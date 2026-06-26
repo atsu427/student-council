@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>お知らせ詳細 | 生徒会</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+      background: #f7f8fa;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      height: 60px;
+      gap: 16px;
+    }
+
+    header a {
+      color: #a0c4ff;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    header h1 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 0 24px 80px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #555;
+      text-decoration: none;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .back-link:hover { color: #1a1a2e; }
+
+    .post-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .category-tag {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: #e8f0fe;
+      color: #1a73e8;
+    }
+
+    .category-tag.行事 { background: #fce8e8; color: #d32f2f; }
+    .category-tag.部活 { background: #e8f5e9; color: #2e7d32; }
+    .category-tag.募集 { background: #fff3e0; color: #e65100; }
+    .category-tag.その他 { background: #f3e5f5; color: #6a1b9a; }
+
+    .post-date { font-size: 13px; color: #888; }
+
+    h2 {
+      font-size: clamp(20px, 4vw, 28px);
+      font-weight: 800;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .post-author {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .post-body {
+      font-size: 16px;
+      line-height: 1.9;
+      color: #333;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 80px;
+      color: #aaa;
+    }
+
+    .error {
+      text-align: center;
+      padding: 80px;
+      color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1><a href="index.html" style="color:#fff;text-decoration:none;">🏫 生徒会</a></h1>
+</header>
+
+<div class="container">
+  <a class="back-link" href="index.html">← お知らせ一覧に戻る</a>
+  <div id="content"><div class="loading">読み込み中...</div></div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://uvqidlzkiuyvqxqttuae.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cWlkbHpraXV5dnF4cXR0dWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0Nzk0MTEsImV4cCI6MjA5ODA1NTQxMX0.VrpNjeEpsfOGJKsSz8uSGxrqiuChT9QjEzgjUnAv1s8';
+
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function loadPost() {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    if (!id) { showError('記事が見つかりません'); return; }
+
+    const { data, error } = await db
+      .from('posts')
+      .select('*')
+      .eq('id', id)
+      .eq('published', true)
+      .single();
+
+    if (error || !data) { showError('記事が見つかりません'); return; }
+
+    document.title = data.title + ' | 生徒会';
+
+    const date = new Date(data.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    document.getElementById('content').innerHTML = `
+      <div class="post-card">
+        <div class="post-meta">
+          <span class="category-tag ${data.category}">${data.category}</span>
+          <span class="post-date">${date}</span>
+        </div>
+        <h2>${escapeHtml(data.title)}</h2>
+        <div class="post-author">投稿者：${escapeHtml(data.author)}</div>
+        <div class="post-body">${escapeHtml(data.body)}</div>
+      </div>
+    `;
+  }
+
+  function showError(msg) {
+    document.getElementById('content').innerHTML = `<div class="error">${msg}</div>`;
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  loadPost();
+</script>
+</body>
+</html>

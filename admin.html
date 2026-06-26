@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理画面 | 生徒会</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+      background: #f7f8fa;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+
+    header h1 { font-size: 18px; font-weight: 700; }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-name { font-size: 13px; color: #a0c4ff; }
+
+    .btn {
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary { background: #1a73e8; color: #fff; }
+    .btn-primary:hover { background: #1557b0; }
+    .btn-danger { background: #d32f2f; color: #fff; }
+    .btn-danger:hover { background: #b71c1c; }
+    .btn-outline { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.4); }
+    .btn-outline:hover { background: rgba(255,255,255,0.1); }
+    .btn-google {
+      background: #fff;
+      color: #444;
+      border: 1.5px solid #ddd;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      padding: 12px 24px;
+    }
+    .btn-google:hover { background: #f5f5f5; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+    /* Login screen */
+    #loginScreen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 60px);
+      padding: 24px;
+    }
+
+    .login-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 48px 40px;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .login-card h2 { font-size: 24px; margin-bottom: 8px; }
+    .login-card p { color: #666; font-size: 14px; margin-bottom: 32px; }
+
+    /* Admin screen */
+    #adminScreen { display: none; }
+
+    .admin-container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #1a1a2e;
+    }
+
+    /* Post form */
+    .post-form {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      margin-bottom: 40px;
+    }
+
+    .form-row {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #444;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"], select, textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #d0d5dd;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      outline: none;
+      background: #fff;
+      color: #1a1a2e;
+    }
+
+    input[type="text"]:focus, select:focus, textarea:focus {
+      border-color: #1a73e8;
+    }
+
+    textarea { min-height: 180px; resize: vertical; line-height: 1.7; }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .publish-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .publish-toggle input { width: auto; cursor: pointer; }
+
+    /* Posts list */
+    .posts-list { display: grid; gap: 12px; }
+
+    .post-item {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .post-item-info { flex: 1; min-width: 0; }
+
+    .post-item-title {
+      font-weight: 700;
+      font-size: 15px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .post-item-meta {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .post-item-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-sm {
+      padding: 5px 14px;
+      font-size: 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-edit { background: #e8f0fe; color: #1a73e8; }
+    .btn-edit:hover { background: #d2e3fc; }
+    .btn-del { background: #fce8e8; color: #d32f2f; }
+    .btn-del:hover { background: #f5c6c6; }
+
+    .status-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .status-published { background: #e8f5e9; color: #2e7d32; }
+    .status-draft { background: #f5f5f5; color: #999; }
+
+    .category-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: #e8f0fe;
+      color: #1a73e8;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 24px;
+      background: #1a1a2e;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 1000;
+    }
+
+    .toast.show { opacity: 1; }
+
+    .empty { color: #aaa; text-align: center; padding: 40px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🏫 生徒会 管理画面</h1>
+  <div class="header-right">
+    <span class="user-name" id="userName"></span>
+    <button class="btn btn-outline" onclick="logout()">ログアウト</button>
+  </div>
+</header>
+
+<!-- ログイン画面 -->
+<div id="loginScreen">
+  <div class="login-card">
+    <h2>管理者ログイン</h2>
+    <p>Googleアカウントでログインしてください</p>
+    <button class="btn btn-google" onclick="loginWithGoogle()">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Googleでログイン
+    </button>
+  </div>
+</div>
+
+<!-- 管理画面 -->
+<div id="adminScreen">
+  <div class="admin-container">
+
+    <!-- 投稿フォーム -->
+    <div class="section-title" id="formTitle">新規投稿</div>
+    <div class="post-form">
+      <input type="hidden" id="editId">
+      <div class="form-row">
+        <label>タイトル</label>
+        <input type="text" id="inputTitle" placeholder="お知らせのタイトルを入力">
+      </div>
+      <div class="form-row">
+        <label>カテゴリ</label>
+        <select id="inputCategory">
+          <option value="お知らせ">お知らせ</option>
+          <option value="行事">行事</option>
+          <option value="部活">部活</option>
+          <option value="募集">募集</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>本文</label>
+        <textarea id="inputBody" placeholder="内容を入力してください"></textarea>
+      </div>
+      <div class="form-actions">
+        <label class="publish-toggle">
+          <input type="checkbox" id="inputPublished" checked>
+          すぐに公開する
+        </label>
+        <div style="flex:1"></div>
+        <button class="btn btn-outline" style="color:#555;border-color:#ccc;" onclick="resetForm()">キャンセル</button>
+        <button class="btn btn-primary" onclick="savePost()">保存する</button>
+      </div>
+    </div>
+
+    <!-- 投稿一覧 -->
+    <div class="section-title">投稿一覧</div>
+    <div class="posts-list" id="postsList">
+      <div class="empty">読み込み中...</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://uvqidlzkiuyvqxqttuae.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cWlkbHpraXV5dnF4cXR0dWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0Nzk0MTEsImV4cCI6MjA5ODA1NTQxMX0.VrpNjeEpsfOGJKsSz8uSGxrqiuChT9QjEzgjUnAv1s8';
+
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let currentUser = null;
+
+  // 認証状態を監視
+  db.auth.onAuthStateChange((event, session) => {
+    if (session?.user) {
+      currentUser = session.user;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminScreen').style.display = 'block';
+      document.getElementById('userName').textContent = session.user.email;
+      loadPosts();
+    } else {
+      currentUser = null;
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('adminScreen').style.display = 'none';
+    }
+  });
+
+  async function loginWithGoogle() {
+    await db.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: location.href }
+    });
+  }
+
+  async function logout() {
+    await db.auth.signOut();
+  }
+
+  async function loadPosts() {
+    const { data, error } = await db
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    const list = document.getElementById('postsList');
+    if (error || !data || data.length === 0) {
+      list.innerHTML = '<div class="empty">投稿はまだありません</div>';
+      return;
+    }
+
+    list.innerHTML = data.map(post => {
+      const date = new Date(post.created_at).toLocaleDateString('ja-JP');
+      return `
+        <div class="post-item">
+          <div class="post-item-info">
+            <div class="post-item-title">${escapeHtml(post.title)}</div>
+            <div class="post-item-meta">
+              <span class="category-tag">${post.category}</span>
+              <span class="status-badge ${post.published ? 'status-published' : 'status-draft'}">
+                ${post.published ? '公開中' : '下書き'}
+              </span>
+              　${date}　${escapeHtml(post.author)}
+            </div>
+          </div>
+          <div class="post-item-actions">
+            <button class="btn-sm btn-edit" onclick="editPost(${post.id})">編集</button>
+            <button class="btn-sm btn-del" onclick="deletePost(${post.id})">削除</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function savePost() {
+    const id = document.getElementById('editId').value;
+    const title = document.getElementById('inputTitle').value.trim();
+    const category = document.getElementById('inputCategory').value;
+    const body = document.getElementById('inputBody').value.trim();
+    const published = document.getElementById('inputPublished').checked;
+
+    if (!title || !body) { showToast('タイトルと本文を入力してください'); return; }
+
+    const payload = {
+      title, category, body, published,
+      author: currentUser?.email || '生徒会'
+    };
+
+    let error;
+    if (id) {
+      ({ error } = await db.from('posts').update(payload).eq('id', id));
+    } else {
+      ({ error } = await db.from('posts').insert(payload));
+    }
+
+    if (error) { showToast('保存に失敗しました: ' + error.message); return; }
+
+    showToast(id ? '更新しました！' : '投稿しました！');
+    resetForm();
+    loadPosts();
+  }
+
+  async function editPost(id) {
+    const { data } = await db.from('posts').select('*').eq('id', id).single();
+    if (!data) return;
+
+    document.getElementById('editId').value = id;
+    document.getElementById('inputTitle').value = data.title;
+    document.getElementById('inputCategory').value = data.category;
+    document.getElementById('inputBody').value = data.body;
+    document.getElementById('inputPublished').checked = data.published;
+    document.getElementById('formTitle').textContent = '投稿を編集';
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function deletePost(id) {
+    if (!confirm('この投稿を削除しますか？')) return;
+    const { error } = await db.from('posts').delete().eq('id', id);
+    if (error) { showToast('削除に失敗しました'); return; }
+    showToast('削除しました');
+    loadPosts();
+  }
+
+  function resetForm() {
+    document.getElementById('editId').value = '';
+    document.getElementById('inputTitle').value = '';
+    document.getElementById('inputCategory').value = 'お知らせ';
+    document.getElementById('inputBody').value = '';
+    document.getElementById('inputPublished').checked = true;
+    document.getElementById('formTitle').textContent = '新規投稿';
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+</body>
+</html>
