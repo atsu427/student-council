@@ -134,6 +134,11 @@
     .members-table tr:last-child td{border-bottom:none}
     .members-table tr:hover td{background:var(--paper-deep)}
     .role-select{padding:6px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13px;background:var(--paper);cursor:pointer}
+    .member-card-grid{display:flex;flex-direction:column;gap:10px}
+    .member-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px 16px;box-shadow:var(--shadow-sm)}
+    .member-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+    .member-card-email{font-size:13px;font-weight:700}
+    .member-card-date{font-size:11px;color:var(--ink-faint);margin-top:3px}
     /* ロール管理 */
     .roles-list{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
     .role-chip{display:flex;align-items:center;gap:8px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:7px 16px;font-size:13px;font-weight:500;box-shadow:var(--shadow-sm)}
@@ -247,6 +252,7 @@
         <div class="form-row">
           <label>本文</label>
           <textarea id="inputBody" placeholder="内容を入力"></textarea>
+          <p style="font-size:12px;color:var(--ink-soft);margin-top:6px">リンクを入れるには <code>[表示する文字](https://example.com)</code> の形式で入力してください</p>
         </div>
         <div class="form-row">
           <label>対象ロール（未選択＝全員に表示）</label>
@@ -285,9 +291,13 @@
           <div class="file-preview-list" id="filePreviewList"></div>
           <div class="upload-progress" id="uploadProgress">アップロード中...</div>
         </div>
+        <div class="form-row">
+          <label>公開日時（指定すると、その時刻になるまで生徒には表示されません。未指定なら即時公開）</label>
+          <input type="datetime-local" id="inputPublishAt">
+        </div>
         <div class="form-actions">
           <label class="publish-toggle">
-            <input type="checkbox" id="inputPublished" checked> すぐに公開する
+            <input type="checkbox" id="inputPublished" checked> 公開する（チェックを外すと下書き）
           </label>
           <div style="flex:1"></div>
           <button class="btn" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line)" onclick="resetForm()">キャンセル</button>
@@ -296,13 +306,28 @@
       </div>
 
       <div class="section-title">投稿一覧</div>
+      <div class="form-row" style="max-width:360px">
+        <input type="text" id="postSearchInput" placeholder="タイトル・本文で検索" oninput="renderPostsList()">
+      </div>
       <div class="posts-list" id="postsList"><div class="loading">読み込み中...</div></div>
     </div>
 
     <!-- 生徒管理タブ -->
     <div class="tab-content" id="tab-members">
       <div class="section-title">ログイン済み生徒一覧</div>
+      <div class="form-row" style="display:flex;gap:12px;flex-wrap:wrap;max-width:560px">
+        <input type="text" id="memberSearchInput" placeholder="メールアドレス・表示名で検索" style="flex:2;min-width:200px" oninput="renderMembersList()">
+        <select id="memberRoleFilter" style="flex:1;min-width:140px" onchange="renderMembersList()"><option value="">すべてのロール</option></select>
+      </div>
       <div id="membersArea"><div class="loading">読み込み中...</div></div>
+
+      <div class="section-title" style="margin-top:48px;color:var(--vermillion)">危険な操作</div>
+      <div class="post-form" style="border-color:var(--vermillion-tint-strong)">
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.8;margin-bottom:16px">
+          お知らせ（添付ファイル含む）・生徒とのDM履歴・生徒の登録情報をすべて削除し、まっさらな状態に戻します。意見箱の内容は本文を残したまま投稿者の紐付けのみ解除します。<strong>この操作は取り消せません。</strong>
+        </p>
+        <button class="btn" style="background:var(--vermillion);color:var(--paper)" onclick="resetAllData()">投稿・DM履歴・生徒情報をすべて削除する</button>
+      </div>
     </div>
 
     <!-- ロール管理タブ -->
@@ -357,7 +382,6 @@
             <label>変更タイプ</label>
             <select id="ovType" onchange="onOverrideTypeChange()">
               <option value="subject_change">科目変更</option>
-              <option value="swap">入れ替え</option>
               <option value="self_study">自習</option>
               <option value="cancelled">カット</option>
             </select>
@@ -366,13 +390,9 @@
             <label>新科目名</label>
             <input type="text" id="ovSubject" placeholder="例：自習（数学）">
           </div>
-          <div style="flex:1;min-width:140px;display:none" id="ovSwapRow">
-            <label>入れ替え先時限</label>
-            <select id="ovSwapWithPeriod"></select>
-          </div>
         </div>
         <div class="form-row">
-          <label>備考</label>
+          <label>備考（カットの場合は下の備考欄に表示されます）</label>
           <input type="text" id="ovNote" placeholder="任意">
         </div>
         <div class="form-actions">
@@ -387,8 +407,13 @@
 
     <!-- 意見箱タブ -->
     <div class="tab-content" id="tab-suggestions">
-      <div class="section-title">意見箱（生徒からの意見・要望）</div>
+      <div class="section-title">意見箱（対応中・未対応）</div>
       <div id="suggestionsArea"><div class="loading">読み込み中...</div></div>
+
+      <div class="section-title" style="margin-top:40px;cursor:pointer" onclick="toggleSuggestionArchive()">
+        アーカイブ（対応済み） <span id="archiveToggleLabel" style="font-size:12px;color:var(--ink-faint);font-weight:400">（タップで表示）</span>
+      </div>
+      <div id="suggestionsArchiveArea" style="display:none"><div class="loading">読み込み中...</div></div>
 
       <div class="section-title" style="margin-top:48px">生徒とのDM</div>
       <div class="dm-layout">
@@ -700,24 +725,56 @@
   }
 
   // ── 生徒管理 ──
+  let membersListCache = [];
+
   async function loadMembers() {
     const el = document.getElementById('membersArea');
     el.innerHTML = '<div class="loading">読み込み中...</div>';
     const { data, error } = await db.from('members').select('*').order('created_at', { ascending: false });
     if (error) { el.innerHTML = '<div class="empty">読み込みエラー: ' + error.message + '</div>'; return; }
-    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">まだログインした生徒はいません</div>'; return; }
+    membersListCache = data || [];
 
-    let rows = '';
-    for (const m of data) {
+    const roleFilter = document.getElementById('memberRoleFilter');
+    const prevRoleFilter = roleFilter.value;
+    roleFilter.innerHTML = '<option value="">すべてのロール</option>' + allRoles.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('');
+    if (allRoles.includes(prevRoleFilter)) roleFilter.value = prevRoleFilter;
+
+    renderMembersList();
+  }
+
+  function renderMembersList() {
+    const el = document.getElementById('membersArea');
+    if (membersListCache.length === 0) { el.innerHTML = '<div class="empty">まだログインした生徒はいません</div>'; return; }
+
+    const keyword = (document.getElementById('memberSearchInput').value || '').trim().toLowerCase();
+    const roleFilter = document.getElementById('memberRoleFilter').value;
+    const filtered = membersListCache.filter(m => {
+      if (roleFilter && !(m.roles || []).includes(roleFilter)) return false;
+      if (keyword && !(m.email || '').toLowerCase().includes(keyword) && !(m.display_name || '').toLowerCase().includes(keyword)) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) { el.innerHTML = '<div class="empty">条件に一致する生徒がいません</div>'; return; }
+
+    el.innerHTML = '<div class="member-card-grid">' + filtered.map(m => {
       const mRoles = m.roles || [];
       const checks = allRoles.map(r => `
         <label class="role-checkbox-item" style="font-size:12px">
           <input type="checkbox" data-member-id="${escapeHtml(m.id)}" data-role-name="${escapeHtml(r)}" ${mRoles.includes(r) ? 'checked' : ''}>
           ${escapeHtml(r)}
         </label>`).join('');
-      rows += `<tr><td>${escapeHtml(m.email)}</td><td><div class="role-checkboxes" style="border:none;padding:0">${checks || '<span style="color:#aaa;font-size:12px">ロールがありません</span>'}</div></td><td>${new Date(m.created_at).toLocaleDateString('ja-JP')}</td><td><button class="btn-sm btn-del" data-del-member-id="${escapeHtml(m.id)}" data-del-member-email="${escapeHtml(m.email)}">削除</button></td></tr>`;
-    }
-    el.innerHTML = '<div class="members-table-wrap"><table class="members-table"><thead><tr><th>メールアドレス</th><th>ロール（複数可）</th><th>初回ログイン</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+      return `<div class="member-card">
+        <div class="member-card-head">
+          <div>
+            <div class="member-card-email">${escapeHtml(m.display_name ? `${m.display_name}（${m.email}）` : m.email)}</div>
+            <div class="member-card-date">初回ログイン: ${new Date(m.created_at).toLocaleDateString('ja-JP')}</div>
+          </div>
+          <button class="btn-sm btn-del" data-del-member-id="${escapeHtml(m.id)}" data-del-member-email="${escapeHtml(m.email)}">削除</button>
+        </div>
+        <div class="role-checkboxes" style="margin-top:10px">${checks || '<span style="color:#aaa;font-size:12px">ロールがありません</span>'}</div>
+      </div>`;
+    }).join('') + '</div>';
+
     el.querySelectorAll('input[data-member-id]').forEach(input => {
       input.addEventListener('change', () => toggleMemberRole(input.dataset.memberId, input.dataset.roleName, input.checked));
     });
@@ -734,12 +791,52 @@
     loadMembers();
   }
 
+  // ── 全データ初期化（危険な操作） ──
+  async function resetAllData() {
+    if (!confirm('お知らせ（添付ファイル含む）・生徒とのDM履歴・生徒の登録情報をすべて削除します。\nこの操作は取り消せません。本当に実行しますか？')) return;
+    const typed = prompt('続行するには「削除」と入力してください。');
+    if (typed !== '削除') { showToast('入力内容が一致しないため中止しました'); return; }
+
+    try {
+      showToast('削除を実行しています...');
+      const { data: posts, error: postsFetchError } = await db.from('posts').select('file_paths');
+      if (postsFetchError) throw postsFetchError;
+      const allFiles = (posts || []).flatMap(p => p.file_paths || []);
+      if (allFiles.length > 0) await db.storage.from(STORAGE_BUCKET).remove(allFiles);
+
+      const steps = [
+        db.from('notifications').delete().neq('id', 0),
+        db.from('dm_messages').delete().neq('id', 0)
+      ];
+      for (const step of steps) { const { error } = await step; if (error) throw error; }
+
+      const { error: suggError } = await db.from('suggestions').update({ member_id: null }).not('member_id', 'is', null);
+      if (suggError) throw suggError;
+
+      const { error: postsDelError } = await db.from('posts').delete().neq('id', 0);
+      if (postsDelError) throw postsDelError;
+
+      const { error: membersDelError } = await db.from('members').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (membersDelError) throw membersDelError;
+
+      showToast('すべて削除しました');
+      resetForm();
+      loadPosts();
+      loadMembers();
+    } catch (e) {
+      console.error('全データ削除エラー:', e);
+      showToast('削除中にエラーが発生しました: ' + e.message);
+    }
+  }
+
   async function toggleMemberRole(id, role, checked) {
     const { data: cur } = await db.from('members').select('roles').eq('id', id).single();
     let roles = (cur?.roles || []).filter(r => r !== role);
     if (checked) roles.push(role);
     const { error } = await db.from('members').update({ roles }).eq('id', id);
     if (error) { showToast('更新失敗: ' + error.message); loadMembers(); return; }
+    const cached = membersListCache.find(m => m.id === id);
+    if (cached) cached.roles = roles;
     showToast('ロールを更新しました');
   }
 
@@ -817,15 +914,30 @@
   }
 
   // ── 投稿一覧 ──
+  let postsListCache = [];
+
   async function loadPosts() {
     const { data, error } = await db.from('posts').select('*').order('created_at', { ascending: false });
+    if (error) { document.getElementById('postsList').innerHTML = '<div class="empty">読み込みエラー: ' + escapeHtml(error.message) + '</div>'; return; }
+    postsListCache = data || [];
+    renderPostsList();
+  }
+
+  function renderPostsList() {
     const list = document.getElementById('postsList');
-    if (error || !data || data.length === 0) { list.innerHTML = '<div class="empty">投稿はまだありません</div>'; return; }
-    list.innerHTML = data.map(post => {
+    const keyword = (document.getElementById('postSearchInput')?.value || '').trim().toLowerCase();
+    const filtered = keyword
+      ? postsListCache.filter(p => (p.title || '').toLowerCase().includes(keyword) || (p.body || '').toLowerCase().includes(keyword))
+      : postsListCache;
+
+    if (filtered.length === 0) { list.innerHTML = `<div class="empty">${keyword ? '検索条件に一致する投稿がありません' : '投稿はまだありません'}</div>`; return; }
+    list.innerHTML = filtered.map(post => {
       const date = new Date(post.created_at).toLocaleDateString('ja-JP');
       const rolesHtml = (post.target_roles && post.target_roles.length > 0)
         ? post.target_roles.map(r => `<span class="role-tag-sm">${escapeHtml(r)}</span>`).join('') : '<span style="font-size:11px;color:#aaa">全員</span>';
       const filesNote = (post.file_paths && post.file_paths.length > 0) ? `添付${post.file_paths.length}件` : '';
+      const isScheduled = post.publish_at && new Date(post.publish_at) > new Date();
+      const scheduledNote = isScheduled ? `<span class="tag" style="background:var(--gold-tint);color:var(--gold)">${new Date(post.publish_at).toLocaleString('ja-JP', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}に公開予定</span>` : '';
       return `<div class="post-item">
         <div class="post-item-info">
           <div class="post-item-title">${escapeHtml(post.title)}</div>
@@ -833,6 +945,7 @@
             <span class="tag">${post.category}</span>
             <span class="status-badge ${post.published ? 'status-published' : 'status-draft'}">${post.published ? '公開中' : '下書き'}</span>
             ${post.is_special ? '<span class="tag" style="background:var(--vermillion);color:var(--paper)">特別メッセージ</span>' : ''}
+            ${scheduledNote}
             ${rolesHtml}
             <span>${date}</span>
             ${filesNote ? `<span>${filesNote}</span>` : ''}
@@ -840,6 +953,7 @@
         </div>
         <div class="post-item-actions">
           <button class="btn-sm btn-edit" onclick="editPost(${post.id})">編集</button>
+          <button class="btn-sm" style="background:var(--green-tint);color:var(--green)" onclick="notifyLine(${post.id}, true)" title="LINEに今すぐ通知を送る">LINE通知</button>
           <button class="btn-sm btn-del" onclick="deletePost(${post.id})">削除</button>
         </div>
       </div>`;
@@ -854,6 +968,9 @@
     const body = document.getElementById('inputBody').value.trim();
     const published = document.getElementById('inputPublished').checked;
     const is_special = document.getElementById('inputSpecial').checked;
+    const publishAtInput = document.getElementById('inputPublishAt').value;
+    const publish_at = publishAtInput ? new Date(publishAtInput).toISOString() : null;
+    const isScheduledFuture = publish_at && new Date(publish_at) > new Date();
     const target_roles = getSelectedRoles();
     const mentioned_emails = getSelectedMentionEmails();
     const mentioned_roles = getSelectedMentionRoles();
@@ -871,7 +988,7 @@
     document.getElementById('uploadProgress').style.display = 'none';
 
     const authorName = (currentMember?.display_name || '').trim() || currentUser.email;
-    const payload = { title, category, body, published, is_special, target_roles, mentioned_emails, mentioned_roles, file_paths: filePaths, author: authorName };
+    const payload = { title, category, body, published, is_special, publish_at, target_roles, mentioned_emails, mentioned_roles, file_paths: filePaths, author: authorName };
 
     const { data: savedPost, error } = id
       ? await db.from('posts').update(payload).eq('id', id).select('id, title').single()
@@ -881,28 +998,34 @@
     if (failedUploads.length > 0) {
       showToast(`保存しましたが、${failedUploads.length}件のファイルがアップロードできませんでした（${failedUploads[0].error.message}）`);
     } else {
-      showToast(id ? '更新しました！' : '投稿しました！');
+      showToast(id ? '更新しました！' : (isScheduledFuture ? `投稿を予約しました（${new Date(publish_at).toLocaleString('ja-JP')}に公開）` : '投稿しました！'));
     }
 
     if ((mentioned_emails.length > 0 || mentioned_roles.length > 0) && savedPost) await notifyMentionedMembers(mentioned_emails, mentioned_roles, savedPost);
-    if (published && savedPost) notifyLine(savedPost.id);
+    // 公開時刻が未来に指定されている場合、自動でのLINE通知は送らない（その時刻になってから一覧の「LINE通知」ボタンで手動送信する）
+    if (published && savedPost && !isScheduledFuture) notifyLine(savedPost.id);
 
     resetForm();
     loadPosts();
   }
 
   // ── LINE通知（失敗してもサイト機能には影響させない） ──
-  async function notifyLine(postId) {
+  async function notifyLine(postId, manual) {
     try {
       const { data: { session } } = await db.auth.getSession();
       if (!session) return;
-      await fetch('/api/line-notify-post', {
+      const res = await fetch('/api/line-notify-post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ postId })
       });
+      if (manual) {
+        const result = await res.json().catch(() => ({}));
+        showToast(result.skipped ? `LINE通知をスキップしました（${result.skipped}）` : 'LINE通知を送信しました');
+      }
     } catch (e) {
       console.error('LINE通知呼び出し失敗（未設定の場合は無視してよい）:', e.message);
+      if (manual) showToast('LINE通知の送信に失敗しました: ' + e.message);
     }
   }
 
@@ -942,6 +1065,7 @@
     document.getElementById('inputBody').value = data.body;
     document.getElementById('inputPublished').checked = data.published;
     document.getElementById('inputSpecial').checked = !!data.is_special;
+    document.getElementById('inputPublishAt').value = toDatetimeLocalValue(data.publish_at);
     document.getElementById('formTitle').textContent = '投稿を編集';
     renderRoleCheckboxes(data.target_roles || []);
     renderMentionCheckboxes(data.mentioned_emails || []);
@@ -974,6 +1098,7 @@
     document.getElementById('inputBody').value = '';
     document.getElementById('inputPublished').checked = true;
     document.getElementById('inputSpecial').checked = false;
+    document.getElementById('inputPublishAt').value = '';
     document.getElementById('formTitle').textContent = '新規投稿';
     renderRoleCheckboxes([]);
     renderMentionCheckboxes([]);
@@ -994,28 +1119,54 @@
   const SUGGESTION_STATUS_LABEL = { open: '未対応', read: '確認済み', closed: '対応済み' };
   const SUGGESTION_NEXT_STATUS = { open: 'read', read: 'closed', closed: 'open' };
 
+  let suggestionArchiveLoaded = false;
+  let suggestionArchiveOpen = false;
+
+  function renderSuggestionItem(s) {
+    const date = new Date(s.created_at).toLocaleString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const nextLabel = SUGGESTION_STATUS_LABEL[SUGGESTION_NEXT_STATUS[s.status] || 'open'];
+    return `<div class="suggestion-item">
+      <div class="suggestion-item-meta">
+        <span class="status-badge status-${escapeHtml(s.status)}">${escapeHtml(SUGGESTION_STATUS_LABEL[s.status] || s.status)}</span>
+        <span>${escapeHtml(s.email || '匿名')}</span>
+        <span>${date}</span>
+      </div>
+      <div class="suggestion-item-body">${escapeHtml(s.body)}</div>
+      <div class="suggestion-item-actions">
+        <button class="btn-sm btn-edit" data-suggestion-id="${s.id}" data-next-status="${SUGGESTION_NEXT_STATUS[s.status] || 'open'}">${nextLabel}にする</button>
+      </div>
+    </div>`;
+  }
+
   async function loadSuggestions() {
     const el = document.getElementById('suggestionsArea');
     el.innerHTML = '<div class="loading">読み込み中...</div>';
-    const { data, error } = await db.from('suggestions').select('*').order('created_at', { ascending: false });
+    const { data, error } = await db.from('suggestions').select('*').neq('status', 'closed').order('created_at', { ascending: false });
     if (error) { console.error('意見箱取得エラー:', error.message); el.innerHTML = '<div class="empty">読み込みエラー: ' + escapeHtml(error.message) + '</div>'; return; }
-    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">まだ意見はありません</div>'; return; }
+    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">対応待ちの意見はありません</div>'; return; }
 
-    el.innerHTML = data.map(s => {
-      const date = new Date(s.created_at).toLocaleString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-      const nextLabel = SUGGESTION_STATUS_LABEL[SUGGESTION_NEXT_STATUS[s.status] || 'open'];
-      return `<div class="suggestion-item">
-        <div class="suggestion-item-meta">
-          <span class="status-badge status-${escapeHtml(s.status)}">${escapeHtml(SUGGESTION_STATUS_LABEL[s.status] || s.status)}</span>
-          <span>${escapeHtml(s.email || '匿名')}</span>
-          <span>${date}</span>
-        </div>
-        <div class="suggestion-item-body">${escapeHtml(s.body)}</div>
-        <div class="suggestion-item-actions">
-          <button class="btn-sm btn-edit" data-suggestion-id="${s.id}" data-next-status="${SUGGESTION_NEXT_STATUS[s.status] || 'open'}">${nextLabel}にする</button>
-        </div>
-      </div>`;
-    }).join('');
+    el.innerHTML = data.map(renderSuggestionItem).join('');
+    el.querySelectorAll('[data-suggestion-id]').forEach(btn => {
+      btn.addEventListener('click', () => updateSuggestionStatus(Number(btn.dataset.suggestionId), btn.dataset.nextStatus));
+    });
+    suggestionArchiveLoaded = false; // ステータス変更があり得るので次回開いた時に再取得する
+  }
+
+  function toggleSuggestionArchive() {
+    suggestionArchiveOpen = !suggestionArchiveOpen;
+    document.getElementById('suggestionsArchiveArea').style.display = suggestionArchiveOpen ? 'block' : 'none';
+    document.getElementById('archiveToggleLabel').textContent = suggestionArchiveOpen ? '（タップで非表示）' : '（タップで表示）';
+    if (suggestionArchiveOpen && !suggestionArchiveLoaded) loadSuggestionArchive();
+  }
+
+  async function loadSuggestionArchive() {
+    const el = document.getElementById('suggestionsArchiveArea');
+    el.innerHTML = '<div class="loading">読み込み中...</div>';
+    const { data, error } = await db.from('suggestions').select('*').eq('status', 'closed').order('created_at', { ascending: false });
+    if (error) { console.error('意見箱アーカイブ取得エラー:', error.message); el.innerHTML = '<div class="empty">読み込みエラー: ' + escapeHtml(error.message) + '</div>'; return; }
+    suggestionArchiveLoaded = true;
+    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">対応済みの意見はありません</div>'; return; }
+    el.innerHTML = data.map(renderSuggestionItem).join('');
     el.querySelectorAll('[data-suggestion-id]').forEach(btn => {
       btn.addEventListener('click', () => updateSuggestionStatus(Number(btn.dataset.suggestionId), btn.dataset.nextStatus));
     });
@@ -1026,6 +1177,7 @@
     if (error) { console.error('意見箱ステータス更新エラー:', error.message); showToast('更新失敗: ' + error.message); return; }
     showToast('ステータスを更新しました');
     loadSuggestions();
+    if (suggestionArchiveOpen) loadSuggestionArchive();
   }
 
   // ── 生徒とのDM ──
@@ -1092,7 +1244,7 @@
   const CLASS_NUMS = [1,2,3,4];
   const WEEKDAYS = ['月','火','水','木','金','土']; // weekday=1が月
   const PERIODS = [1,2,3,4,5,6,7];
-  const OVERRIDE_TYPE_LABEL = { subject_change: '科目変更', swap: '入れ替え', self_study: '自習', cancelled: 'カット' };
+  const OVERRIDE_TYPE_LABEL = { subject_change: '科目変更', self_study: '自習', cancelled: 'カット' };
   let ttInitialized = false;
   let ttSlotsCache = {}; // key: `${weekday}-${period}` -> subject
 
@@ -1106,7 +1258,6 @@
       document.getElementById('ovClass').innerHTML = classOptions;
       const periodOptions = PERIODS.map(p => `<option value="${p}">${p}限</option>`).join('');
       document.getElementById('ovPeriod').innerHTML = periodOptions;
-      document.getElementById('ovSwapWithPeriod').innerHTML = periodOptions;
       document.getElementById('ovDate').value = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
 
       document.getElementById('ttGradeSelect').addEventListener('change', loadTimetableGrid);
@@ -1121,7 +1272,6 @@
   function onOverrideTypeChange() {
     const type = document.getElementById('ovType').value;
     document.getElementById('ovSubjectRow').style.display = (type === 'subject_change') ? '' : 'none';
-    document.getElementById('ovSwapRow').style.display = (type === 'swap') ? '' : 'none';
   }
 
   async function loadTimetableGrid() {
@@ -1140,7 +1290,7 @@
 
   function renderTimetableGrid(grade, classNo) {
     const area = document.getElementById('ttGridArea');
-    let html = '<table class="members-table"><thead><tr><th>時限</th>' + WEEKDAYS.map(w => `<th>${w}</th>`).join('') + '</tr></thead><tbody>';
+    let html = '<div class="members-table-wrap"><table class="members-table" style="min-width:560px"><thead><tr><th>時限</th>' + WEEKDAYS.map(w => `<th>${w}</th>`).join('') + '</tr></thead><tbody>';
     PERIODS.forEach(p => {
       html += `<tr><td>${p}限</td>`;
       for (let w = 1; w <= WEEKDAYS.length; w++) {
@@ -1149,7 +1299,7 @@
       }
       html += '</tr>';
     });
-    html += '</tbody></table>';
+    html += '</tbody></table></div>';
     area.innerHTML = html;
     area.querySelectorAll('input[data-weekday]').forEach(input => {
       input.addEventListener('change', () => saveTimetableSlot(grade, classNo, Number(input.dataset.weekday), Number(input.dataset.period), input.value.trim()));
@@ -1171,7 +1321,6 @@
     const period = Number(document.getElementById('ovPeriod').value);
     const type = document.getElementById('ovType').value;
     const subject = document.getElementById('ovSubject').value.trim();
-    const swapWithPeriod = Number(document.getElementById('ovSwapWithPeriod').value);
     const note = document.getElementById('ovNote').value.trim();
 
     if (!date) { showToast('日付を入力してください'); return; }
@@ -1179,7 +1328,6 @@
 
     const payload = { date, grade, class_no: classNo, period, type, note: note || null };
     if (type === 'subject_change') payload.subject = subject;
-    if (type === 'swap') payload.swap_with_period = swapWithPeriod;
 
     const { error } = await db.from('timetable_overrides').insert(payload);
     if (error) { console.error('時間割変更登録エラー:', error.message); showToast('登録失敗: ' + error.message); return; }
@@ -1199,7 +1347,6 @@
     area.innerHTML = data.map(o => {
       let detail = '';
       if (o.type === 'subject_change') detail = `→ ${escapeHtml(o.subject || '')}`;
-      else if (o.type === 'swap') detail = `↔ ${o.swap_with_period}限`;
       return `<div class="post-item">
         <div class="post-item-info">
           <div class="post-item-title">${escapeHtml(o.date)} ${escapeHtml(o.grade)}${o.class_no}組 ${o.period}限</div>
@@ -1228,6 +1375,13 @@
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function toDatetimeLocalValue(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
 </script>
 </body>
 </html>

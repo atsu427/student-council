@@ -55,6 +55,8 @@
     h2{font-size:clamp(23px,4vw,31px);font-weight:700;line-height:1.5;margin-bottom:16px;letter-spacing:.01em}
     .post-author{font-size:13px;color:var(--ink-faint);margin-bottom:36px;padding-bottom:28px;border-bottom:1px solid var(--line)}
     .post-body{font-size:16px;line-height:2;color:var(--ink);white-space:pre-wrap;word-break:break-word;margin-bottom:36px}
+    .post-body a{color:var(--vermillion);text-decoration:underline}
+    .post-body a:hover{text-decoration:none}
     /* 添付ファイル */
     .attachments{border-top:1px solid var(--line);padding-top:30px}
     .attachments h3{font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:18px;letter-spacing:.05em}
@@ -283,7 +285,7 @@
         </div>
         <h2>${escapeHtml(data.title)}</h2>
         <div class="post-author">投稿者：${escapeHtml(data.author)}</div>
-        <div class="post-body">${escapeHtml(data.body)}</div>
+        <div class="post-body">${renderBodyHtml(data.body)}</div>
         ${filesHtml}
       </div>`;
   }
@@ -310,6 +312,11 @@
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // 本文中の [表示文字](https://...) 記法をリンクに変換する（escapeHtml後の文字列に対して適用するので安全）
+  function renderBodyHtml(body) {
+    return escapeHtml(body).replace(/\[([^\[\]]+)\]\((https?:\/\/[^\s()]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  }
 </script>
 </body>
 </html>

@@ -20,9 +20,10 @@ async function isAdmin(env, userId) {
 }
 
 async function getPost(env, postId) {
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}&select=id,title,body,published,mentioned_emails,mentioned_roles`, {
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}&select=id,title,body,category,is_special,published,mentioned_emails,mentioned_roles,file_paths`, {
     headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
   });
+  if (!res.ok) { console.error('posts取得失敗:', res.status, await res.text()); return null; }
   const rows = await res.json();
   return Array.isArray(rows) && rows[0] ? rows[0] : null;
 }
@@ -46,36 +47,39 @@ async function getLineUserIdsByRoles(env, roles) {
   return (Array.isArray(rows) ? rows : []).filter(r => r.line_user_id);
 }
 
-function buildPostMessage(post, env) {
-  const excerpt = (post.body || '').slice(0, 80);
-  return [{
-    type: 'text',
-    text: `【生徒会からのお知らせ】\n${post.title}\n\n${excerpt}${post.body.length > 80 ? '…' : ''}`,
-  }, {
-    type: 'template',
-    altText: post.title,
-    template: {
-      type: 'buttons',
-      text: '詳しくはサイトでご確認ください',
-      actions: [{ type: 'uri', label: '生徒会ページを見る', uri: env.SITE_URL || 'https://example.pages.dev' }]
-    }
-  }];
+function isImagePath(path) { return /\.(jpe?g|png|gif|webp)$/i.test(path); }
+
+// LINEは1リクエストあたり最大5メッセージまでなので、テキスト1件+画像は最大4件までにする
+function buildPostMessages(post, env) {
+  const excerpt = (post.body || '').replace(/\[([^\[\]]+)\]\(https?:\/\/[^\s()]+\)/g, '$1').slice(0, 100);
+  const specialPrefix = post.is_special ? '【重要】' : '';
+  const text = `【生徒会からのお知らせ】\n${specialPrefix}[${post.category || 'お知らせ'}] ${post.title}\n\n${excerpt}${(post.body || '').length > 100 ? '…' : ''}`;
+  const messages = [{ type: 'text', text }];
+
+  const imagePaths = (post.file_paths || []).filter(isImagePath).slice(0, 4);
+  for (const path of imagePaths) {
+    const url = `${env.SUPABASE_URL}/storage/v1/object/public/post-files/${path}`;
+    messages.push({ type: 'image', originalContentUrl: url, previewImageUrl: url });
+  }
+  return messages;
 }
 
 async function lineBroadcast(env, messages) {
-  await fetch('https://api.line.me/v2/bot/message/broadcast', {
+  const res = await fetch('https://api.line.me/v2/bot/message/broadcast', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.LINE_CHANNEL_ACCESS_TOKEN}` },
     body: JSON.stringify({ messages })
   });
+  if (!res.ok) console.error('LINE broadcast失敗:', res.status, await res.text());
 }
 
 async function linePush(env, to, messages) {
-  await fetch('https://api.line.me/v2/bot/message/push', {
+  const res = await fetch('https://api.line.me/v2/bot/message/push', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.LINE_CHANNEL_ACCESS_TOKEN}` },
     body: JSON.stringify({ to, messages })
   });
+  if (!res.ok) console.error('LINE push失敗:', res.status, await res.text());
 }
 
 export async function onRequestPost(context) {
@@ -98,7 +102,7 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ skipped: 'LINE未設定（環境変数LINE_CHANNEL_ACCESS_TOKEN未設定）' }), { status: 200 });
     }
 
-    await lineBroadcast(env, buildPostMessage(post, env));
+    await lineBroadcast(env, buildPostMessages(post, env));
 
     const [byEmail, byRole] = await Promise.all([
       getLineUserIdsByEmails(env, post.mentioned_emails),

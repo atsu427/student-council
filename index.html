@@ -49,6 +49,9 @@
     .hero-inner::before{content:'';position:absolute;top:-1px;left:0;width:48px;height:3px;background:var(--vermillion)}
     .hero h2{font-size:clamp(27px,4vw,35px);font-weight:700;letter-spacing:.05em;margin-bottom:11px;line-height:1.3}
     .hero p{font-size:13px;color:#b9b09a;letter-spacing:.03em;line-height:1.7}
+    .post-search-bar{max-width:760px;margin:0 auto;padding:18px 28px 0}
+    .post-search-bar input{width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-md);font-size:14px;font-family:inherit;outline:none;background:var(--paper-deep);color:var(--ink);transition:border-color .2s,background-color .2s}
+    .post-search-bar input:focus{border-color:var(--vermillion);background:var(--paper)}
     .filter-bar{display:flex;gap:4px;flex-wrap:wrap;max-width:760px;margin:0 auto;padding:10px 28px;border-bottom:1px solid var(--line)}
     .filter-btn{padding:10px 16px;border:none;border-radius:var(--radius-sm);border-bottom:2px solid transparent;background:transparent;color:var(--ink-soft);font-size:13px;cursor:pointer;transition:color .15s,border-color .15s,background-color .15s;font-family:inherit;letter-spacing:.02em}
     .filter-btn:hover{color:var(--ink);background:var(--paper-deep)}
@@ -127,12 +130,6 @@
     .tt-table{width:100%;border-collapse:collapse;font-size:13px}
     .tt-table th{padding:9px 8px;text-align:left;font-size:11px;font-weight:700;border-bottom:2px solid var(--ink);color:var(--ink-soft);letter-spacing:.02em}
     .tt-table td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-    .tt-cell-cancelled{color:var(--ink-faint);text-decoration:line-through}
-    .tt-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid currentColor;margin-left:6px;white-space:nowrap}
-    .tt-badge-change{color:var(--gold)}
-    .tt-badge-swap{color:var(--green)}
-    .tt-badge-self{color:var(--vermillion)}
-    .tt-badge-cancel{color:var(--ink-faint)}
     /* ヘッダーナビ */
     .header-left{display:flex;align-items:center;gap:28px;min-width:0}
     .main-nav{display:flex;gap:2px}
@@ -159,21 +156,25 @@
     /* 特別メッセージ */
     #specialBanner{display:none;background:var(--vermillion-tint);border-bottom:1px solid var(--vermillion-tint-strong)}
     #specialBanner.show{display:block}
-    .special-msg{max-width:760px;margin:0 auto;padding:14px 28px;display:flex;align-items:flex-start;gap:12px}
+    .special-msg{max-width:760px;margin:0 auto;padding:14px 28px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
     .special-msg + .special-msg{border-top:1px solid var(--vermillion-tint-strong)}
-    .special-msg-label{flex-shrink:0;font-size:11px;font-weight:700;color:var(--paper);background:var(--vermillion);padding:3px 10px;border-radius:999px;letter-spacing:.04em;margin-top:1px}
-    .special-msg a{color:var(--ink);text-decoration:none;font-size:14px;font-weight:700;line-height:1.7}
+    .special-msg-label{flex-shrink:0;font-size:11px;font-weight:700;color:var(--paper);background:var(--vermillion);padding:3px 10px;border-radius:999px;letter-spacing:.04em}
+    .special-msg a{color:var(--ink);text-decoration:none;font-size:14px;font-weight:700;line-height:1.7;flex-shrink:0}
     .special-msg a:hover{text-decoration:underline;color:var(--vermillion)}
+    .special-msg-body{font-size:13px;color:var(--ink-soft);line-height:1.7}
     /* 通知ベルアイコン */
     .bell-icon{width:18px;height:18px;display:block}
-    /* 時間割：学年4クラス並列表示 */
-    .tt-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .tt-grid-table{width:100%;min-width:480px;border-collapse:collapse;font-size:13px}
-    .tt-grid-table th{padding:9px 10px;text-align:center;font-size:12px;font-weight:700;border-bottom:2px solid var(--ink);color:var(--ink-soft);letter-spacing:.02em;white-space:nowrap}
-    .tt-grid-table th:first-child{text-align:left}
-    .tt-grid-table td{padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:top;text-align:center}
-    .tt-grid-table td:first-child{text-align:left;color:var(--ink-soft);font-weight:700;white-space:nowrap}
-    .tt-grid-table td.tt-cell-cancelled{color:var(--ink-faint);text-decoration:line-through}
+    /* 時間割：学年内4クラスをカードで並列表示 */
+    .tt-class-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    @media (max-width:900px){ .tt-class-grid{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width:540px){ .tt-class-grid{grid-template-columns:1fr} }
+    .tt-class-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px;box-shadow:var(--shadow-sm)}
+    .tt-class-card h4{font-size:13px;font-weight:700;margin-bottom:10px;letter-spacing:.03em;color:var(--ink-soft)}
+    .tt-class-card ol{list-style:none;display:flex;flex-direction:column;gap:7px}
+    .tt-class-card li{display:flex;gap:8px;font-size:13px;line-height:1.6;align-items:baseline}
+    .tt-period-no{flex-shrink:0;color:var(--ink-faint);font-size:11px;font-weight:700;min-width:2.2em}
+    .tt-period-subject.tt-changed{color:var(--vermillion);font-weight:700}
+    .tt-class-card .tt-empty-note{font-size:12px;color:var(--ink-faint)}
     .tt-remarks{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
     .tt-remarks h4{font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:10px;letter-spacing:.03em}
     .tt-remarks ul{list-style:none;display:flex;flex-direction:column;gap:8px}
@@ -249,6 +250,10 @@
         <h2>お知らせ</h2>
         <p>生徒会からの最新情報をお届けします</p>
       </div>
+    </div>
+
+    <div class="post-search-bar">
+      <input type="text" id="postSearchInput" placeholder="お知らせを検索" oninput="renderFilteredPosts()">
     </div>
 
     <div class="filter-bar" id="filterBar">
@@ -500,14 +505,20 @@
     document.getElementById('loginScreen').style.display = 'flex';
   }
 
+  let currentCategoryFilter = '';
+
   async function loadPosts() {
     const { data, error } = await db.from('posts').select('*').eq('published', true).order('created_at', { ascending: false });
     if (error) { document.getElementById('postsGrid').innerHTML = '<div class="empty"><p>読み込みに失敗しました</p></div>'; return; }
 
     const myRoles = currentMember?.roles || ['general'];
-    // target_rolesが空配列 or 自分のロールのいずれかを含む投稿のみ表示
-    allPosts = (data || []).filter(p => !p.target_roles || p.target_roles.length === 0 || p.target_roles.some(r => myRoles.includes(r)) || p.target_roles.includes('全体'));
-    renderPosts(allPosts);
+    const now = new Date();
+    allPosts = (data || []).filter(p => {
+      if (p.publish_at && new Date(p.publish_at) > now) return false; // 時間指定で公開時刻がまだ来ていない
+      // target_rolesが空配列 or 自分のロールのいずれかを含む投稿のみ表示
+      return !p.target_roles || p.target_roles.length === 0 || p.target_roles.some(r => myRoles.includes(r)) || p.target_roles.includes('全体');
+    });
+    renderFilteredPosts();
   }
 
   // ── 特別メッセージ（重要なお知らせをヘッダー直下に表示） ──
@@ -516,13 +527,21 @@
     const banner = document.getElementById('specialBanner');
     if (error) { console.error('特別メッセージ取得エラー:', error.message); return; }
     const myRoles = currentMember?.roles || ['general'];
-    const visible = (data || []).filter(p => !p.target_roles || p.target_roles.length === 0 || p.target_roles.some(r => myRoles.includes(r)) || p.target_roles.includes('全体'));
+    const now = new Date();
+    const visible = (data || []).filter(p => {
+      if (p.publish_at && new Date(p.publish_at) > now) return false;
+      return !p.target_roles || p.target_roles.length === 0 || p.target_roles.some(r => myRoles.includes(r)) || p.target_roles.includes('全体');
+    });
     if (visible.length === 0) { banner.classList.remove('show'); banner.innerHTML = ''; return; }
-    banner.innerHTML = visible.map(p => `
-      <div class="special-msg">
+    banner.innerHTML = visible.map(p => {
+      const excerpt = stripLinkSyntax(p.body || '').slice(0, 60);
+      const excerptHtml = excerpt ? `<span class="special-msg-body">${escapeHtml(excerpt)}${(p.body || '').length > 60 ? '…' : ''}</span>` : '';
+      return `<div class="special-msg">
         <span class="special-msg-label">重要</span>
         <a href="post.html?id=${p.id}">${escapeHtml(p.title)}</a>
-      </div>`).join('');
+        ${excerptHtml}
+      </div>`;
+    }).join('');
     banner.classList.add('show');
   }
 
@@ -544,8 +563,16 @@
   }
 
   function filterPosts(cat) {
+    currentCategoryFilter = cat;
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.cat === cat));
-    renderPosts(cat ? allPosts.filter(p => p.category === cat) : allPosts);
+    renderFilteredPosts();
+  }
+
+  function renderFilteredPosts() {
+    const keyword = (document.getElementById('postSearchInput').value || '').trim().toLowerCase();
+    let posts = currentCategoryFilter ? allPosts.filter(p => p.category === currentCategoryFilter) : allPosts;
+    if (keyword) posts = posts.filter(p => (p.title || '').toLowerCase().includes(keyword) || (p.body || '').toLowerCase().includes(keyword));
+    renderPosts(posts);
   }
 
   function renderPosts(posts) {
@@ -568,7 +595,7 @@
           ${rolesHtml}
         </div>
         <div class="post-title">${escapeHtml(post.title)}</div>
-        <div class="post-excerpt">${escapeHtml(post.body)}</div>
+        <div class="post-excerpt">${escapeHtml(stripLinkSyntax(post.body))}</div>
         ${filesNote}
       </a>`;
     }).join('');
@@ -680,57 +707,46 @@
     TT_CLASS_NUMS.forEach(c => { overrideByClass[c] = {}; });
     overrides.forEach(o => { if (overrideByClass[o.class_no]) overrideByClass[o.class_no][o.period] = o; });
 
-    // 表示用科目（入れ替えを反映した「変更後」の状態）
-    const displayByClass = {};
-    TT_CLASS_NUMS.forEach(c => { displayByClass[c] = { ...subjectByClass[c] }; });
-    overrides.forEach(o => {
-      if (o.type === 'swap' && o.swap_with_period && displayByClass[o.class_no]) {
-        const orig = subjectByClass[o.class_no];
-        displayByClass[o.class_no][o.period] = orig[o.swap_with_period] || '';
-        displayByClass[o.class_no][o.swap_with_period] = orig[o.period] || '';
-      }
-    });
-
-    // 1) 変更後の時間割を学年内4クラス並びで表示
-    let table = '<div class="tt-table-wrap"><table class="tt-grid-table"><thead><tr><th>時限</th>' +
-      TT_CLASS_NUMS.map(c => `<th>${c}組</th>`).join('') + '</tr></thead><tbody>';
-    TT_PERIODS.forEach(p => {
-      table += `<tr><td>${p}限</td>`;
-      TT_CLASS_NUMS.forEach(c => {
+    // 1) クラスごとに、カットされた時限を除いた「変更後」の時間割を順番に並べる
+    let cardsHtml = '<div class="tt-class-grid">';
+    TT_CLASS_NUMS.forEach(c => {
+      const rows = [];
+      TT_PERIODS.forEach(p => {
         const o = overrideByClass[c][p];
-        let subject = displayByClass[c][p] || '（未設定）';
-        let cellClass = '';
-        if (o) {
-          if (o.type === 'subject_change') subject = o.subject || '';
-          else if (o.type === 'self_study') subject = '自習';
-          else if (o.type === 'cancelled') { subject = displayByClass[c][p] || ''; cellClass = 'tt-cell-cancelled'; }
-        }
-        table += `<td class="${cellClass}">${escapeHtml(subject || '（未設定）')}</td>`;
+        if (o && o.type === 'cancelled') return; // カットされた時限は時間割から除外（下の備考にのみ表示）
+        let subject = subjectByClass[c][p] || '';
+        let changed = false;
+        if (o && o.type === 'subject_change') { subject = o.subject || ''; changed = true; }
+        else if (o && o.type === 'self_study') { subject = '自習'; changed = true; }
+        rows.push({ subject: subject || '（未設定）', changed });
       });
-      table += '</tr>';
+      const itemsHtml = rows.length > 0
+        ? rows.map((r, i) => `<li><span class="tt-period-no">${i + 1}限</span><span class="tt-period-subject${r.changed ? ' tt-changed' : ''}">${escapeHtml(r.subject)}</span></li>`).join('')
+        : '<li class="tt-empty-note">本日の授業はありません</li>';
+      cardsHtml += `<div class="tt-class-card"><h4>${c}組</h4><ol>${itemsHtml}</ol></div>`;
     });
-    table += '</tbody></table></div>';
+    cardsHtml += '</div>';
 
-    // 2) 備考：本日カット・変更となった分をテキストで一覧表示
+    // 2) 備考：カットされた時限を、元の時限・科目名とともに一覧表示
     const remarkLines = overrides.slice()
+      .filter(o => o.type === 'cancelled')
       .sort((a, b) => a.class_no - b.class_no || a.period - b.period)
       .map(o => {
-        const head = `${o.class_no}組 ${o.period}限`;
-        if (o.type === 'subject_change') return `${head}：${o.subject || ''}に変更${o.note ? `（${o.note}）` : ''}`;
-        if (o.type === 'swap') return `${head} ⇔ ${o.swap_with_period}限：入れ替え${o.note ? `（${o.note}）` : ''}`;
-        if (o.type === 'self_study') return `${head}：自習${o.note ? `（${o.note}）` : ''}`;
-        if (o.type === 'cancelled') return `${head}：カット${o.note ? `（${o.note}）` : ''}`;
-        return '';
-      }).filter(Boolean);
+        const origSubject = subjectByClass[o.class_no][o.period] || '（未設定）';
+        return `${o.class_no}組 ${o.period}限：${origSubject} がカットされました${o.note ? `（${o.note}）` : ''}`;
+      });
 
     const remarks = remarkLines.length > 0
-      ? `<div class="tt-remarks"><h4>備考（本日の変更）</h4><ul>${remarkLines.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`
-      : `<div class="tt-remarks"><h4>備考</h4><p style="font-size:13px;color:var(--ink-faint)">本日の変更はありません</p></div>`;
+      ? `<div class="tt-remarks"><h4>備考（本日のカット）</h4><ul>${remarkLines.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`
+      : `<div class="tt-remarks"><h4>備考</h4><p style="font-size:13px;color:var(--ink-faint)">本日のカットはありません</p></div>`;
 
-    area.innerHTML = table + remarks;
+    area.innerHTML = cardsHtml + remarks;
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // 一覧・バナーなどのプレビューでは [表示文字](url) 記法をリンクにせず、表示文字だけ残す（カード自体がリンクのためネスト回避）
+  function stripLinkSyntax(body) { return String(body).replace(/\[([^\[\]]+)\]\(https?:\/\/[^\s()]+\)/g, '$1'); }
 </script>
 </body>
 </html>
