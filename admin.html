@@ -368,8 +368,8 @@
     const roleChoices = ['general', ...allRoles];
     let rows = '';
     for (const m of data) {
-      const opts = roleChoices.map(r => '<option value="' + escapeHtml(r) + '"' + (m.role === r ? ' selected' : '') + '>' + escapeHtml(r) + '</option>').join('');
-      rows += '<tr><td>' + escapeHtml(m.email) + '</td><td><select class="role-select" onchange="updateMemberRole('' + m.id + '', this.value)">' + opts + '</select></td><td>' + new Date(m.created_at).toLocaleDateString('ja-JP') + '</td></tr>';
+      const opts = roleChoices.map(r => `<option value="${escapeHtml(r)}"${m.role === r ? ' selected' : ''}>${escapeHtml(r)}</option>`).join('');
+      rows += `<tr><td>${escapeHtml(m.email)}</td><td><select class="role-select" onchange="updateMemberRole('${m.id}', this.value)">${opts}</select></td><td>${new Date(m.created_at).toLocaleDateString('ja-JP')}</td></tr>`;
     }
     el.innerHTML = '<table class="members-table"><thead><tr><th>メールアドレス</th><th>ロール</th><th>初回ログイン</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
