@@ -43,6 +43,7 @@
       header h1{font-size:15px}
       .header-right{gap:8px}
       .user-name{display:none}
+      .login-card,.error-card{padding:40px 24px}
     }
     .user-name{font-size:12px;color:#c4c9d2}
     .btn{padding:9px 22px;border-radius:var(--radius-sm);border:none;font-size:13px;font-weight:500;cursor:pointer;transition:transform .15s var(--ease),opacity .15s,background-color .15s,box-shadow .15s;text-decoration:none;display:inline-block;font-family:inherit}
@@ -172,6 +173,16 @@
     footer .footer-links a{color:var(--ink-soft);text-decoration:none;font-size:12px;letter-spacing:.02em;transition:color .15s}
     footer .footer-links a:hover{color:var(--vermillion);text-decoration:underline}
     footer .footer-copyright{color:var(--ink-faint)}
+    .members-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    @media (max-width:700px){
+      .admin-container{padding:28px 16px 80px}
+      .post-item{flex-wrap:wrap}
+      .post-item-actions{width:100%;justify-content:flex-end}
+      .dm-layout{flex-direction:column;min-height:0}
+      .dm-member-list{width:100%;max-height:160px;border-right:none;border-bottom:1px solid var(--line)}
+      .dm-panel-thread{max-height:300px}
+      .form-row[style*="display:flex"]{flex-direction:column}
+    }
   </style>
 </head>
 <body>
@@ -248,6 +259,17 @@
           <div class="role-checkboxes" id="mentionCheckboxes">
             <span style="font-size:13px;color:#aaa">読み込み中...</span>
           </div>
+        </div>
+        <div class="form-row">
+          <label>ロールへのメンション（選択したロールを持つ生徒全員に通知を送る）</label>
+          <div class="role-checkboxes" id="mentionRoleCheckboxes">
+            <span style="font-size:13px;color:#aaa">読み込み中...</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="publish-toggle" style="display:inline-flex">
+            <input type="checkbox" id="inputSpecial"> 特別メッセージとして表示する（ヘッダー直下に重要なお知らせとして表示）
+          </label>
         </div>
         <div class="form-row">
           <label>添付ファイル</label>
@@ -400,8 +422,8 @@
   <footer id="siteFooter">
     <div class="footer-links">
       <a href="https://www.nada.ac.jp/" target="_blank" rel="noopener noreferrer">灘中学校・灘高等学校</a>
-      <a href="https://www.nada.ac.jp/nyuugaku.html" target="_blank" rel="noopener noreferrer">入試情報</a>
-      <a href="https://www.nada.ac.jp/dousoukai.html" target="_blank" rel="noopener noreferrer">同窓会（校友会）</a>
+      <a href="https://fest.nada-sc.jp/" target="_blank" rel="noopener noreferrer">灘校文化祭</a>
+      <a href="index.html">灘校生徒会のHP</a>
     </div>
     <div class="footer-copyright">© 灘校生徒会</div>
   </footer>
@@ -533,6 +555,7 @@
     }
     allRoles = names;
     renderRoleCheckboxes([]);
+    renderMentionRoleCheckboxes([]);
   }
 
   function renderRoleCheckboxes(selectedRoles) {
@@ -547,6 +570,21 @@
 
   function getSelectedRoles() {
     return Array.from(document.querySelectorAll('input[name="targetRole"]:checked')).map(el => el.value);
+  }
+
+  // ── ロールへのメンション ──
+  function renderMentionRoleCheckboxes(selectedRoles) {
+    const el = document.getElementById('mentionRoleCheckboxes');
+    if (allRoles.length === 0) { el.innerHTML = '<span style="font-size:13px;color:#aaa">ロールがありません（ロール管理から追加）</span>'; return; }
+    el.innerHTML = allRoles.map(r => `
+      <label class="role-checkbox-item">
+        <input type="checkbox" name="mentionRole" value="${escapeHtml(r)}" ${selectedRoles.includes(r) ? 'checked' : ''}>
+        ${escapeHtml(r)}
+      </label>`).join('');
+  }
+
+  function getSelectedMentionRoles() {
+    return Array.from(document.querySelectorAll('input[name="mentionRole"]:checked')).map(el => el.value);
   }
 
   // ── メンション ──
@@ -677,12 +715,23 @@
           <input type="checkbox" data-member-id="${escapeHtml(m.id)}" data-role-name="${escapeHtml(r)}" ${mRoles.includes(r) ? 'checked' : ''}>
           ${escapeHtml(r)}
         </label>`).join('');
-      rows += `<tr><td>${escapeHtml(m.email)}</td><td><div class="role-checkboxes" style="border:none;padding:0">${checks || '<span style="color:#aaa;font-size:12px">ロールがありません</span>'}</div></td><td>${new Date(m.created_at).toLocaleDateString('ja-JP')}</td></tr>`;
+      rows += `<tr><td>${escapeHtml(m.email)}</td><td><div class="role-checkboxes" style="border:none;padding:0">${checks || '<span style="color:#aaa;font-size:12px">ロールがありません</span>'}</div></td><td>${new Date(m.created_at).toLocaleDateString('ja-JP')}</td><td><button class="btn-sm btn-del" data-del-member-id="${escapeHtml(m.id)}" data-del-member-email="${escapeHtml(m.email)}">削除</button></td></tr>`;
     }
-    el.innerHTML = '<table class="members-table"><thead><tr><th>メールアドレス</th><th>ロール（複数可）</th><th>初回ログイン</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    el.innerHTML = '<div class="members-table-wrap"><table class="members-table"><thead><tr><th>メールアドレス</th><th>ロール（複数可）</th><th>初回ログイン</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
     el.querySelectorAll('input[data-member-id]').forEach(input => {
       input.addEventListener('change', () => toggleMemberRole(input.dataset.memberId, input.dataset.roleName, input.checked));
     });
+    el.querySelectorAll('button[data-del-member-id]').forEach(btn => {
+      btn.addEventListener('click', () => deleteMember(btn.dataset.delMemberId, btn.dataset.delMemberEmail));
+    });
+  }
+
+  async function deleteMember(id, email) {
+    if (!confirm(`生徒「${email}」を一覧から削除しますか？\n（本人がもう一度ログインすると再登録されます）`)) return;
+    const { error } = await db.from('members').delete().eq('id', id);
+    if (error) { showToast('削除失敗: ' + error.message); return; }
+    showToast('削除しました');
+    loadMembers();
   }
 
   async function toggleMemberRole(id, role, checked) {
@@ -776,13 +825,14 @@
       const date = new Date(post.created_at).toLocaleDateString('ja-JP');
       const rolesHtml = (post.target_roles && post.target_roles.length > 0)
         ? post.target_roles.map(r => `<span class="role-tag-sm">${escapeHtml(r)}</span>`).join('') : '<span style="font-size:11px;color:#aaa">全員</span>';
-      const filesNote = (post.file_paths && post.file_paths.length > 0) ? `📎${post.file_paths.length}` : '';
+      const filesNote = (post.file_paths && post.file_paths.length > 0) ? `添付${post.file_paths.length}件` : '';
       return `<div class="post-item">
         <div class="post-item-info">
           <div class="post-item-title">${escapeHtml(post.title)}</div>
           <div class="post-item-meta">
             <span class="tag">${post.category}</span>
             <span class="status-badge ${post.published ? 'status-published' : 'status-draft'}">${post.published ? '公開中' : '下書き'}</span>
+            ${post.is_special ? '<span class="tag" style="background:var(--vermillion);color:var(--paper)">特別メッセージ</span>' : ''}
             ${rolesHtml}
             <span>${date}</span>
             ${filesNote ? `<span>${filesNote}</span>` : ''}
@@ -803,8 +853,10 @@
     const category = document.getElementById('inputCategory').value;
     const body = document.getElementById('inputBody').value.trim();
     const published = document.getElementById('inputPublished').checked;
+    const is_special = document.getElementById('inputSpecial').checked;
     const target_roles = getSelectedRoles();
     const mentioned_emails = getSelectedMentionEmails();
+    const mentioned_roles = getSelectedMentionRoles();
 
     if (!title || !body) { showToast('タイトルと本文を入力してください'); return; }
 
@@ -819,7 +871,7 @@
     document.getElementById('uploadProgress').style.display = 'none';
 
     const authorName = (currentMember?.display_name || '').trim() || currentUser.email;
-    const payload = { title, category, body, published, target_roles, mentioned_emails, file_paths: filePaths, author: authorName };
+    const payload = { title, category, body, published, is_special, target_roles, mentioned_emails, mentioned_roles, file_paths: filePaths, author: authorName };
 
     const { data: savedPost, error } = id
       ? await db.from('posts').update(payload).eq('id', id).select('id, title').single()
@@ -832,7 +884,7 @@
       showToast(id ? '更新しました！' : '投稿しました！');
     }
 
-    if (mentioned_emails.length > 0 && savedPost) await notifyMentionedMembers(mentioned_emails, savedPost);
+    if ((mentioned_emails.length > 0 || mentioned_roles.length > 0) && savedPost) await notifyMentionedMembers(mentioned_emails, mentioned_roles, savedPost);
     if (published && savedPost) notifyLine(savedPost.id);
 
     resetForm();
@@ -854,13 +906,20 @@
     }
   }
 
-  // ── メンション通知 ──
-  async function notifyMentionedMembers(emails, post) {
-    const { data: members, error: membersError } = await db.from('members').select('id, email').in('email', emails);
-    if (membersError) { console.error('メンション対象メンバー取得エラー:', membersError.message); showToast('通知の送信に失敗しました: ' + membersError.message); return; }
-    if (!members || members.length === 0) return;
+  // ── メンション通知（個人指定＋ロール指定の両方をまとめて通知。重複は除く） ──
+  async function notifyMentionedMembers(emails, roles, post) {
+    const queries = [];
+    if (emails.length > 0) queries.push(db.from('members').select('id, email').in('email', emails));
+    if (roles.length > 0) queries.push(db.from('members').select('id, email').overlaps('roles', roles));
+    const results = await Promise.all(queries);
+    const errored = results.find(r => r.error);
+    if (errored) { console.error('メンション対象メンバー取得エラー:', errored.error.message); showToast('通知の送信に失敗しました: ' + errored.error.message); return; }
 
-    const rows = members.map(m => ({
+    const memberMap = new Map();
+    results.forEach(r => (r.data || []).forEach(m => memberMap.set(m.id, m)));
+    if (memberMap.size === 0) return;
+
+    const rows = Array.from(memberMap.values()).map(m => ({
       member_id: m.id,
       post_id: post.id,
       body: `あなたが投稿「${post.title}」でメンションされました`
@@ -882,9 +941,11 @@
     document.getElementById('inputCategory').value = data.category;
     document.getElementById('inputBody').value = data.body;
     document.getElementById('inputPublished').checked = data.published;
+    document.getElementById('inputSpecial').checked = !!data.is_special;
     document.getElementById('formTitle').textContent = '投稿を編集';
     renderRoleCheckboxes(data.target_roles || []);
     renderMentionCheckboxes(data.mentioned_emails || []);
+    renderMentionRoleCheckboxes(data.mentioned_roles || []);
     existingFilePaths = data.file_paths || [];
     removedFilePaths = [];
     selectedFiles = [];
@@ -912,9 +973,11 @@
     document.getElementById('inputCategory').value = defaultCat ? defaultCat.name : (categoriesCache[0]?.name || '');
     document.getElementById('inputBody').value = '';
     document.getElementById('inputPublished').checked = true;
+    document.getElementById('inputSpecial').checked = false;
     document.getElementById('formTitle').textContent = '新規投稿';
     renderRoleCheckboxes([]);
     renderMentionCheckboxes([]);
+    renderMentionRoleCheckboxes([]);
     selectedFiles = []; existingFilePaths = []; removedFilePaths = [];
     renderFilePreview();
     document.getElementById('existingFilesArea').style.display = 'none';

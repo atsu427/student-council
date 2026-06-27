@@ -73,7 +73,7 @@
     .notif-bell{background:transparent;border:none;color:var(--paper);font-size:18px;cursor:pointer;position:relative;padding:6px;line-height:1;border-radius:var(--radius-sm);transition:background-color .15s}
     .notif-bell:hover{background:rgba(255,255,255,.12)}
     .notif-badge{position:absolute;top:-2px;right:-2px;background:var(--vermillion);color:var(--paper);font-size:10px;font-weight:700;border-radius:999px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;box-shadow:0 0 0 2px var(--ink)}
-    .notif-panel{display:none;position:absolute;top:44px;right:0;background:var(--paper);color:var(--ink);width:320px;max-height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:200}
+    .notif-panel{display:none;position:absolute;top:44px;right:0;background:var(--paper);color:var(--ink);width:320px;max-width:calc(100vw - 32px);max-height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:200}
     .notif-panel.show{display:block}
     .notif-item{padding:14px 16px;border-bottom:1px solid var(--line);font-size:13px;line-height:1.7;cursor:pointer;transition:background .15s}
     .notif-item:first-child{border-radius:var(--radius-lg) var(--radius-lg) 0 0}
@@ -133,6 +133,58 @@
     .tt-badge-swap{color:var(--green)}
     .tt-badge-self{color:var(--vermillion)}
     .tt-badge-cancel{color:var(--ink-faint)}
+    /* ヘッダーナビ */
+    .header-left{display:flex;align-items:center;gap:28px;min-width:0}
+    .main-nav{display:flex;gap:2px}
+    .nav-link{background:transparent;border:none;color:#c4c9d2;font-size:13px;font-weight:500;letter-spacing:.02em;padding:9px 14px;border-radius:var(--radius-sm);cursor:pointer;font-family:inherit;transition:background-color .15s,color .15s;white-space:nowrap}
+    .nav-link:hover{background:rgba(255,255,255,.1);color:var(--paper)}
+    .nav-link.active{background:rgba(255,255,255,.14);color:var(--paper);font-weight:700}
+    .hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:32px;height:32px;background:transparent;border:none;cursor:pointer;padding:0}
+    .hamburger span{display:block;width:20px;height:2px;background:var(--paper);border-radius:1px;transition:transform .2s var(--ease),opacity .2s}
+    .hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+    .hamburger.open span:nth-child(2){opacity:0}
+    .hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    @media (max-width:760px){
+      .main-nav{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;gap:2px;background:var(--ink);padding:10px;box-shadow:var(--shadow-lg);z-index:99;border-bottom:1px solid rgba(255,255,255,.12)}
+      .main-nav.open{display:flex}
+      .nav-link{text-align:left;padding:13px 16px}
+      .hamburger{display:flex}
+      header{padding:0 16px}
+      header h1{font-size:16px}
+      .header-right{gap:8px}
+      .user-name{display:none}
+    }
+    .page-section{display:none}
+    .page-section.active{display:block}
+    /* 特別メッセージ */
+    #specialBanner{display:none;background:var(--vermillion-tint);border-bottom:1px solid var(--vermillion-tint-strong)}
+    #specialBanner.show{display:block}
+    .special-msg{max-width:760px;margin:0 auto;padding:14px 28px;display:flex;align-items:flex-start;gap:12px}
+    .special-msg + .special-msg{border-top:1px solid var(--vermillion-tint-strong)}
+    .special-msg-label{flex-shrink:0;font-size:11px;font-weight:700;color:var(--paper);background:var(--vermillion);padding:3px 10px;border-radius:999px;letter-spacing:.04em;margin-top:1px}
+    .special-msg a{color:var(--ink);text-decoration:none;font-size:14px;font-weight:700;line-height:1.7}
+    .special-msg a:hover{text-decoration:underline;color:var(--vermillion)}
+    /* 通知ベルアイコン */
+    .bell-icon{width:18px;height:18px;display:block}
+    /* 時間割：学年4クラス並列表示 */
+    .tt-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .tt-grid-table{width:100%;min-width:480px;border-collapse:collapse;font-size:13px}
+    .tt-grid-table th{padding:9px 10px;text-align:center;font-size:12px;font-weight:700;border-bottom:2px solid var(--ink);color:var(--ink-soft);letter-spacing:.02em;white-space:nowrap}
+    .tt-grid-table th:first-child{text-align:left}
+    .tt-grid-table td{padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:top;text-align:center}
+    .tt-grid-table td:first-child{text-align:left;color:var(--ink-soft);font-weight:700;white-space:nowrap}
+    .tt-grid-table td.tt-cell-cancelled{color:var(--ink-faint);text-decoration:line-through}
+    .tt-remarks{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+    .tt-remarks h4{font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:10px;letter-spacing:.03em}
+    .tt-remarks ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+    .tt-remarks li{font-size:13px;line-height:1.7;padding-left:14px;border-left:2px solid var(--vermillion);color:var(--ink-soft)}
+    @media (max-width:600px){
+      .side-section{padding:24px 18px}
+      .posts-grid{padding:14px 18px 88px}
+      .hero{padding:0 18px 36px}
+      .filter-bar{padding:10px 18px}
+      .login-card,.error-card{padding:40px 24px}
+    }
   </style>
 </head>
 <body>
@@ -162,89 +214,104 @@
 <!-- メインコンテンツ -->
 <div id="mainContent">
   <header>
-    <h1>灘校生徒会</h1>
+    <div class="header-left">
+      <h1>灘校生徒会</h1>
+      <nav class="main-nav" id="mainNav">
+        <button class="nav-link active" data-tab="posts" onclick="switchSection('posts')">お知らせ</button>
+        <button class="nav-link" data-tab="timetable" onclick="switchSection('timetable')">時間割</button>
+        <button class="nav-link" data-tab="suggestions" onclick="switchSection('suggestions')">意見箱</button>
+        <button class="nav-link" data-tab="line" onclick="switchSection('line')">LINE連携</button>
+      </nav>
+    </div>
     <div class="header-right">
       <span class="user-name" id="userName"></span>
       <div class="notif-wrap">
         <button class="notif-bell" id="notifBell" onclick="toggleNotifPanel()" title="通知">
-          🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span>
+          <svg class="bell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 3.5-1 5-2 7h16c-1-2-2-3.5-2-7"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+          <span class="notif-badge" id="notifBadge" style="display:none">0</span>
         </button>
         <div class="notif-panel" id="notifPanel">
           <div id="notifList"><div class="notif-empty">読み込み中...</div></div>
         </div>
       </div>
       <a id="adminLink" href="admin.html" class="btn-admin" style="display:none">管理画面</a>
+      <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()" aria-label="メニュー"><span></span><span></span><span></span></button>
       <button class="btn btn-outline" onclick="logout()">ログアウト</button>
     </div>
   </header>
 
-  <div class="hero">
-    <div class="hero-inner">
-      <h2>お知らせ</h2>
-      <p>生徒会からの最新情報をお届けします</p>
+  <div id="specialBanner"></div>
+
+  <!-- お知らせ -->
+  <div class="page-section active" id="tab-posts">
+    <div class="hero">
+      <div class="hero-inner">
+        <h2>お知らせ</h2>
+        <p>生徒会からの最新情報をお届けします</p>
+      </div>
     </div>
-  </div>
 
-  <div class="filter-bar" id="filterBar">
-    <button class="filter-btn active" onclick="filterPosts('')" data-cat="">すべて</button>
-  </div>
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-btn active" onclick="filterPosts('')" data-cat="">すべて</button>
+    </div>
 
-  <div class="posts-grid" id="postsGrid">
-    <div class="loading">読み込み中...</div>
+    <div class="posts-grid" id="postsGrid">
+      <div class="loading">読み込み中...</div>
+    </div>
   </div>
 
   <!-- 時間割 -->
-  <div class="side-section">
-    <h3>今日の時間割</h3>
-    <div class="form-row" style="display:flex;gap:16px;max-width:320px;margin-bottom:18px">
-      <div style="flex:1">
+  <div class="page-section" id="tab-timetable">
+    <div class="side-section" style="margin-top:0;border-top:none">
+      <h3>今日の時間割</h3>
+      <div class="form-row" style="max-width:200px;margin-bottom:18px">
         <label>学年</label>
         <select id="ttStudentGrade"></select>
       </div>
-      <div style="flex:1">
-        <label>クラス</label>
-        <select id="ttStudentClass"></select>
-      </div>
+      <div id="ttStudentArea"><div class="dm-empty">学年を選択してください</div></div>
     </div>
-    <div id="ttStudentArea"><div class="dm-empty">学年・クラスを選択してください</div></div>
   </div>
 
   <!-- 意見箱 -->
-  <div class="side-section">
-    <h3>意見箱</h3>
-    <textarea id="suggestionInput" placeholder="生徒会への意見・要望を入力してください"></textarea>
-    <div class="side-actions">
-      <button class="btn-secondary" onclick="submitSuggestion()">送信する</button>
+  <div class="page-section" id="tab-suggestions">
+    <div class="side-section" style="margin-top:0;border-top:none">
+      <h3>意見箱</h3>
+      <textarea id="suggestionInput" placeholder="生徒会への意見・要望を入力してください"></textarea>
+      <div class="side-actions">
+        <button class="btn-secondary" onclick="submitSuggestion()">送信する</button>
+      </div>
     </div>
-  </div>
 
-  <!-- 生徒会とのDM -->
-  <div class="side-section">
-    <h3>生徒会へのメッセージ</h3>
-    <div class="dm-thread" id="dmThread"><div class="dm-empty">読み込み中...</div></div>
-    <textarea id="dmInput" placeholder="メッセージを入力" style="min-height:60px"></textarea>
-    <div class="side-actions">
-      <button class="btn-secondary" onclick="sendDmMessage()">送信する</button>
+    <!-- 生徒会とのDM -->
+    <div class="side-section">
+      <h3>生徒会へのメッセージ</h3>
+      <div class="dm-thread" id="dmThread"><div class="dm-empty">読み込み中...</div></div>
+      <textarea id="dmInput" placeholder="メッセージを入力" style="min-height:60px"></textarea>
+      <div class="side-actions">
+        <button class="btn-secondary" onclick="sendDmMessage()">送信する</button>
+      </div>
     </div>
   </div>
 
   <!-- LINE連携 -->
-  <div class="side-section">
-    <h3>LINE通知連携</h3>
-    <p style="font-size:13px;color:var(--ink-soft);line-height:1.8;margin-bottom:14px">
-      公式LINEを友だち追加し、下の連携コードをトークに送信すると、あなた宛のメンション通知をLINEでも受け取れるようになります。
-    </p>
-    <p style="font-size:13px;margin-bottom:10px">連携コード: <strong id="lineLinkCode">-</strong>
-      <span id="lineLinkedBadge" style="display:none;color:#3d6b4a;font-weight:700;margin-left:8px">連携済み</span>
-    </p>
-    <a class="btn-secondary" id="lineFriendBtn" href="#" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">公式LINEを友だち追加</a>
+  <div class="page-section" id="tab-line">
+    <div class="side-section" style="margin-top:0;border-top:none">
+      <h3>LINE通知連携</h3>
+      <p style="font-size:13px;color:var(--ink-soft);line-height:1.8;margin-bottom:14px">
+        公式LINEを友だち追加し、下の連携コードをトークに送信すると、あなた宛のメンション通知をLINEでも受け取れるようになります。
+      </p>
+      <p style="font-size:13px;margin-bottom:10px">連携コード: <strong id="lineLinkCode">-</strong>
+        <span id="lineLinkedBadge" style="display:none;color:#3d6b4a;font-weight:700;margin-left:8px">連携済み</span>
+      </p>
+      <a class="btn-secondary" id="lineFriendBtn" href="#" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">公式LINEを友だち追加</a>
+    </div>
   </div>
 
   <footer id="siteFooter">
     <div class="footer-links">
       <a href="https://www.nada.ac.jp/" target="_blank" rel="noopener noreferrer">灘中学校・灘高等学校</a>
-      <a href="https://www.nada.ac.jp/nyuugaku.html" target="_blank" rel="noopener noreferrer">入試情報</a>
-      <a href="https://www.nada.ac.jp/dousoukai.html" target="_blank" rel="noopener noreferrer">同窓会（校友会）</a>
+      <a href="https://fest.nada-sc.jp/" target="_blank" rel="noopener noreferrer">灘校文化祭</a>
+      <a href="index.html">灘校生徒会のHP</a>
     </div>
     <div class="footer-copyright">© 灘校生徒会</div>
   </footer>
@@ -297,6 +364,7 @@
       loadPosts();
       loadCategoryFilters();
       initStudentTimetable();
+      loadSpecialMessages();
 
       syncMember(session.user.id, email);
       loadNotifications(session.user.id);
@@ -327,7 +395,7 @@
       if (member?.display_name) document.getElementById('userName').textContent = member.display_name;
 
       renderLineLinkSection(member);
-      if (roleChanged) loadPosts(); // ロールが判明したら対象お知らせを再読込
+      if (roleChanged) { loadPosts(); loadSpecialMessages(); } // ロールが判明したら対象お知らせを再読込
     } catch (e) {
       console.error('members同期エラー:', e);
     }
@@ -399,6 +467,20 @@
     if (wrap && !wrap.contains(e.target)) document.getElementById('notifPanel').classList.remove('show');
   });
 
+  // ── ヘッダーナビ（タブ切り替え・モバイル用ハンバーガー） ──
+  function switchSection(name) {
+    document.querySelectorAll('.page-section').forEach(el => el.classList.toggle('active', el.id === 'tab-' + name));
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.toggle('active', el.dataset.tab === name));
+    document.getElementById('mainNav').classList.remove('open');
+    document.getElementById('hamburgerBtn').classList.remove('open');
+    window.scrollTo({ top: 0 });
+  }
+
+  function toggleMobileNav() {
+    document.getElementById('mainNav').classList.toggle('open');
+    document.getElementById('hamburgerBtn').classList.toggle('open');
+  }
+
   function showError(msg) {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('mainContent').style.display = 'none';
@@ -427,6 +509,22 @@
     // target_rolesが空配列 or 自分のロールのいずれかを含む投稿のみ表示
     allPosts = (data || []).filter(p => !p.target_roles || p.target_roles.length === 0 || p.target_roles.some(r => myRoles.includes(r)) || p.target_roles.includes('全体'));
     renderPosts(allPosts);
+  }
+
+  // ── 特別メッセージ（重要なお知らせをヘッダー直下に表示） ──
+  async function loadSpecialMessages() {
+    const { data, error } = await db.from('posts').select('*').eq('published', true).eq('is_special', true).order('created_at', { ascending: false });
+    const banner = document.getElementById('specialBanner');
+    if (error) { console.error('特別メッセージ取得エラー:', error.message); return; }
+    const myRoles = currentMember?.roles || ['general'];
+    const visible = (data || []).filter(p => !p.target_roles || p.target_roles.length === 0 || p.target_roles.some(r => myRoles.includes(r)) || p.target_roles.includes('全体'));
+    if (visible.length === 0) { banner.classList.remove('show'); banner.innerHTML = ''; return; }
+    banner.innerHTML = visible.map(p => `
+      <div class="special-msg">
+        <span class="special-msg-label">重要</span>
+        <a href="post.html?id=${p.id}">${escapeHtml(p.title)}</a>
+      </div>`).join('');
+    banner.classList.add('show');
   }
 
   async function loadCategoryFilters() {
@@ -459,8 +557,10 @@
       const rolesHtml = (post.target_roles && post.target_roles.length > 0)
         ? post.target_roles.map(r => `<span class="role-tag">${escapeHtml(r)}</span>`).join('') : '';
       const filesNote = (post.file_paths && post.file_paths.length > 0) ? `<div class="post-has-files">添付 ${post.file_paths.length}件</div>` : '';
-      const isMentioned = currentUserEmail && (post.mentioned_emails || []).some(e => (e || '').toLowerCase() === currentUserEmail);
-      const mentionHtml = isMentioned ? '<span class="mention-tag">📣 あなたへのメンション</span>' : '';
+      const myRolesForMention = currentMember?.roles || [];
+      const isMentioned = (currentUserEmail && (post.mentioned_emails || []).some(e => (e || '').toLowerCase() === currentUserEmail))
+        || (post.mentioned_roles || []).some(r => myRolesForMention.includes(r));
+      const mentionHtml = isMentioned ? '<span class="mention-tag">あなたへのメンション</span>' : '';
       return `<a class="post-card" href="post.html?id=${post.id}">
         <div class="post-meta">
           <span class="category-tag ${post.category}">${post.category}</span>
@@ -531,7 +631,7 @@
   // index.htmlにはadmin.htmlのようなトースト要素が無いため、簡易的にalertで代用する
   function showToast(msg) { alert(msg); }
 
-  // ── 時間割 ──
+  // ── 時間割（学年を選択し、4クラス分の変更後の時間割を並べて表示。変更点は下の備考にまとめる） ──
   const TT_GRADES = ['中1','中2','中3','高1','高2','高3'];
   const TT_CLASS_NUMS = [1,2,3,4];
   const TT_PERIODS = [1,2,3,4,5,6,7];
@@ -541,15 +641,12 @@
     if (ttStudentInitialized) return;
     ttStudentInitialized = true;
     document.getElementById('ttStudentGrade').innerHTML = TT_GRADES.map(g => `<option value="${g}">${g}</option>`).join('');
-    document.getElementById('ttStudentClass').innerHTML = TT_CLASS_NUMS.map(c => `<option value="${c}">${c}組</option>`).join('');
     document.getElementById('ttStudentGrade').addEventListener('change', loadStudentTimetable);
-    document.getElementById('ttStudentClass').addEventListener('change', loadStudentTimetable);
     loadStudentTimetable();
   }
 
   async function loadStudentTimetable() {
     const grade = document.getElementById('ttStudentGrade').value;
-    const classNo = Number(document.getElementById('ttStudentClass').value);
     const area = document.getElementById('ttStudentArea');
     area.innerHTML = '<div class="dm-empty">読み込み中...</div>';
 
@@ -562,8 +659,8 @@
     if (!weekday) { area.innerHTML = '<div class="dm-empty">本日（日曜）は時間割がありません</div>'; return; }
 
     const [{ data: slots, error: slotsError }, { data: overrides, error: overridesError }] = await Promise.all([
-      db.from('timetable_slots').select('*').eq('grade', grade).eq('class_no', classNo).eq('weekday', weekday),
-      db.from('timetable_overrides').select('*').eq('grade', grade).eq('class_no', classNo).eq('date', dateStr)
+      db.from('timetable_slots').select('*').eq('grade', grade).eq('weekday', weekday),
+      db.from('timetable_overrides').select('*').eq('grade', grade).eq('date', dateStr)
     ]);
     if (slotsError) { console.error('時間割取得エラー:', slotsError.message); area.innerHTML = '<div class="dm-empty">読み込みに失敗しました</div>'; return; }
     if (overridesError) console.error('時間割変更取得エラー:', overridesError.message);
@@ -573,39 +670,65 @@
 
   function renderStudentTimetable(slots, overrides) {
     const area = document.getElementById('ttStudentArea');
-    const subjectByPeriod = {};
-    TT_PERIODS.forEach(p => { subjectByPeriod[p] = ''; });
-    slots.forEach(s => { subjectByPeriod[s.period] = s.subject || ''; });
 
-    const overrideByPeriod = {};
-    (overrides || []).forEach(o => { overrideByPeriod[o.period] = o; });
+    // クラスごとの時限→科目（標準時間割）
+    const subjectByClass = {};
+    TT_CLASS_NUMS.forEach(c => { subjectByClass[c] = {}; TT_PERIODS.forEach(p => { subjectByClass[c][p] = ''; }); });
+    slots.forEach(s => { if (subjectByClass[s.class_no]) subjectByClass[s.class_no][s.period] = s.subject || ''; });
 
-    // swap: 表示用に科目を入れ替える（入れ替え元・先どちらの行からでも見えるように両方処理）
-    const displaySubject = { ...subjectByPeriod };
-    (overrides || []).forEach(o => {
-      if (o.type === 'swap' && o.swap_with_period) {
-        const a = o.period, b = o.swap_with_period;
-        displaySubject[a] = subjectByPeriod[b] || '';
-        displaySubject[b] = subjectByPeriod[a] || '';
+    // クラスごとの時限→本日の変更
+    const overrideByClass = {};
+    TT_CLASS_NUMS.forEach(c => { overrideByClass[c] = {}; });
+    overrides.forEach(o => { if (overrideByClass[o.class_no]) overrideByClass[o.class_no][o.period] = o; });
+
+    // 表示用科目（入れ替えを反映した「変更後」の状態）
+    const displayByClass = {};
+    TT_CLASS_NUMS.forEach(c => { displayByClass[c] = { ...subjectByClass[c] }; });
+    overrides.forEach(o => {
+      if (o.type === 'swap' && o.swap_with_period && displayByClass[o.class_no]) {
+        const orig = subjectByClass[o.class_no];
+        displayByClass[o.class_no][o.period] = orig[o.swap_with_period] || '';
+        displayByClass[o.class_no][o.swap_with_period] = orig[o.period] || '';
       }
     });
 
-    let html = '<table class="tt-table"><thead><tr><th>時限</th><th>科目</th></tr></thead><tbody>';
+    // 1) 変更後の時間割を学年内4クラス並びで表示
+    let table = '<div class="tt-table-wrap"><table class="tt-grid-table"><thead><tr><th>時限</th>' +
+      TT_CLASS_NUMS.map(c => `<th>${c}組</th>`).join('') + '</tr></thead><tbody>';
     TT_PERIODS.forEach(p => {
-      const o = overrideByPeriod[p];
-      let subjectHtml = escapeHtml(displaySubject[p] || '（未設定）');
-      let rowClass = '';
-      let badge = '';
-      if (o) {
-        if (o.type === 'subject_change') { subjectHtml = escapeHtml(o.subject || ''); badge = '<span class="tt-badge tt-badge-change">変更</span>'; }
-        else if (o.type === 'swap') { badge = `<span class="tt-badge tt-badge-swap">入替(${o.swap_with_period}限)</span>`; }
-        else if (o.type === 'self_study') { subjectHtml = '自習'; badge = '<span class="tt-badge tt-badge-self">自習</span>'; }
-        else if (o.type === 'cancelled') { rowClass = 'tt-cell-cancelled'; badge = '<span class="tt-badge tt-badge-cancel">カット</span>'; }
-      }
-      html += `<tr><td>${p}限</td><td class="${rowClass}">${subjectHtml}${badge}</td></tr>`;
+      table += `<tr><td>${p}限</td>`;
+      TT_CLASS_NUMS.forEach(c => {
+        const o = overrideByClass[c][p];
+        let subject = displayByClass[c][p] || '（未設定）';
+        let cellClass = '';
+        if (o) {
+          if (o.type === 'subject_change') subject = o.subject || '';
+          else if (o.type === 'self_study') subject = '自習';
+          else if (o.type === 'cancelled') { subject = displayByClass[c][p] || ''; cellClass = 'tt-cell-cancelled'; }
+        }
+        table += `<td class="${cellClass}">${escapeHtml(subject || '（未設定）')}</td>`;
+      });
+      table += '</tr>';
     });
-    html += '</tbody></table>';
-    area.innerHTML = html;
+    table += '</tbody></table></div>';
+
+    // 2) 備考：本日カット・変更となった分をテキストで一覧表示
+    const remarkLines = overrides.slice()
+      .sort((a, b) => a.class_no - b.class_no || a.period - b.period)
+      .map(o => {
+        const head = `${o.class_no}組 ${o.period}限`;
+        if (o.type === 'subject_change') return `${head}：${o.subject || ''}に変更${o.note ? `（${o.note}）` : ''}`;
+        if (o.type === 'swap') return `${head} ⇔ ${o.swap_with_period}限：入れ替え${o.note ? `（${o.note}）` : ''}`;
+        if (o.type === 'self_study') return `${head}：自習${o.note ? `（${o.note}）` : ''}`;
+        if (o.type === 'cancelled') return `${head}：カット${o.note ? `（${o.note}）` : ''}`;
+        return '';
+      }).filter(Boolean);
+
+    const remarks = remarkLines.length > 0
+      ? `<div class="tt-remarks"><h4>備考（本日の変更）</h4><ul>${remarkLines.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`
+      : `<div class="tt-remarks"><h4>備考</h4><p style="font-size:13px;color:var(--ink-faint)">本日の変更はありません</p></div>`;
+
+    area.innerHTML = table + remarks;
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

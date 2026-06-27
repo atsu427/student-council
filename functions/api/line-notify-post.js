@@ -20,7 +20,7 @@ async function isAdmin(env, userId) {
 }
 
 async function getPost(env, postId) {
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}&select=id,title,body,published,mentioned_emails`, {
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}&select=id,title,body,published,mentioned_emails,mentioned_roles`, {
     headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
   });
   const rows = await res.json();
@@ -30,7 +30,16 @@ async function getPost(env, postId) {
 async function getLineUserIdsByEmails(env, emails) {
   if (!emails || emails.length === 0) return [];
   const list = emails.map(e => `"${e}"`).join(',');
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/members?email=in.(${list})&select=email,line_user_id`, {
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/members?email=in.(${list})&select=id,email,line_user_id`, {
+    headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
+  });
+  const rows = await res.json();
+  return (Array.isArray(rows) ? rows : []).filter(r => r.line_user_id);
+}
+
+async function getLineUserIdsByRoles(env, roles) {
+  if (!roles || roles.length === 0) return [];
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/members?roles=ov.{${roles.join(',')}}&select=id,email,line_user_id`, {
     headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
   });
   const rows = await res.json();
@@ -91,7 +100,13 @@ export async function onRequestPost(context) {
 
     await lineBroadcast(env, buildPostMessage(post, env));
 
-    const mentioned = await getLineUserIdsByEmails(env, post.mentioned_emails);
+    const [byEmail, byRole] = await Promise.all([
+      getLineUserIdsByEmails(env, post.mentioned_emails),
+      getLineUserIdsByRoles(env, post.mentioned_roles)
+    ]);
+    const mentionedMap = new Map();
+    [...byEmail, ...byRole].forEach(m => mentionedMap.set(m.id, m));
+    const mentioned = Array.from(mentionedMap.values());
     for (const m of mentioned) {
       await linePush(env, m.line_user_id, [{ type: 'text', text: `【メンション通知】\n「${post.title}」であなたが言及されました。\n${env.SITE_URL || ''}` }]);
     }
