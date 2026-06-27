@@ -12,7 +12,7 @@ async function verifySignature(secret, rawBody, signature) {
 }
 
 async function lineReply(env, replyToken, messages) {
-  await fetch('https://api.line.me/v2/bot/message/reply', {
+  const res = await fetch('https://api.line.me/v2/bot/message/reply', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -20,6 +20,9 @@ async function lineReply(env, replyToken, messages) {
     },
     body: JSON.stringify({ replyToken, messages })
   });
+  if (!res.ok) {
+    console.error('LINE reply失敗:', res.status, await res.text());
+  }
 }
 
 async function findMemberByLinkCode(env, code) {
@@ -30,12 +33,13 @@ async function findMemberByLinkCode(env, code) {
       Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
     }
   });
+  if (!res.ok) { console.error('members検索失敗:', res.status, await res.text()); return null; }
   const rows = await res.json();
   return Array.isArray(rows) && rows[0] ? rows[0] : null;
 }
 
 async function linkLineUser(env, memberId, lineUserId) {
-  await fetch(`${env.SUPABASE_URL}/rest/v1/members?id=eq.${memberId}`, {
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/members?id=eq.${memberId}`, {
     method: 'PATCH',
     headers: {
       apikey: env.SUPABASE_SERVICE_ROLE_KEY,
@@ -45,6 +49,7 @@ async function linkLineUser(env, memberId, lineUserId) {
     },
     body: JSON.stringify({ line_user_id: lineUserId })
   });
+  if (!res.ok) console.error('line_user_id更新失敗:', res.status, await res.text());
 }
 
 export async function onRequestPost(context) {
@@ -59,28 +64,32 @@ export async function onRequestPost(context) {
   const events = payload.events || [];
 
   for (const event of events) {
-    if (event.type === 'follow') {
-      await lineReply(env, event.replyToken, [{
-        type: 'text',
-        text: '灘校生徒会公式LINEに登録ありがとうございます。\nサイトにログイン後、マイページに表示される「連携コード」をこのトークにそのまま送信すると、メンション通知などの個別通知を受け取れるようになります。'
-      }]);
-    }
-
-    if (event.type === 'message' && event.message?.type === 'text') {
-      const text = (event.message.text || '').trim();
-      const member = await findMemberByLinkCode(env, text);
-      if (member) {
-        await linkLineUser(env, member.id, event.source.userId);
+    try {
+      if (event.type === 'follow') {
         await lineReply(env, event.replyToken, [{
           type: 'text',
-          text: `連携が完了しました（${member.email}）。これ以降、あなた宛のメンション通知をLINEでお届けします。`
-        }]);
-      } else {
-        await lineReply(env, event.replyToken, [{
-          type: 'text',
-          text: 'コードが見つかりませんでした。サイトにログインし、マイページに表示される連携コードを送信してください。'
+          text: '灘校生徒会公式LINEに登録ありがとうございます。\nサイトにログイン後、マイページに表示される「連携コード」をこのトークにそのまま送信すると、メンション通知などの個別通知を受け取れるようになります。'
         }]);
       }
+
+      if (event.type === 'message' && event.message?.type === 'text') {
+        const text = (event.message.text || '').trim();
+        const member = await findMemberByLinkCode(env, text);
+        if (member) {
+          await linkLineUser(env, member.id, event.source.userId);
+          await lineReply(env, event.replyToken, [{
+            type: 'text',
+            text: `連携が完了しました（${member.email}）。これ以降、あなた宛のメンション通知をLINEでお届けします。`
+          }]);
+        } else {
+          await lineReply(env, event.replyToken, [{
+            type: 'text',
+            text: 'コードが見つかりませんでした。サイトにログインし、マイページに表示される連携コードを送信してください。'
+          }]);
+        }
+      }
+    } catch (e) {
+      console.error('イベント処理エラー:', event.type, e.message);
     }
   }
 
