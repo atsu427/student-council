@@ -244,13 +244,16 @@
   // ── 認証 ──
   db.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
-      const email = session.user.email;
-      if (ALLOWED_DOMAIN && email.split('@')[1] !== ALLOWED_DOMAIN) {
+      // 大文字小文字・前後の空白の違いで誤って弾かれないように正規化して比較
+      const email = (session.user.email || '').trim();
+      const emailLower = email.toLowerCase();
+      if (ALLOWED_DOMAIN && emailLower.split('@')[1] !== ALLOWED_DOMAIN.toLowerCase()) {
         await db.auth.signOut();
         showError(`@${ALLOWED_DOMAIN} のアカウントでログインしてください。`);
         return;
       }
-      if (email !== ADMIN_EMAIL) {
+      if (emailLower !== ADMIN_EMAIL.toLowerCase()) {
+        console.error('管理者メール不一致:', JSON.stringify(email), '!=', JSON.stringify(ADMIN_EMAIL));
         await db.auth.signOut();
         showError(`管理者（${ADMIN_EMAIL}）のみアクセスできます。`);
         return;

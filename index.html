@@ -131,10 +131,12 @@
 
   db.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
-      const email = session.user.email;
+      // 大文字小文字・前後の空白の違いで誤って弾かれないように正規化して比較
+      const email = (session.user.email || '').trim();
+      const emailLower = email.toLowerCase();
 
       // ドメイン制限（ALLOWED_DOMAINがnullなら全員許可）
-      if (ALLOWED_DOMAIN && email.split('@')[1] !== ALLOWED_DOMAIN) {
+      if (ALLOWED_DOMAIN && emailLower.split('@')[1] !== ALLOWED_DOMAIN.toLowerCase()) {
         await db.auth.signOut();
         showError(`@${ALLOWED_DOMAIN} のアカウントでログインしてください。<br>（現在：${email}）`);
         return;
@@ -147,7 +149,7 @@
       document.getElementById('errorScreen').style.display = 'none';
       document.getElementById('mainContent').style.display = 'block';
       document.getElementById('userName').textContent = email;
-      if (email === ADMIN_EMAIL) document.getElementById('adminLink').style.display = 'inline-block';
+      if (emailLower === ADMIN_EMAIL.toLowerCase()) document.getElementById('adminLink').style.display = 'inline-block';
       loadPosts();
 
       syncMember(session.user.id, email);
