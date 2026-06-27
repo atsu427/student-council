@@ -12,46 +12,60 @@
     :root{
       --ink:#1d2024;
       --ink-soft:#5c636d;
-      --paper:#ffffff;
-      --paper-deep:#f3f4f6;
-      --line:#e2e5ea;
+      --ink-faint:#8a8f98;
+      --paper:#fffefb;
+      --paper-deep:#f4f1ea;
+      --line:#e7e2d8;
+      --line-strong:#d8d2c4;
       --vermillion:#b4332a;
+      --vermillion-tint:#fbeeec;
+      --vermillion-tint-strong:#f6dcd9;
       --gold:#9a7b2e;
+      --gold-tint:#f8f1e2;
+      --green:#3d6b4a;
+      --radius-sm:6px;
+      --radius-md:10px;
+      --radius-lg:14px;
+      --shadow-sm:0 1px 2px rgba(29,32,36,.04),0 2px 8px rgba(29,32,36,.05);
+      --shadow-md:0 4px 16px rgba(29,32,36,.07),0 1px 3px rgba(29,32,36,.05);
+      --shadow-lg:0 12px 32px rgba(29,32,36,.10),0 2px 6px rgba(29,32,36,.05);
+      --ease:cubic-bezier(.25,.1,.25,1);
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN','Helvetica Neue',Arial,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+    body{font-family:'Noto Sans JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,'Helvetica Neue',Arial,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
     h2,.login-card h2{font-family:inherit}
-    header{background:var(--ink);color:var(--paper);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;border-bottom:3px solid var(--vermillion)}
+    header{background:var(--ink);color:var(--paper);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;border-bottom:3px solid var(--vermillion);box-shadow:var(--shadow-md)}
     header h1{font-size:19px;font-weight:700;font-family:inherit;letter-spacing:.06em}
     .header-right{display:flex;align-items:center;gap:18px}
     .user-name{font-size:12px;color:#c4c9d2}
-    .btn-outline{background:transparent;color:var(--paper);border:1px solid rgba(255,255,255,.45);padding:7px 18px;border-radius:0;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
-    .btn-outline:hover{background:rgba(255,255,255,.1)}
+    .btn-outline{background:transparent;color:var(--paper);border:1px solid rgba(255,255,255,.45);padding:8px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:background-color .15s,border-color .15s,transform .15s var(--ease)}
+    .btn-outline:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.7)}
+    .btn-outline:active{transform:scale(.97)}
     .container{max-width:680px;margin:0 auto;padding:48px 32px 96px}
-    .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--ink-soft);text-decoration:none;font-size:13px;margin-bottom:32px;border-bottom:1px solid transparent;padding-bottom:2px}
+    .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--ink-soft);text-decoration:none;font-size:13px;margin-bottom:32px;border-bottom:1px solid transparent;padding-bottom:2px;transition:color .15s,border-color .15s}
     .back-link:hover{color:var(--vermillion);border-bottom-color:var(--vermillion)}
-    .post-card{background:transparent;border:none;border-top:1px solid var(--ink);padding:32px 0 0;box-shadow:none}
-    .post-meta{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
-    .category-tag{font-size:12px;font-weight:700;padding:2px 0;border-radius:0;background:none;color:var(--vermillion);letter-spacing:.08em;border-bottom:1px solid currentColor}
-    .category-tag.行事{color:#6b5a1f}
-    .category-tag.部活{color:#3d6b4a}
-    .category-tag.募集{color:#a25f1f}
-    .category-tag.その他{color:#5a4a6b}
-    .post-date{font-size:13px;color:#8a909a;font-family:inherit}
-    h2{font-size:clamp(22px,4vw,30px);font-weight:700;line-height:1.5;margin-bottom:14px;letter-spacing:.02em}
-    .post-author{font-size:13px;color:#8a909a;margin-bottom:36px;padding-bottom:28px;border-bottom:1px solid var(--line)}
+    .post-card{background:var(--paper);border:none;border-top:3px solid var(--ink);padding:34px 0 0;box-shadow:none}
+    .post-meta{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+    .category-tag{font-size:12px;font-weight:700;padding:3px 11px;border-radius:999px;background:var(--vermillion-tint);color:var(--vermillion);letter-spacing:.06em}
+    .category-tag.行事{color:#6b5a1f;background:var(--gold-tint)}
+    .category-tag.部活{color:#2f5a3b;background:#e9f1ea}
+    .category-tag.募集{color:#8a4d18;background:#fbece0}
+    .category-tag.その他{color:#4a3d5c;background:#ece8f1}
+    .post-date{font-size:13px;color:var(--ink-faint);font-family:inherit}
+    h2{font-size:clamp(23px,4vw,31px);font-weight:700;line-height:1.5;margin-bottom:16px;letter-spacing:.01em}
+    .post-author{font-size:13px;color:var(--ink-faint);margin-bottom:36px;padding-bottom:28px;border-bottom:1px solid var(--line)}
     .post-body{font-size:16px;line-height:2;color:var(--ink);white-space:pre-wrap;word-break:break-word;margin-bottom:36px}
     /* 添付ファイル */
     .attachments{border-top:1px solid var(--line);padding-top:30px}
     .attachments h3{font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:18px;letter-spacing:.05em}
     /* 画像グリッド */
-    .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:2px;margin-bottom:18px}
-    .image-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:0;cursor:pointer;border:1px solid var(--paper);transition:opacity .2s}
-    .image-grid img:hover{opacity:.8}
+    .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:18px}
+    .image-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius-md);cursor:pointer;border:1px solid var(--line);transition:opacity .2s,box-shadow .2s,transform .2s var(--ease)}
+    .image-grid img:hover{opacity:.92;box-shadow:var(--shadow-md);transform:translateY(-1px)}
     /* ファイルリスト */
-    .file-list{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}
-    .file-item{display:flex;align-items:center;gap:14px;padding:14px 4px;background:transparent;border-radius:0;border:none;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);transition:padding-left .15s}
-    .file-item:hover{padding-left:10px;color:var(--vermillion)}
+    .file-list{display:flex;flex-direction:column;gap:8px;border-top:none}
+    .file-item{display:flex;align-items:center;gap:14px;padding:13px 14px;background:var(--paper-deep);border-radius:var(--radius-md);border:1px solid transparent;text-decoration:none;color:var(--ink);transition:border-color .15s,background-color .15s,transform .15s var(--ease)}
+    .file-item:hover{border-color:var(--vermillion);background:var(--vermillion-tint);color:var(--vermillion);transform:translateX(2px)}
     .file-icon{font-size:18px;flex-shrink:0}
     .file-info{flex:1;min-width:0}
     .file-name{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -59,21 +73,28 @@
     /* ライトボックス */
     #lightbox{display:none;position:fixed;inset:0;background:rgba(20,18,14,.94);z-index:999;align-items:center;justify-content:center;padding:20px}
     #lightbox.open{display:flex}
-    #lightbox img{max-width:100%;max-height:90vh;border-radius:0;object-fit:contain}
-    .lb-close{position:absolute;top:16px;right:20px;color:#fff;font-size:36px;cursor:pointer;line-height:1;user-select:none}
-    .lb-nav{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:30px;cursor:pointer;user-select:none;padding:12px;background:transparent;border-radius:0;border:1px solid rgba(255,255,255,.3)}
+    #lightbox img{max-width:100%;max-height:90vh;border-radius:var(--radius-md);object-fit:contain;box-shadow:var(--shadow-lg)}
+    .lb-close{position:absolute;top:16px;right:20px;color:#fff;font-size:36px;cursor:pointer;line-height:1;user-select:none;transition:opacity .15s}
+    .lb-close:hover{opacity:.7}
+    .lb-nav{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:30px;cursor:pointer;user-select:none;padding:12px;background:rgba(255,255,255,.06);border-radius:50%;border:1px solid rgba(255,255,255,.3);transition:background-color .15s}
+    .lb-nav:hover{background:rgba(255,255,255,.16)}
     #lbPrev{left:16px}
     #lbNext{right:16px}
     /* ログイン画面 */
     #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--ink)}
-    .login-card{background:var(--paper);border-radius:0;padding:56px 44px;text-align:center;box-shadow:none;max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
+    .login-card{background:var(--paper);border-radius:var(--radius-lg);padding:56px 44px;text-align:center;box-shadow:var(--shadow-lg);max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
     .login-card h2{font-size:23px;margin-bottom:10px;letter-spacing:.05em}
     .login-card p{color:var(--ink-soft);font-size:13px;margin-bottom:36px;line-height:1.8}
-    .btn-google{background:var(--paper);color:var(--ink);border:1px solid var(--ink);display:flex;align-items:center;gap:10px;font-size:14px;padding:13px 24px;border-radius:0;cursor:pointer;width:100%;justify-content:center;font-weight:500;transition:all .15s;font-family:inherit}
-    .btn-google:hover{background:var(--ink);color:var(--paper)}
+    .btn-google{background:var(--paper);color:var(--ink);border:1px solid var(--line-strong);display:flex;align-items:center;gap:10px;font-size:14px;padding:13px 24px;border-radius:var(--radius-md);cursor:pointer;width:100%;justify-content:center;font-weight:500;transition:background-color .15s,color .15s,border-color .15s,box-shadow .15s;font-family:inherit}
+    .btn-google:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);box-shadow:var(--shadow-md)}
     #mainContent{display:none}
-    .loading{text-align:center;padding:80px;color:#9aa0aa;font-family:inherit}
+    .loading{text-align:center;padding:80px;color:var(--ink-faint);font-family:inherit}
     .error-msg{text-align:center;padding:80px;color:var(--vermillion);font-family:inherit}
+    footer{text-align:center;padding:32px 28px;font-size:11px;color:var(--ink-faint);border-top:1px solid var(--line);letter-spacing:.05em}
+    footer .footer-links{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:10px}
+    footer .footer-links a{color:var(--ink-soft);text-decoration:none;font-size:12px;letter-spacing:.02em;transition:color .15s}
+    footer .footer-links a:hover{color:var(--vermillion);text-decoration:underline}
+    footer .footer-copyright{color:var(--ink-faint)}
   </style>
 </head>
 <body>
@@ -101,6 +122,14 @@
     <a class="back-link" href="index.html">← お知らせ一覧に戻る</a>
     <div id="content"><div class="loading">読み込み中...</div></div>
   </div>
+  <footer id="siteFooter">
+    <div class="footer-links">
+      <a href="https://www.nada.ac.jp/" target="_blank" rel="noopener noreferrer">灘中学校・灘高等学校</a>
+      <a href="https://www.nada.ac.jp/nyuugaku.html" target="_blank" rel="noopener noreferrer">入試情報</a>
+      <a href="https://www.nada.ac.jp/dousoukai.html" target="_blank" rel="noopener noreferrer">同窓会（校友会）</a>
+    </div>
+    <div class="footer-copyright">© 灘校生徒会</div>
+  </footer>
 </div>
 
 <div id="lightbox" onclick="closeLightbox()">
@@ -174,15 +203,15 @@
 
     // ロール制限チェック（members取得に失敗してもgeneral扱いで処理を継続する）
     if (data.target_roles && data.target_roles.length > 0) {
-      let myRole = 'general';
+      let myRoles = ['general'];
       try {
-        const { data: member, error: memberError } = await db.from('members').select('role').eq('id', user.id).single();
+        const { data: member, error: memberError } = await db.from('members').select('roles').eq('id', user.id).single();
         if (memberError) console.error('members取得エラー:', memberError.message);
-        myRole = member?.role || 'general';
+        myRoles = member?.roles || ['general'];
       } catch (e) {
         console.error('members取得エラー:', e);
       }
-      if (!data.target_roles.includes(myRole) && !data.target_roles.includes('全体')) {
+      if (!data.target_roles.some(r => myRoles.includes(r)) && !data.target_roles.includes('全体')) {
         showError('この記事を閲覧する権限がありません');
         return;
       }

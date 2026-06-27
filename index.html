@@ -12,66 +12,127 @@
     :root{
       --ink:#1d2024;
       --ink-soft:#5c636d;
-      --paper:#ffffff;
-      --paper-deep:#f3f4f6;
-      --line:#e2e5ea;
+      --ink-faint:#8a8f98;
+      --paper:#fffefb;
+      --paper-deep:#f4f1ea;
+      --line:#e7e2d8;
+      --line-strong:#d8d2c4;
       --vermillion:#b4332a;
+      --vermillion-tint:#fbeeec;
+      --vermillion-tint-strong:#f6dcd9;
       --gold:#9a7b2e;
+      --gold-tint:#f8f1e2;
+      --green:#3d6b4a;
+      --radius-sm:6px;
+      --radius-md:10px;
+      --radius-lg:14px;
+      --shadow-sm:0 1px 2px rgba(29,32,36,.04),0 2px 8px rgba(29,32,36,.05);
+      --shadow-md:0 4px 16px rgba(29,32,36,.07),0 1px 3px rgba(29,32,36,.05);
+      --shadow-lg:0 12px 32px rgba(29,32,36,.10),0 2px 6px rgba(29,32,36,.05);
+      --ease:cubic-bezier(.25,.1,.25,1);
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN','Helvetica Neue',Arial,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+    body{font-family:'Noto Sans JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,'Helvetica Neue',Arial,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
     h1,h2,.login-card h2,.error-card h2{font-family:inherit}
-    header{background:var(--ink);color:var(--paper);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;border-bottom:3px solid var(--vermillion)}
+    header{background:var(--ink);color:var(--paper);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;border-bottom:3px solid var(--vermillion);box-shadow:var(--shadow-md)}
     header h1{font-size:19px;font-weight:700;letter-spacing:.08em}
     .header-right{display:flex;align-items:center;gap:18px}
     .user-name{font-size:12px;color:#c4c9d2;letter-spacing:.02em}
-    .btn{padding:7px 20px;border-radius:0;border:none;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s;text-decoration:none;display:inline-block;font-family:inherit}
+    .btn{padding:8px 22px;border-radius:var(--radius-sm);border:none;font-size:13px;font-weight:500;cursor:pointer;transition:transform .15s var(--ease),opacity .15s,background-color .15s,box-shadow .15s;text-decoration:none;display:inline-block;font-family:inherit}
+    .btn:active{transform:scale(.97)}
     .btn-outline{background:transparent;color:var(--paper);border:1px solid rgba(255,255,255,.45)}
-    .btn-outline:hover{background:rgba(255,255,255,.1)}
-    .btn-admin{background:transparent;color:var(--paper);border:none;font-size:12px;padding:0;font-weight:500;text-decoration:underline;text-decoration-color:rgba(255,255,255,.4);text-underline-offset:3px}
+    .btn-outline:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.7)}
+    .btn-admin{background:transparent;color:var(--paper);border:none;font-size:12px;padding:0;font-weight:500;text-decoration:underline;text-decoration-color:rgba(255,255,255,.4);text-underline-offset:3px;transition:text-decoration-color .15s}
     .btn-admin:hover{text-decoration-color:var(--paper)}
-    .hero{background:var(--ink);color:var(--paper);padding:0 32px 40px;text-align:left;border-bottom:1px solid rgba(255,255,255,.15)}
-    .hero-inner{max-width:760px;margin:0 auto;padding-top:36px;border-top:1px solid rgba(255,255,255,.25)}
-    .hero h2{font-size:clamp(26px,4vw,34px);font-weight:700;letter-spacing:.06em;margin-bottom:10px}
-    .hero p{font-size:13px;color:#b9b09a;letter-spacing:.03em}
-    .filter-bar{display:flex;gap:0;flex-wrap:wrap;max-width:760px;margin:0 auto;padding:0 32px;border-bottom:1px solid var(--line)}
-    .filter-btn{padding:14px 18px 12px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--ink-soft);font-size:13px;cursor:pointer;transition:color .15s,border-color .15s;font-family:inherit;letter-spacing:.02em}
-    .filter-btn.active{color:var(--vermillion);border-bottom-color:var(--vermillion);font-weight:700}
-    .filter-btn:hover{color:var(--ink)}
-    .posts-grid{max-width:760px;margin:0 auto;padding:8px 32px 80px;display:block}
-    .post-card{background:transparent;border:none;border-bottom:1px solid var(--line);border-radius:0;padding:26px 4px 24px;box-shadow:none;cursor:pointer;transition:padding-left .15s,border-color .15s;text-decoration:none;color:inherit;display:block}
-    .post-card:hover{padding-left:14px;border-color:var(--ink)}
-    .post-meta{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
-    .category-tag{font-size:11px;font-weight:700;padding:2px 0;border-radius:0;background:none;color:var(--vermillion);letter-spacing:.08em;border-bottom:1px solid currentColor}
-    .category-tag.行事{color:#6b5a1f}
-    .category-tag.部活{color:#3d6b4a}
-    .category-tag.募集{color:#a25f1f}
-    .category-tag.その他{color:#5a4a6b}
-    .role-tag{font-size:11px;padding:2px 9px;border-radius:2px;background:var(--paper-deep);color:var(--ink-soft);border:1px solid var(--line)}
-    .post-date{font-size:12px;color:#8a909a;font-family:inherit}
-    .post-title{font-size:18px;font-weight:700;line-height:1.6;margin-bottom:10px;font-family:inherit}
+    .hero{background:var(--ink);color:var(--paper);padding:0 32px 44px;text-align:left;border-bottom:1px solid rgba(255,255,255,.15)}
+    .hero-inner{max-width:760px;margin:0 auto;padding-top:40px;border-top:1px solid rgba(255,255,255,.25);position:relative}
+    .hero-inner::before{content:'';position:absolute;top:-1px;left:0;width:48px;height:3px;background:var(--vermillion)}
+    .hero h2{font-size:clamp(27px,4vw,35px);font-weight:700;letter-spacing:.05em;margin-bottom:11px;line-height:1.3}
+    .hero p{font-size:13px;color:#b9b09a;letter-spacing:.03em;line-height:1.7}
+    .filter-bar{display:flex;gap:4px;flex-wrap:wrap;max-width:760px;margin:0 auto;padding:10px 28px;border-bottom:1px solid var(--line)}
+    .filter-btn{padding:10px 16px;border:none;border-radius:var(--radius-sm);border-bottom:2px solid transparent;background:transparent;color:var(--ink-soft);font-size:13px;cursor:pointer;transition:color .15s,border-color .15s,background-color .15s;font-family:inherit;letter-spacing:.02em}
+    .filter-btn:hover{color:var(--ink);background:var(--paper-deep)}
+    .filter-btn.active{color:var(--vermillion);border-bottom-color:var(--vermillion);font-weight:700;background:var(--vermillion-tint)}
+    .posts-grid{max-width:760px;margin:0 auto;padding:14px 28px 88px;display:block}
+    .post-card{background:var(--paper);border:1px solid transparent;border-radius:var(--radius-lg);padding:24px 22px;box-shadow:none;cursor:pointer;transition:box-shadow .2s var(--ease),border-color .2s,transform .2s var(--ease);text-decoration:none;color:inherit;display:block;margin-bottom:10px}
+    .post-card:hover{box-shadow:var(--shadow-md);border-color:var(--line);transform:translateY(-2px)}
+    .post-meta{display:flex;align-items:center;gap:10px;margin-bottom:13px;flex-wrap:wrap}
+    .category-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--vermillion-tint);color:var(--vermillion);letter-spacing:.06em}
+    .category-tag.行事{color:#6b5a1f;background:var(--gold-tint)}
+    .category-tag.部活{color:#2f5a3b;background:#e9f1ea}
+    .category-tag.募集{color:#8a4d18;background:#fbece0}
+    .category-tag.その他{color:#4a3d5c;background:#ece8f1}
+    .role-tag{font-size:11px;padding:3px 10px;border-radius:999px;background:var(--paper-deep);color:var(--ink-soft);border:1px solid var(--line)}
+    .post-date{font-size:12px;color:var(--ink-faint);font-family:inherit}
+    .post-title{font-size:18px;font-weight:700;line-height:1.6;margin-bottom:9px;font-family:inherit;letter-spacing:.01em}
     .post-excerpt{font-size:14px;color:var(--ink-soft);line-height:1.85;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-    .post-has-files{font-size:12px;color:#8a909a;margin-top:10px}
+    .post-has-files{font-size:12px;color:var(--ink-faint);margin-top:10px}
+    .mention-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--vermillion);color:var(--paper);letter-spacing:.03em}
+    /* 通知ベル */
+    .notif-wrap{position:relative}
+    .notif-bell{background:transparent;border:none;color:var(--paper);font-size:18px;cursor:pointer;position:relative;padding:6px;line-height:1;border-radius:var(--radius-sm);transition:background-color .15s}
+    .notif-bell:hover{background:rgba(255,255,255,.12)}
+    .notif-badge{position:absolute;top:-2px;right:-2px;background:var(--vermillion);color:var(--paper);font-size:10px;font-weight:700;border-radius:999px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;box-shadow:0 0 0 2px var(--ink)}
+    .notif-panel{display:none;position:absolute;top:44px;right:0;background:var(--paper);color:var(--ink);width:320px;max-height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:200}
+    .notif-panel.show{display:block}
+    .notif-item{padding:14px 16px;border-bottom:1px solid var(--line);font-size:13px;line-height:1.7;cursor:pointer;transition:background .15s}
+    .notif-item:first-child{border-radius:var(--radius-lg) var(--radius-lg) 0 0}
+    .notif-item:last-child{border-bottom:none;border-radius:0 0 var(--radius-lg) var(--radius-lg)}
+    .notif-item:hover{background:var(--paper-deep)}
+    .notif-item.unread{background:var(--vermillion-tint)}
+    .notif-item-date{font-size:11px;color:var(--ink-faint);margin-top:4px}
+    .notif-empty{padding:28px 16px;text-align:center;color:var(--ink-faint);font-size:13px}
     /* ログイン画面 */
     #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--ink)}
-    .login-card{background:var(--paper);border-radius:0;padding:56px 44px;text-align:center;box-shadow:none;max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
+    .login-card{background:var(--paper);border-radius:var(--radius-lg);padding:56px 44px;text-align:center;box-shadow:var(--shadow-lg);max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
     .login-card h2{font-size:23px;margin-bottom:10px;letter-spacing:.05em}
     .login-card p{color:var(--ink-soft);font-size:13px;margin-bottom:36px;line-height:1.8}
-    .btn-google{background:var(--paper);color:var(--ink);border:1px solid var(--ink);display:flex;align-items:center;gap:10px;font-size:14px;padding:13px 24px;border-radius:0;cursor:pointer;width:100%;justify-content:center;font-weight:500;transition:all .15s;font-family:inherit}
-    .btn-google:hover{background:var(--ink);color:var(--paper)}
+    .btn-google{background:var(--paper);color:var(--ink);border:1px solid var(--line-strong);display:flex;align-items:center;gap:10px;font-size:14px;padding:13px 24px;border-radius:var(--radius-md);cursor:pointer;width:100%;justify-content:center;font-weight:500;transition:background-color .15s,color .15s,border-color .15s,box-shadow .15s;font-family:inherit}
+    .btn-google:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);box-shadow:var(--shadow-md)}
     .btn-google:hover svg{filter:grayscale(1) brightness(2)}
-    .login-note{margin-top:22px;font-size:11px;color:#9aa0aa;letter-spacing:.02em}
+    .login-note{margin-top:22px;font-size:11px;color:var(--ink-faint);letter-spacing:.02em}
     /* エラー画面 */
     #errorScreen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--ink)}
-    .error-card{background:var(--paper);border-radius:0;padding:56px 44px;text-align:center;box-shadow:none;max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
+    .error-card{background:var(--paper);border-radius:var(--radius-lg);padding:56px 44px;text-align:center;box-shadow:var(--shadow-lg);max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
     .error-card h2{font-size:21px;margin-bottom:14px;color:var(--vermillion)}
     .error-card p{font-size:13px;color:var(--ink-soft);margin-bottom:28px;line-height:1.8}
-    .btn-secondary{background:transparent;color:var(--ink);border:1px solid var(--ink);padding:9px 22px;border-radius:0;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+    .btn-secondary{background:transparent;color:var(--ink);border:1px solid var(--line-strong);padding:9px 22px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:background-color .15s,border-color .15s,transform .15s var(--ease)}
+    .btn-secondary:hover{background:var(--paper-deep);border-color:var(--ink-soft)}
+    .btn-secondary:active{transform:scale(.97)}
     #mainContent{display:none}
-    .loading{text-align:center;padding:60px;color:#8a909a;font-size:13px;font-family:inherit}
-    .empty{text-align:center;padding:60px;color:#9aa0aa}
+    .loading{text-align:center;padding:60px;color:var(--ink-faint);font-size:13px;font-family:inherit}
+    .empty{text-align:center;padding:60px;color:var(--ink-faint)}
     .empty p{font-size:14px;font-family:inherit}
-    footer{text-align:center;padding:28px;font-size:11px;color:#9aa0aa;border-top:1px solid var(--line);letter-spacing:.05em}
+    footer{text-align:center;padding:32px 28px;font-size:11px;color:var(--ink-faint);border-top:1px solid var(--line);letter-spacing:.05em}
+    footer .footer-links{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:10px}
+    footer .footer-links a{color:var(--ink-soft);text-decoration:none;font-size:12px;letter-spacing:.02em;transition:color .15s}
+    footer .footer-links a:hover{color:var(--vermillion);text-decoration:underline}
+    footer .footer-copyright{color:var(--ink-faint)}
+    /* 意見箱・DM */
+    .side-section{max-width:760px;margin:24px auto 0;padding:32px 28px;border-top:1px solid var(--line)}
+    .side-section h3{font-size:15px;font-weight:700;margin-bottom:16px;letter-spacing:.03em}
+    .side-section textarea{width:100%;min-height:90px;resize:vertical;line-height:1.8;border:1px solid var(--line);border-radius:var(--radius-md);padding:12px 14px;font-size:14px;font-family:inherit;outline:none;background:var(--paper-deep);color:var(--ink);transition:border-color .2s,background-color .2s}
+    .side-section textarea:focus{border-color:var(--vermillion);background:var(--paper)}
+    .side-actions{display:flex;justify-content:flex-end;margin-top:12px}
+    .dm-thread{display:flex;flex-direction:column;gap:10px;max-height:380px;overflow-y:auto;padding:4px 2px;margin-bottom:14px}
+    .dm-bubble{max-width:70%;padding:10px 14px;font-size:13px;line-height:1.7;border-radius:var(--radius-md)}
+    .dm-bubble.student{align-self:flex-end;background:var(--ink);color:var(--paper);border-radius:var(--radius-md) var(--radius-md) var(--radius-sm) var(--radius-md)}
+    .dm-bubble.admin{align-self:flex-start;background:var(--paper-deep);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-md) var(--radius-md) var(--radius-md) var(--radius-sm)}
+    .dm-bubble-date{font-size:10px;opacity:.65;margin-top:4px}
+    .dm-empty{text-align:center;color:var(--ink-faint);font-size:13px;padding:24px 0}
+    /* 時間割 */
+    .side-section label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:7px;letter-spacing:.03em}
+    .side-section select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;outline:none;background:var(--paper-deep);color:var(--ink);transition:border-color .15s}
+    .side-section select:focus{border-color:var(--vermillion)}
+    .tt-table{width:100%;border-collapse:collapse;font-size:13px}
+    .tt-table th{padding:9px 8px;text-align:left;font-size:11px;font-weight:700;border-bottom:2px solid var(--ink);color:var(--ink-soft);letter-spacing:.02em}
+    .tt-table td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+    .tt-cell-cancelled{color:var(--ink-faint);text-decoration:line-through}
+    .tt-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid currentColor;margin-left:6px;white-space:nowrap}
+    .tt-badge-change{color:var(--gold)}
+    .tt-badge-swap{color:var(--green)}
+    .tt-badge-self{color:var(--vermillion)}
+    .tt-badge-cancel{color:var(--ink-faint)}
   </style>
 </head>
 <body>
@@ -104,6 +165,14 @@
     <h1>灘校生徒会</h1>
     <div class="header-right">
       <span class="user-name" id="userName"></span>
+      <div class="notif-wrap">
+        <button class="notif-bell" id="notifBell" onclick="toggleNotifPanel()" title="通知">
+          🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span>
+        </button>
+        <div class="notif-panel" id="notifPanel">
+          <div id="notifList"><div class="notif-empty">読み込み中...</div></div>
+        </div>
+      </div>
       <a id="adminLink" href="admin.html" class="btn-admin" style="display:none">管理画面</a>
       <button class="btn btn-outline" onclick="logout()">ログアウト</button>
     </div>
@@ -116,20 +185,69 @@
     </div>
   </div>
 
-  <div class="filter-bar">
+  <div class="filter-bar" id="filterBar">
     <button class="filter-btn active" onclick="filterPosts('')" data-cat="">すべて</button>
-    <button class="filter-btn" onclick="filterPosts('お知らせ')" data-cat="お知らせ">お知らせ</button>
-    <button class="filter-btn" onclick="filterPosts('行事')" data-cat="行事">行事</button>
-    <button class="filter-btn" onclick="filterPosts('部活')" data-cat="部活">部活</button>
-    <button class="filter-btn" onclick="filterPosts('募集')" data-cat="募集">募集</button>
-    <button class="filter-btn" onclick="filterPosts('その他')" data-cat="その他">その他</button>
   </div>
 
   <div class="posts-grid" id="postsGrid">
     <div class="loading">読み込み中...</div>
   </div>
 
-  <footer>© 灘校生徒会</footer>
+  <!-- 時間割 -->
+  <div class="side-section">
+    <h3>今日の時間割</h3>
+    <div class="form-row" style="display:flex;gap:16px;max-width:320px;margin-bottom:18px">
+      <div style="flex:1">
+        <label>学年</label>
+        <select id="ttStudentGrade"></select>
+      </div>
+      <div style="flex:1">
+        <label>クラス</label>
+        <select id="ttStudentClass"></select>
+      </div>
+    </div>
+    <div id="ttStudentArea"><div class="dm-empty">学年・クラスを選択してください</div></div>
+  </div>
+
+  <!-- 意見箱 -->
+  <div class="side-section">
+    <h3>意見箱</h3>
+    <textarea id="suggestionInput" placeholder="生徒会への意見・要望を入力してください"></textarea>
+    <div class="side-actions">
+      <button class="btn-secondary" onclick="submitSuggestion()">送信する</button>
+    </div>
+  </div>
+
+  <!-- 生徒会とのDM -->
+  <div class="side-section">
+    <h3>生徒会へのメッセージ</h3>
+    <div class="dm-thread" id="dmThread"><div class="dm-empty">読み込み中...</div></div>
+    <textarea id="dmInput" placeholder="メッセージを入力" style="min-height:60px"></textarea>
+    <div class="side-actions">
+      <button class="btn-secondary" onclick="sendDmMessage()">送信する</button>
+    </div>
+  </div>
+
+  <!-- LINE連携 -->
+  <div class="side-section">
+    <h3>LINE通知連携</h3>
+    <p style="font-size:13px;color:var(--ink-soft);line-height:1.8;margin-bottom:14px">
+      公式LINEを友だち追加し、下の連携コードをトークに送信すると、あなた宛のメンション通知をLINEでも受け取れるようになります。
+    </p>
+    <p style="font-size:13px;margin-bottom:10px">連携コード: <strong id="lineLinkCode">-</strong>
+      <span id="lineLinkedBadge" style="display:none;color:#3d6b4a;font-weight:700;margin-left:8px">連携済み</span>
+    </p>
+    <a class="btn-secondary" id="lineFriendBtn" href="#" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">公式LINEを友だち追加</a>
+  </div>
+
+  <footer id="siteFooter">
+    <div class="footer-links">
+      <a href="https://www.nada.ac.jp/" target="_blank" rel="noopener noreferrer">灘中学校・灘高等学校</a>
+      <a href="https://www.nada.ac.jp/nyuugaku.html" target="_blank" rel="noopener noreferrer">入試情報</a>
+      <a href="https://www.nada.ac.jp/dousoukai.html" target="_blank" rel="noopener noreferrer">同窓会（校友会）</a>
+    </div>
+    <div class="footer-copyright">© 灘校生徒会</div>
+  </footer>
 </div>
 
 <script>
@@ -138,6 +256,8 @@
   const ADMIN_EMAIL = 'j170470@stg.nada.ac.jp';
   // ※テスト中はドメイン制限なし。本番に戻す場合は↓を 'stg.nada.ac.jp' に変更
   const ALLOWED_DOMAIN = null;
+  // LINE公式アカウント作成後、友だち追加URL（https://lin.ee/xxxxx 形式）に置き換えること
+  const LINE_OA_URL = 'https://line.me/R/ti/p/@未設定';
 
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -146,6 +266,10 @@
 
   let allPosts = [];
   let currentMember = null;
+  let currentUserEmail = '';
+  let currentUserId = null;
+  let myNotifications = [];
+  let myDmMessages = [];
 
   db.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
@@ -167,10 +291,16 @@
       document.getElementById('errorScreen').style.display = 'none';
       document.getElementById('mainContent').style.display = 'block';
       document.getElementById('userName').textContent = email;
+      currentUserEmail = emailLower;
+      currentUserId = session.user.id;
       if (emailLower === ADMIN_EMAIL.toLowerCase()) document.getElementById('adminLink').style.display = 'inline-block';
       loadPosts();
+      loadCategoryFilters();
+      initStudentTimetable();
 
       syncMember(session.user.id, email);
+      loadNotifications(session.user.id);
+      loadDmThread(session.user.id);
     } else {
       document.getElementById('loginScreen').style.display = 'flex';
       document.getElementById('mainContent').style.display = 'none';
@@ -182,25 +312,92 @@
   async function syncMember(userId, email) {
     try {
       const { error: upsertError } = await db.from('members')
-        .upsert({ id: userId, email, role: 'general' }, { onConflict: 'id', ignoreDuplicates: true });
+        .upsert({ id: userId, email, roles: ['general'] }, { onConflict: 'id', ignoreDuplicates: true });
       if (upsertError) console.error('members登録エラー:', upsertError.message);
 
       const { data: member, error: memberError } = await db.from('members').select('*').eq('id', userId).single();
       if (memberError) console.error('members取得エラー:', memberError.message);
 
-      const roleChanged = member && member.role !== currentMember?.role;
+      const roleChanged = member && JSON.stringify(member.roles) !== JSON.stringify(currentMember?.roles);
       currentMember = member;
 
       // 「管理者」ロールを持つ人に管理画面リンクを表示
-      if (member?.role === '管理者') document.getElementById('adminLink').style.display = 'inline-block';
+      if ((member?.roles || []).includes('管理者')) document.getElementById('adminLink').style.display = 'inline-block';
       // プロフィール表示名があればヘッダーに反映
       if (member?.display_name) document.getElementById('userName').textContent = member.display_name;
 
+      renderLineLinkSection(member);
       if (roleChanged) loadPosts(); // ロールが判明したら対象お知らせを再読込
     } catch (e) {
       console.error('members同期エラー:', e);
     }
   }
+
+  // ── LINE連携 ──
+  function renderLineLinkSection(member) {
+    document.getElementById('lineLinkCode').textContent = member?.line_link_code || '-';
+    document.getElementById('lineFriendBtn').href = LINE_OA_URL;
+    document.getElementById('lineLinkedBadge').style.display = member?.line_user_id ? 'inline' : 'none';
+  }
+
+  // ── 通知（メンション） ──
+  // メインUIの描画はブロックせず、バックグラウンドで取得する
+  async function loadNotifications(userId) {
+    try {
+      const { data, error } = await db.from('notifications')
+        .select('*').eq('member_id', userId).order('created_at', { ascending: false });
+      if (error) { console.error('通知取得エラー:', error.message); return; }
+      myNotifications = data || [];
+      renderNotifBadge();
+    } catch (e) {
+      console.error('通知同期エラー:', e);
+    }
+  }
+
+  function renderNotifBadge() {
+    const unreadCount = myNotifications.filter(n => !n.read).length;
+    const badge = document.getElementById('notifBadge');
+    if (unreadCount > 0) { badge.textContent = unreadCount > 99 ? '99+' : String(unreadCount); badge.style.display = 'flex'; }
+    else badge.style.display = 'none';
+  }
+
+  function toggleNotifPanel() {
+    const panel = document.getElementById('notifPanel');
+    const opening = !panel.classList.contains('show');
+    panel.classList.toggle('show', opening);
+    if (opening) {
+      renderNotifList();
+      markAllNotificationsRead();
+    }
+  }
+
+  function renderNotifList() {
+    const list = document.getElementById('notifList');
+    if (myNotifications.length === 0) { list.innerHTML = '<div class="notif-empty">通知はありません</div>'; return; }
+    list.innerHTML = myNotifications.map(n => {
+      const date = new Date(n.created_at).toLocaleString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const href = n.post_id ? `post.html?id=${n.post_id}` : '#';
+      return `<div class="notif-item ${n.read ? '' : 'unread'}" onclick="location.href='${href}'">
+        <div>${escapeHtml(n.body)}</div>
+        <div class="notif-item-date">${date}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // パネルを開いた時点で表示中の未読をまとめて既読にする
+  async function markAllNotificationsRead() {
+    const unreadIds = myNotifications.filter(n => !n.read).map(n => n.id);
+    if (unreadIds.length === 0) return;
+    myNotifications = myNotifications.map(n => unreadIds.includes(n.id) ? { ...n, read: true } : n);
+    renderNotifBadge();
+    const { error } = await db.from('notifications').update({ read: true }).in('id', unreadIds);
+    if (error) console.error('通知既読更新エラー:', error.message);
+  }
+
+  document.addEventListener('click', e => {
+    const wrap = document.querySelector('.notif-wrap');
+    if (wrap && !wrap.contains(e.target)) document.getElementById('notifPanel').classList.remove('show');
+  });
 
   function showError(msg) {
     document.getElementById('loginScreen').style.display = 'none';
@@ -226,10 +423,27 @@
     const { data, error } = await db.from('posts').select('*').eq('published', true).order('created_at', { ascending: false });
     if (error) { document.getElementById('postsGrid').innerHTML = '<div class="empty"><p>読み込みに失敗しました</p></div>'; return; }
 
-    const myRole = currentMember?.role || 'general';
-    // target_rolesが空配列 or 自分のロールを含む投稿のみ表示
-    allPosts = (data || []).filter(p => !p.target_roles || p.target_roles.length === 0 || p.target_roles.includes(myRole) || p.target_roles.includes('全体'));
+    const myRoles = currentMember?.roles || ['general'];
+    // target_rolesが空配列 or 自分のロールのいずれかを含む投稿のみ表示
+    allPosts = (data || []).filter(p => !p.target_roles || p.target_roles.length === 0 || p.target_roles.some(r => myRoles.includes(r)) || p.target_roles.includes('全体'));
     renderPosts(allPosts);
+  }
+
+  async function loadCategoryFilters() {
+    const { data, error } = await db.from('categories').select('*').order('sort_order');
+    if (error) { console.error('カテゴリ取得エラー:', error.message); return; }
+    const bar = document.getElementById('filterBar');
+    const allBtn = bar.querySelector('[data-cat=""]');
+    bar.innerHTML = '';
+    bar.appendChild(allBtn);
+    (data || []).forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.dataset.cat = c.name;
+      btn.textContent = c.name;
+      btn.addEventListener('click', () => filterPosts(c.name));
+      bar.appendChild(btn);
+    });
   }
 
   function filterPosts(cat) {
@@ -245,10 +459,13 @@
       const rolesHtml = (post.target_roles && post.target_roles.length > 0)
         ? post.target_roles.map(r => `<span class="role-tag">${escapeHtml(r)}</span>`).join('') : '';
       const filesNote = (post.file_paths && post.file_paths.length > 0) ? `<div class="post-has-files">添付 ${post.file_paths.length}件</div>` : '';
+      const isMentioned = currentUserEmail && (post.mentioned_emails || []).some(e => (e || '').toLowerCase() === currentUserEmail);
+      const mentionHtml = isMentioned ? '<span class="mention-tag">📣 あなたへのメンション</span>' : '';
       return `<a class="post-card" href="post.html?id=${post.id}">
         <div class="post-meta">
           <span class="category-tag ${post.category}">${post.category}</span>
           <span class="post-date">${date}</span>
+          ${mentionHtml}
           ${rolesHtml}
         </div>
         <div class="post-title">${escapeHtml(post.title)}</div>
@@ -256,6 +473,139 @@
         ${filesNote}
       </a>`;
     }).join('');
+  }
+
+  // ── 意見箱 ──
+  async function submitSuggestion() {
+    const input = document.getElementById('suggestionInput');
+    const body = input.value.trim();
+    if (!body) return;
+    if (!currentUserId) { showToast('ログイン情報を確認できませんでした'); return; }
+    const { error } = await db.from('suggestions').insert({
+      member_id: currentUserId, email: currentUserEmail, body
+    });
+    if (error) { console.error('意見箱送信エラー:', error.message); showToast('送信に失敗しました: ' + error.message); return; }
+    input.value = '';
+    showToast('意見を送信しました');
+  }
+
+  // ── 生徒会とのDM ──
+  async function loadDmThread(userId) {
+    try {
+      const { data, error } = await db.from('dm_messages')
+        .select('*').eq('member_id', userId).order('created_at', { ascending: true });
+      if (error) { console.error('DM取得エラー:', error.message); document.getElementById('dmThread').innerHTML = '<div class="dm-empty">読み込みに失敗しました</div>'; return; }
+      myDmMessages = data || [];
+      renderDmThread();
+    } catch (e) {
+      console.error('DM同期エラー:', e);
+    }
+  }
+
+  function renderDmThread() {
+    const thread = document.getElementById('dmThread');
+    if (myDmMessages.length === 0) { thread.innerHTML = '<div class="dm-empty">まだメッセージはありません</div>'; return; }
+    thread.innerHTML = myDmMessages.map(m => {
+      const date = new Date(m.created_at).toLocaleString('ja-JP', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return `<div class="dm-bubble ${m.sender}">
+        <div>${escapeHtml(m.body)}</div>
+        <div class="dm-bubble-date">${date}</div>
+      </div>`;
+    }).join('');
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  async function sendDmMessage() {
+    const input = document.getElementById('dmInput');
+    const body = input.value.trim();
+    if (!body) return;
+    if (!currentUserId) { showToast('ログイン情報を確認できませんでした'); return; }
+    const { data, error } = await db.from('dm_messages')
+      .insert({ member_id: currentUserId, sender: 'student', body })
+      .select('*').single();
+    if (error) { console.error('DM送信エラー:', error.message); showToast('送信に失敗しました: ' + error.message); return; }
+    input.value = '';
+    if (data) { myDmMessages.push(data); renderDmThread(); }
+  }
+
+  // index.htmlにはadmin.htmlのようなトースト要素が無いため、簡易的にalertで代用する
+  function showToast(msg) { alert(msg); }
+
+  // ── 時間割 ──
+  const TT_GRADES = ['中1','中2','中3','高1','高2','高3'];
+  const TT_CLASS_NUMS = [1,2,3,4];
+  const TT_PERIODS = [1,2,3,4,5,6,7];
+  let ttStudentInitialized = false;
+
+  function initStudentTimetable() {
+    if (ttStudentInitialized) return;
+    ttStudentInitialized = true;
+    document.getElementById('ttStudentGrade').innerHTML = TT_GRADES.map(g => `<option value="${g}">${g}</option>`).join('');
+    document.getElementById('ttStudentClass').innerHTML = TT_CLASS_NUMS.map(c => `<option value="${c}">${c}組</option>`).join('');
+    document.getElementById('ttStudentGrade').addEventListener('change', loadStudentTimetable);
+    document.getElementById('ttStudentClass').addEventListener('change', loadStudentTimetable);
+    loadStudentTimetable();
+  }
+
+  async function loadStudentTimetable() {
+    const grade = document.getElementById('ttStudentGrade').value;
+    const classNo = Number(document.getElementById('ttStudentClass').value);
+    const area = document.getElementById('ttStudentArea');
+    area.innerHTML = '<div class="dm-empty">読み込み中...</div>';
+
+    const today = new Date();
+    // JSの getDay() は 0=日,1=月...6=土。weekdayは1=月〜6=土なので日曜(0)は対象外。
+    const jsDay = today.getDay();
+    const weekday = jsDay === 0 ? null : jsDay;
+    const dateStr = today.toLocaleDateString('en-CA'); // YYYY-MM-DD
+
+    if (!weekday) { area.innerHTML = '<div class="dm-empty">本日（日曜）は時間割がありません</div>'; return; }
+
+    const [{ data: slots, error: slotsError }, { data: overrides, error: overridesError }] = await Promise.all([
+      db.from('timetable_slots').select('*').eq('grade', grade).eq('class_no', classNo).eq('weekday', weekday),
+      db.from('timetable_overrides').select('*').eq('grade', grade).eq('class_no', classNo).eq('date', dateStr)
+    ]);
+    if (slotsError) { console.error('時間割取得エラー:', slotsError.message); area.innerHTML = '<div class="dm-empty">読み込みに失敗しました</div>'; return; }
+    if (overridesError) console.error('時間割変更取得エラー:', overridesError.message);
+
+    renderStudentTimetable(slots || [], overrides || []);
+  }
+
+  function renderStudentTimetable(slots, overrides) {
+    const area = document.getElementById('ttStudentArea');
+    const subjectByPeriod = {};
+    TT_PERIODS.forEach(p => { subjectByPeriod[p] = ''; });
+    slots.forEach(s => { subjectByPeriod[s.period] = s.subject || ''; });
+
+    const overrideByPeriod = {};
+    (overrides || []).forEach(o => { overrideByPeriod[o.period] = o; });
+
+    // swap: 表示用に科目を入れ替える（入れ替え元・先どちらの行からでも見えるように両方処理）
+    const displaySubject = { ...subjectByPeriod };
+    (overrides || []).forEach(o => {
+      if (o.type === 'swap' && o.swap_with_period) {
+        const a = o.period, b = o.swap_with_period;
+        displaySubject[a] = subjectByPeriod[b] || '';
+        displaySubject[b] = subjectByPeriod[a] || '';
+      }
+    });
+
+    let html = '<table class="tt-table"><thead><tr><th>時限</th><th>科目</th></tr></thead><tbody>';
+    TT_PERIODS.forEach(p => {
+      const o = overrideByPeriod[p];
+      let subjectHtml = escapeHtml(displaySubject[p] || '（未設定）');
+      let rowClass = '';
+      let badge = '';
+      if (o) {
+        if (o.type === 'subject_change') { subjectHtml = escapeHtml(o.subject || ''); badge = '<span class="tt-badge tt-badge-change">変更</span>'; }
+        else if (o.type === 'swap') { badge = `<span class="tt-badge tt-badge-swap">入替(${o.swap_with_period}限)</span>`; }
+        else if (o.type === 'self_study') { subjectHtml = '自習'; badge = '<span class="tt-badge tt-badge-self">自習</span>'; }
+        else if (o.type === 'cancelled') { rowClass = 'tt-cell-cancelled'; badge = '<span class="tt-badge tt-badge-cancel">カット</span>'; }
+      }
+      html += `<tr><td>${p}限</td><td class="${rowClass}">${subjectHtml}${badge}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    area.innerHTML = html;
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

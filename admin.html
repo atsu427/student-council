@@ -12,113 +12,166 @@
     :root{
       --ink:#1d2024;
       --ink-soft:#5c636d;
-      --paper:#ffffff;
-      --paper-deep:#f3f4f6;
-      --line:#e2e5ea;
+      --ink-faint:#8a8f98;
+      --paper:#fffefb;
+      --paper-deep:#f4f1ea;
+      --line:#e7e2d8;
+      --line-strong:#d8d2c4;
       --vermillion:#b4332a;
+      --vermillion-tint:#fbeeec;
+      --vermillion-tint-strong:#f6dcd9;
       --gold:#9a7b2e;
+      --gold-tint:#f8f1e2;
+      --green:#3d6b4a;
+      --green-tint:#e9f1ea;
+      --radius-sm:6px;
+      --radius-md:10px;
+      --radius-lg:14px;
+      --shadow-sm:0 1px 2px rgba(29,32,36,.04),0 2px 8px rgba(29,32,36,.05);
+      --shadow-md:0 4px 16px rgba(29,32,36,.07),0 1px 3px rgba(29,32,36,.05);
+      --shadow-lg:0 12px 32px rgba(29,32,36,.10),0 2px 6px rgba(29,32,36,.05);
+      --ease:cubic-bezier(.25,.1,.25,1);
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN','Helvetica Neue',Arial,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+    body{font-family:'Noto Sans JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,'Helvetica Neue',Arial,sans-serif;background:var(--paper-deep);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
     h2,.login-card h2,.error-card h2{font-family:inherit}
-    header{background:var(--ink);color:var(--paper);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;border-bottom:3px solid var(--vermillion)}
-    header h1{font-size:18px;font-weight:700;font-family:inherit;letter-spacing:.04em}
-    .header-right{display:flex;align-items:center;gap:16px}
+    header{background:var(--ink);color:var(--paper);padding:12px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 20px;min-height:64px;border-bottom:3px solid var(--vermillion);box-shadow:var(--shadow-md)}
+    header h1{font-size:18px;font-weight:700;font-family:inherit;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .header-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap;flex-shrink:0}
+    @media (max-width:480px){
+      header{padding:10px 18px}
+      header h1{font-size:15px}
+      .header-right{gap:8px}
+      .user-name{display:none}
+    }
     .user-name{font-size:12px;color:#c4c9d2}
-    .btn{padding:8px 20px;border-radius:0;border:none;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s;text-decoration:none;display:inline-block;font-family:inherit}
-    .btn-primary{background:var(--vermillion);color:var(--paper)}
-    .btn-primary:hover{background:#8a3024}
+    .btn{padding:9px 22px;border-radius:var(--radius-sm);border:none;font-size:13px;font-weight:500;cursor:pointer;transition:transform .15s var(--ease),opacity .15s,background-color .15s,box-shadow .15s;text-decoration:none;display:inline-block;font-family:inherit}
+    .btn:active{transform:scale(.97)}
+    .btn-primary{background:var(--vermillion);color:var(--paper);box-shadow:var(--shadow-sm)}
+    .btn-primary:hover{background:#963429;box-shadow:var(--shadow-md)}
     .btn-outline{background:transparent;color:var(--paper);border:1px solid rgba(255,255,255,.45)}
-    .btn-outline:hover{background:rgba(255,255,255,.1)}
+    .btn-outline:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.7)}
     .btn-view{background:transparent;color:var(--paper);font-weight:500;border:1px solid var(--gold)}
     .btn-view:hover{background:var(--gold);color:var(--ink)}
     /* ログイン */
     #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--ink)}
-    .login-card{background:var(--paper);border-radius:0;padding:56px 44px;text-align:center;box-shadow:none;max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
+    .login-card{background:var(--paper);border-radius:var(--radius-lg);padding:56px 44px;text-align:center;box-shadow:var(--shadow-lg);max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
     .login-card h2{font-size:23px;margin-bottom:10px;letter-spacing:.05em}
     .login-card p{color:var(--ink-soft);font-size:13px;margin-bottom:36px;line-height:1.8}
-    .btn-google{background:var(--paper);color:var(--ink);border:1px solid var(--ink);display:flex;align-items:center;gap:10px;font-size:14px;padding:13px 24px;border-radius:0;cursor:pointer;width:100%;justify-content:center;font-weight:500;transition:all .15s;font-family:inherit}
-    .btn-google:hover{background:var(--ink);color:var(--paper)}
-    .login-note{margin-top:18px;font-size:11px;color:#9aa0aa}
+    .btn-google{background:var(--paper);color:var(--ink);border:1px solid var(--line-strong);display:flex;align-items:center;gap:10px;font-size:14px;padding:13px 24px;border-radius:var(--radius-md);cursor:pointer;width:100%;justify-content:center;font-weight:500;transition:background-color .15s,color .15s,border-color .15s,box-shadow .15s;font-family:inherit}
+    .btn-google:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);box-shadow:var(--shadow-md)}
+    .login-note{margin-top:18px;font-size:11px;color:var(--ink-faint)}
     #errorScreen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--ink)}
-    .error-card{background:var(--paper);border-radius:0;padding:56px 44px;text-align:center;box-shadow:none;max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
+    .error-card{background:var(--paper);border-radius:var(--radius-lg);padding:56px 44px;text-align:center;box-shadow:var(--shadow-lg);max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
     .error-card h2{font-size:21px;margin-bottom:14px;color:var(--vermillion)}
     .error-card p{font-size:13px;color:var(--ink-soft);margin-bottom:28px;line-height:1.8}
     #adminScreen{display:none}
     /* タブ */
-    .tabs{display:flex;gap:28px;border-bottom:1px solid var(--line);margin-bottom:36px}
-    .tab{padding:12px 2px;font-size:14px;font-weight:500;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s}
-    .tab.active{color:var(--vermillion);border-bottom-color:var(--vermillion);font-weight:700}
-    .tab:hover{color:var(--ink)}
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:36px;padding-bottom:0}
+    .tab{padding:12px 16px;font-size:14px;font-weight:500;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:var(--radius-sm) var(--radius-sm) 0 0;transition:color .15s,border-color .15s,background-color .15s}
+    .tab.active{color:var(--vermillion);border-bottom-color:var(--vermillion);font-weight:700;background:var(--vermillion-tint)}
+    .tab:hover{color:var(--ink);background:var(--paper-deep)}
     .tab-content{display:none}
     .tab-content.active{display:block}
     /* コンテナ */
-    .admin-container{max-width:900px;margin:0 auto;padding:40px 32px 96px}
+    .admin-container{max-width:920px;margin:0 auto;padding:40px 32px 96px}
     .section-title{font-size:17px;font-weight:700;margin-bottom:22px;padding-bottom:0;border-bottom:none;display:flex;align-items:center;justify-content:flex-start;font-family:inherit;letter-spacing:.04em}
-    .section-title::before{content:'';display:inline-block;width:14px;height:1px;background:var(--vermillion);margin-right:10px;vertical-align:middle}
+    .section-title::before{content:'';display:inline-block;width:14px;height:3px;border-radius:2px;background:var(--vermillion);margin-right:10px;vertical-align:middle}
     /* フォーム */
-    .post-form{background:transparent;border-radius:0;padding:0 0 36px;box-shadow:none;margin-bottom:44px;border-bottom:1px solid var(--line)}
+    .post-form{background:var(--paper);border-radius:var(--radius-lg);padding:28px 28px 32px;box-shadow:var(--shadow-sm);margin-bottom:44px;border:1px solid var(--line)}
     .form-row{margin-bottom:22px}
     label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:7px;letter-spacing:.03em}
-    input[type="text"],select,textarea{width:100%;padding:10px 4px;border:none;border-bottom:1px solid var(--line);border-radius:0;font-size:15px;font-family:inherit;outline:none;background:transparent;color:var(--ink);transition:border-color .2s}
-    input[type="text"]:focus,select:focus,textarea:focus{border-color:var(--vermillion)}
-    textarea{min-height:160px;resize:vertical;line-height:1.8;border:1px solid var(--line);padding:12px 14px}
+    input[type="text"],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:15px;font-family:inherit;outline:none;background:var(--paper-deep);color:var(--ink);transition:border-color .2s,background-color .2s,box-shadow .2s}
+    input[type="text"]:focus,select:focus,textarea:focus{border-color:var(--vermillion);background:var(--paper);box-shadow:0 0 0 3px var(--vermillion-tint)}
+    textarea{min-height:160px;resize:vertical;line-height:1.8;padding:12px 14px}
     /* ロール選択チェックボックス */
-    .role-checkboxes{display:flex;flex-wrap:wrap;gap:10px 16px;padding:14px 2px;background:transparent;border-radius:0;border:none;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .role-checkboxes{display:flex;flex-wrap:wrap;gap:10px 16px;padding:14px 16px;background:var(--paper-deep);border-radius:var(--radius-md);border:1px solid var(--line)}
     .role-checkbox-item{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
-    .role-checkbox-item input{cursor:pointer;width:15px;height:15px;accent-color:var(--vermillion)}
+    .role-checkbox-item input{cursor:pointer;width:16px;height:16px;accent-color:var(--vermillion)}
     /* ファイルアップロード */
-    .file-drop-area{border:1px dashed var(--line);border-radius:0;padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:var(--paper-deep)}
-    .file-drop-area:hover,.file-drop-area.drag-over{border-color:var(--vermillion);background:#e9ecf1}
+    .file-drop-area{border:1.5px dashed var(--line-strong);border-radius:var(--radius-md);padding:24px;text-align:center;cursor:pointer;transition:border-color .2s,background-color .2s,transform .15s var(--ease);background:var(--paper-deep)}
+    .file-drop-area:hover{border-color:var(--vermillion);background:var(--vermillion-tint)}
+    .file-drop-area.drag-over{border-color:var(--vermillion);background:var(--vermillion-tint);transform:scale(1.01)}
     .file-drop-area p{font-size:13px;color:var(--ink-soft);margin-bottom:4px}
-    .file-drop-area span{font-size:11px;color:#9aa0aa}
+    .file-drop-area span{font-size:11px;color:var(--ink-faint)}
     input[type="file"]{display:none}
-    .file-preview-list{display:flex;flex-direction:column;gap:0;margin-top:10px}
-    .file-preview-item{display:flex;align-items:center;gap:10px;padding:9px 4px;background:transparent;border-radius:0;border-bottom:1px solid var(--line);font-size:13px}
+    .file-preview-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+    .file-preview-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--paper-deep);border-radius:var(--radius-sm);border-bottom:none;font-size:13px}
     .file-preview-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .file-remove{background:none;border:none;color:var(--vermillion);cursor:pointer;font-size:18px;padding:0 2px;flex-shrink:0}
+    .file-remove{background:none;border:none;color:var(--vermillion);cursor:pointer;font-size:18px;padding:0 2px;flex-shrink:0;transition:opacity .15s}
+    .file-remove:hover{opacity:.6}
     .existing-files{margin-bottom:10px}
-    .existing-file-item{display:flex;align-items:center;gap:10px;padding:8px 4px;background:transparent;border-radius:0;font-size:13px;margin-bottom:0;border-bottom:1px solid var(--line)}
+    .existing-file-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--paper-deep);border-radius:var(--radius-sm);font-size:13px;margin-bottom:6px;border-bottom:none}
     .existing-file-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .upload-progress{font-size:13px;color:var(--gold);display:none;margin-top:8px}
     .form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;align-items:center}
     .publish-toggle{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
     .publish-toggle input{width:auto;cursor:pointer;accent-color:var(--vermillion)}
     /* 投稿一覧 */
-    .posts-list{display:block}
-    .post-item{background:transparent;border-radius:0;padding:16px 4px;box-shadow:none;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px}
+    .posts-list{display:flex;flex-direction:column;gap:8px}
+    .post-item{background:var(--paper);border-radius:var(--radius-md);padding:16px 18px;box-shadow:var(--shadow-sm);border:1px solid var(--line);display:flex;align-items:center;gap:14px;transition:box-shadow .2s,transform .2s var(--ease)}
+    .post-item:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
     .post-item-info{flex:1;min-width:0}
     .post-item-title{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;font-family:inherit}
-    .post-item-meta{font-size:12px;color:#8a909a;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .post-item-meta{font-size:12px;color:var(--ink-faint);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     .post-item-actions{display:flex;gap:6px;flex-shrink:0}
-    .btn-sm{padding:5px 14px;font-size:12px;border-radius:0;border:1px solid transparent;cursor:pointer;font-weight:500}
-    .btn-edit{background:transparent;color:var(--gold);border-color:var(--gold)}
+    .btn-sm{padding:6px 14px;font-size:12px;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;font-weight:500;transition:background-color .15s,color .15s,transform .15s var(--ease)}
+    .btn-sm:active{transform:scale(.95)}
+    .btn-edit{background:var(--gold-tint);color:var(--gold);border-color:transparent}
     .btn-edit:hover{background:var(--gold);color:var(--paper)}
-    .btn-del{background:transparent;color:var(--vermillion);border-color:var(--vermillion)}
+    .btn-del{background:var(--vermillion-tint);color:var(--vermillion);border-color:transparent}
     .btn-del:hover{background:var(--vermillion);color:var(--paper)}
-    .status-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:0}
-    .status-published{background:transparent;color:#3d6b4a;border:1px solid #3d6b4a}
-    .status-draft{background:transparent;color:#9aa0aa;border:1px solid var(--line)}
-    .tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:0;background:none;color:var(--vermillion);border-bottom:1px solid currentColor}
-    .role-tag-sm{font-size:11px;padding:2px 8px;border-radius:0;background:var(--paper-deep);color:var(--ink-soft);border:1px solid var(--line)}
+    .status-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px}
+    .status-published{background:var(--green-tint);color:var(--green);border:1px solid transparent}
+    .status-draft{background:var(--paper-deep);color:var(--ink-faint);border:1px solid var(--line)}
+    .tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--vermillion-tint);color:var(--vermillion)}
+    .role-tag-sm{font-size:11px;padding:3px 9px;border-radius:999px;background:var(--paper-deep);color:var(--ink-soft);border:1px solid var(--line)}
     /* 生徒管理 */
-    .members-table{width:100%;border-collapse:collapse;background:transparent;border-radius:0;overflow:visible;box-shadow:none}
-    .members-table th{background:transparent;color:var(--ink);padding:10px 14px;text-align:left;font-size:12px;font-weight:700;border-bottom:1px solid var(--ink);letter-spacing:.03em}
+    .members-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--paper);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid var(--line)}
+    .members-table th{background:var(--paper-deep);color:var(--ink);padding:11px 14px;text-align:left;font-size:12px;font-weight:700;border-bottom:1px solid var(--line-strong);letter-spacing:.03em}
     .members-table td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--line)}
-    .members-table tr:last-child td{border-bottom:1px solid var(--line)}
+    .members-table tr:last-child td{border-bottom:none}
     .members-table tr:hover td{background:var(--paper-deep)}
-    .role-select{padding:5px 10px;border:none;border-bottom:1px solid var(--line);border-radius:0;font-size:13px;background:transparent;cursor:pointer}
+    .role-select{padding:6px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13px;background:var(--paper);cursor:pointer}
     /* ロール管理 */
     .roles-list{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
-    .role-chip{display:flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--line);border-radius:0;padding:6px 14px;font-size:13px;font-weight:500}
-    .role-chip-del{background:none;border:none;color:var(--vermillion);cursor:pointer;font-size:16px;line-height:1}
+    .role-chip{display:flex;align-items:center;gap:8px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:7px 16px;font-size:13px;font-weight:500;box-shadow:var(--shadow-sm)}
+    .role-chip-del{background:none;border:none;color:var(--vermillion);cursor:pointer;font-size:16px;line-height:1;transition:opacity .15s}
+    .role-chip-del:hover{opacity:.6}
     .add-role-row{display:flex;gap:8px;margin-top:4px}
-    .add-role-row input{flex:1;max-width:200px;border:none;border-bottom:1px solid var(--line);padding:8px 4px}
+    .add-role-row input{flex:1;max-width:220px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 12px}
     /* トースト */
-    .toast{position:fixed;bottom:32px;right:24px;background:var(--ink);color:var(--paper);padding:12px 24px;border-radius:0;font-size:13px;opacity:0;transition:opacity .3s;z-index:1000;border-left:3px solid var(--vermillion)}
-    .toast.show{opacity:1}
-    .empty{color:#9aa0aa;text-align:center;padding:40px;font-size:13px}
-    .loading{color:#9aa0aa;text-align:center;padding:40px;font-size:13px;font-family:inherit}
+    .toast{position:fixed;bottom:32px;right:24px;background:var(--ink);color:var(--paper);padding:13px 24px;border-radius:var(--radius-md);font-size:13px;opacity:0;transform:translateY(8px);transition:opacity .3s var(--ease),transform .3s var(--ease);z-index:1000;border-left:3px solid var(--vermillion);box-shadow:var(--shadow-lg)}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .empty{color:var(--ink-faint);text-align:center;padding:40px;font-size:13px}
+    .loading{color:var(--ink-faint);text-align:center;padding:40px;font-size:13px;font-family:inherit}
+    /* 意見箱・DM */
+    .suggestion-item{padding:16px 18px;border-bottom:none;background:var(--paper);border-radius:var(--radius-md);border:1px solid var(--line);margin-bottom:8px;box-shadow:var(--shadow-sm)}
+    .suggestion-item-meta{font-size:12px;color:var(--ink-faint);display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+    .suggestion-item-body{font-size:14px;line-height:1.8;white-space:pre-wrap;margin-bottom:10px}
+    .suggestion-item-actions{display:flex;gap:6px}
+    .status-open{background:var(--vermillion-tint);color:var(--vermillion);border:1px solid transparent}
+    .status-read{background:var(--gold-tint);color:var(--gold);border:1px solid transparent}
+    .status-closed{background:var(--paper-deep);color:var(--ink-faint);border:1px solid var(--line)}
+    .dm-layout{display:flex;gap:0;border:1px solid var(--line);border-radius:var(--radius-lg);min-height:420px;overflow:hidden;box-shadow:var(--shadow-sm);background:var(--paper)}
+    .dm-member-list{width:240px;border-right:1px solid var(--line);overflow-y:auto;max-height:520px;background:var(--paper-deep)}
+    .dm-member-item{padding:13px 16px;font-size:13px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .15s}
+    .dm-member-item:hover{background:var(--paper)}
+    .dm-member-item.active{background:var(--paper);font-weight:700;border-left:3px solid var(--vermillion)}
+    .dm-panel{flex:1;display:flex;flex-direction:column;padding:18px}
+    .dm-panel-thread{flex:1;display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:380px;padding:4px 2px;margin-bottom:14px}
+    .dm-bubble{max-width:70%;padding:10px 14px;font-size:13px;line-height:1.7;border-radius:var(--radius-md)}
+    .dm-bubble.admin{align-self:flex-end;background:var(--ink);color:var(--paper);border-radius:var(--radius-md) var(--radius-md) var(--radius-sm) var(--radius-md)}
+    .dm-bubble.student{align-self:flex-start;background:var(--paper-deep);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-md) var(--radius-md) var(--radius-md) var(--radius-sm)}
+    .dm-bubble-date{font-size:10px;opacity:.65;margin-top:4px}
+    .dm-panel-input{display:flex;gap:8px}
+    .dm-panel-input textarea{flex:1;min-height:48px;resize:vertical;border:1px solid var(--line);border-radius:var(--radius-md);padding:10px 12px;font-size:13px;font-family:inherit;outline:none;background:var(--paper-deep)}
+    .dm-panel-input textarea:focus{border-color:var(--vermillion);background:var(--paper)}
+    footer{text-align:center;padding:32px 28px;font-size:11px;color:var(--ink-faint);border-top:1px solid var(--line);letter-spacing:.05em}
+    footer .footer-links{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:10px}
+    footer .footer-links a{color:var(--ink-soft);text-decoration:none;font-size:12px;letter-spacing:.02em;transition:color .15s}
+    footer .footer-links a:hover{color:var(--vermillion);text-decoration:underline}
+    footer .footer-copyright{color:var(--ink-faint)}
   </style>
 </head>
 <body>
@@ -141,7 +194,7 @@
   <div class="error-card">
     <h2>アクセス権限がありません</h2>
     <p id="errorMsg"></p>
-    <button class="btn btn-outline" style="color:#555;border-color:#ccc" onclick="logout()">ログアウト</button>
+    <button class="btn btn-outline" style="color:var(--ink-soft);border-color:var(--line-strong)" onclick="logout()">ログアウト</button>
   </div>
 </div>
 
@@ -161,6 +214,9 @@
       <div class="tab active" onclick="switchTab('posts')">投稿管理</div>
       <div class="tab" onclick="switchTab('members')">生徒管理</div>
       <div class="tab" onclick="switchTab('roles')">ロール管理</div>
+      <div class="tab" onclick="switchTab('categories')">カテゴリ管理</div>
+      <div class="tab" onclick="switchTab('timetable')">時間割管理</div>
+      <div class="tab" onclick="switchTab('suggestions')">意見箱</div>
       <div class="tab" onclick="switchTab('profile')">プロフィール</div>
     </div>
 
@@ -175,13 +231,7 @@
         </div>
         <div class="form-row">
           <label>カテゴリ</label>
-          <select id="inputCategory">
-            <option value="お知らせ">お知らせ</option>
-            <option value="行事">行事</option>
-            <option value="部活">部活</option>
-            <option value="募集">募集</option>
-            <option value="その他">その他</option>
-          </select>
+          <select id="inputCategory"></select>
         </div>
         <div class="form-row">
           <label>本文</label>
@@ -190,6 +240,12 @@
         <div class="form-row">
           <label>対象ロール（未選択＝全員に表示）</label>
           <div class="role-checkboxes" id="roleCheckboxes">
+            <span style="font-size:13px;color:#aaa">読み込み中...</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>メンション（選択した生徒に通知を送る）</label>
+          <div class="role-checkboxes" id="mentionCheckboxes">
             <span style="font-size:13px;color:#aaa">読み込み中...</span>
           </div>
         </div>
@@ -233,6 +289,98 @@
       <div id="rolesArea"><div class="loading">読み込み中...</div></div>
     </div>
 
+    <!-- カテゴリ管理タブ -->
+    <div class="tab-content" id="tab-categories">
+      <div class="section-title">カテゴリ一覧</div>
+      <div id="categoriesArea"><div class="loading">読み込み中...</div></div>
+    </div>
+
+    <!-- 時間割管理タブ -->
+    <div class="tab-content" id="tab-timetable">
+      <div class="section-title">標準時間割</div>
+      <div class="form-row" style="display:flex;gap:16px;max-width:420px">
+        <div style="flex:1">
+          <label>学年</label>
+          <select id="ttGradeSelect"></select>
+        </div>
+        <div style="flex:1">
+          <label>クラス</label>
+          <select id="ttClassSelect"></select>
+        </div>
+      </div>
+      <div id="ttGridArea" style="margin-top:10px"><div class="loading">学年・クラスを選択してください</div></div>
+
+      <div class="section-title" style="margin-top:48px">本日の時間割変更</div>
+      <div class="post-form">
+        <div class="form-row" style="display:flex;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:140px">
+            <label>日付</label>
+            <input type="text" id="ovDate" placeholder="YYYY-MM-DD">
+          </div>
+          <div style="flex:1;min-width:120px">
+            <label>学年</label>
+            <select id="ovGrade"></select>
+          </div>
+          <div style="flex:1;min-width:100px">
+            <label>クラス</label>
+            <select id="ovClass"></select>
+          </div>
+          <div style="flex:1;min-width:100px">
+            <label>時限</label>
+            <select id="ovPeriod"></select>
+          </div>
+        </div>
+        <div class="form-row" style="display:flex;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:160px">
+            <label>変更タイプ</label>
+            <select id="ovType" onchange="onOverrideTypeChange()">
+              <option value="subject_change">科目変更</option>
+              <option value="swap">入れ替え</option>
+              <option value="self_study">自習</option>
+              <option value="cancelled">カット</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:160px" id="ovSubjectRow">
+            <label>新科目名</label>
+            <input type="text" id="ovSubject" placeholder="例：自習（数学）">
+          </div>
+          <div style="flex:1;min-width:140px;display:none" id="ovSwapRow">
+            <label>入れ替え先時限</label>
+            <select id="ovSwapWithPeriod"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>備考</label>
+          <input type="text" id="ovNote" placeholder="任意">
+        </div>
+        <div class="form-actions">
+          <div style="flex:1"></div>
+          <button class="btn btn-primary" onclick="addOverride()">登録する</button>
+        </div>
+      </div>
+
+      <div class="section-title">登録済みの変更（日付降順）</div>
+      <div id="ttOverridesArea"><div class="loading">読み込み中...</div></div>
+    </div>
+
+    <!-- 意見箱タブ -->
+    <div class="tab-content" id="tab-suggestions">
+      <div class="section-title">意見箱（生徒からの意見・要望）</div>
+      <div id="suggestionsArea"><div class="loading">読み込み中...</div></div>
+
+      <div class="section-title" style="margin-top:48px">生徒とのDM</div>
+      <div class="dm-layout">
+        <div class="dm-member-list" id="dmMemberList"><div class="loading">読み込み中...</div></div>
+        <div class="dm-panel">
+          <div class="dm-panel-thread" id="dmPanelThread"><div class="empty">左の一覧から生徒を選択してください</div></div>
+          <div class="dm-panel-input">
+            <textarea id="dmAdminInput" placeholder="生徒を選択するとメッセージを送信できます" disabled></textarea>
+            <button class="btn btn-primary" id="dmSendBtn" onclick="sendAdminDmMessage()" disabled>送信</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- プロフィールタブ -->
     <div class="tab-content" id="tab-profile">
       <div class="section-title">プロフィール</div>
@@ -249,6 +397,14 @@
       </div>
     </div>
   </div>
+  <footer id="siteFooter">
+    <div class="footer-links">
+      <a href="https://www.nada.ac.jp/" target="_blank" rel="noopener noreferrer">灘中学校・灘高等学校</a>
+      <a href="https://www.nada.ac.jp/nyuugaku.html" target="_blank" rel="noopener noreferrer">入試情報</a>
+      <a href="https://www.nada.ac.jp/dousoukai.html" target="_blank" rel="noopener noreferrer">同窓会（校友会）</a>
+    </div>
+    <div class="footer-copyright">© 灘校生徒会</div>
+  </footer>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -273,6 +429,10 @@
   let existingFilePaths = [];
   let removedFilePaths = [];
   let allRoles = [];
+  let categoriesCache = [];
+  let allMembers = [];
+  let selectedDmMemberId = null;
+  let currentDmMessages = [];
 
   // ── 認証 ──
   db.auth.onAuthStateChange(async (event, session) => {
@@ -286,26 +446,29 @@
       }
       currentUser = session.user;
 
-      // 既定の管理者メールは初回から「管理者」ロールを付与（ブートストラップ）
-      if (emailLower === ADMIN_EMAIL.toLowerCase()) {
-        const { error: bootError } = await db.from('members')
-          .upsert({ id: currentUser.id, email, role: ADMIN_ROLE }, { onConflict: 'id' });
-        if (bootError) console.error('管理者ブートストラップ失敗:', bootError.message);
-      }
-
       // 自分のメンバー情報（ロール・プロフィール名）を取得。無ければ一般として登録。
       let { data: member, error: memberError } = await db.from('members').select('*').eq('id', currentUser.id).single();
       if (memberError && memberError.code === 'PGRST116') {
-        await db.from('members').upsert({ id: currentUser.id, email, role: 'general' }, { onConflict: 'id' });
+        const initialRoles = emailLower === ADMIN_EMAIL.toLowerCase() ? [ADMIN_ROLE] : [];
+        await db.from('members').upsert({ id: currentUser.id, email, roles: initialRoles }, { onConflict: 'id' });
         ({ data: member } = await db.from('members').select('*').eq('id', currentUser.id).single());
       } else if (memberError) {
         console.error('members取得エラー:', memberError.message);
+      }
+
+      // 既定の管理者メールには必ず「管理者」ロールが含まれるようにする（ブートストラップ）
+      if (member && emailLower === ADMIN_EMAIL.toLowerCase() && !(member.roles || []).includes(ADMIN_ROLE)) {
+        const newRoles = [...(member.roles || []), ADMIN_ROLE];
+        const { data: updated, error: bootError } = await db.from('members')
+          .update({ roles: newRoles }).eq('id', currentUser.id).select('*').single();
+        if (bootError) console.error('管理者ブートストラップ失敗:', bootError.message);
+        else member = updated;
       }
       currentMember = member || null;
 
       // 「管理者」ロールを持つ人だけ管理画面に入れる
       // （signOutはindex.html等と共有セッションを消すので呼ばず、エラー画面表示のみ）
-      if (currentMember?.role !== ADMIN_ROLE) {
+      if (!(currentMember?.roles || []).includes(ADMIN_ROLE)) {
         showError('管理者ロールを持つアカウントのみアクセスできます。');
         return;
       }
@@ -314,7 +477,7 @@
       document.getElementById('errorScreen').style.display = 'none';
       document.getElementById('adminScreen').style.display = 'block';
       document.getElementById('userName').textContent = currentMember.display_name || email;
-      await loadRoles();
+      await Promise.all([loadRoles(), loadCategories(), loadMentionMembers()]);
       loadPosts();
     } else {
       currentUser = null;
@@ -347,11 +510,14 @@
 
   // ── タブ切り替え ──
   function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['posts','members','roles','profile'][i] === name));
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['posts','members','roles','categories','timetable','suggestions','profile'][i] === name));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
     if (name === 'members') loadMembers();
     if (name === 'roles') renderRolesTab();
+    if (name === 'categories') renderCategoriesTab();
+    if (name === 'timetable') initTimetableTab();
+    if (name === 'suggestions') { loadSuggestions(); loadDmMemberList(); }
     if (name === 'profile') renderProfileTab();
   }
 
@@ -383,19 +549,44 @@
     return Array.from(document.querySelectorAll('input[name="targetRole"]:checked')).map(el => el.value);
   }
 
+  // ── メンション ──
+  async function loadMentionMembers() {
+    const { data, error } = await db.from('members').select('id, email, display_name').order('email');
+    if (error) { console.error('メンバー取得エラー:', error.message); allMembers = []; }
+    else allMembers = data || [];
+    renderMentionCheckboxes([]);
+  }
+
+  function renderMentionCheckboxes(selectedEmails) {
+    const el = document.getElementById('mentionCheckboxes');
+    if (allMembers.length === 0) { el.innerHTML = '<span style="font-size:13px;color:#aaa">ログイン済みの生徒がいません</span>'; return; }
+    el.innerHTML = allMembers.map(m => `
+      <label class="role-checkbox-item">
+        <input type="checkbox" name="mentionMember" value="${escapeHtml(m.email)}" ${selectedEmails.includes(m.email) ? 'checked' : ''}>
+        ${escapeHtml(m.display_name || m.email)}
+      </label>`).join('');
+  }
+
+  function getSelectedMentionEmails() {
+    return Array.from(document.querySelectorAll('input[name="mentionMember"]:checked')).map(el => el.value);
+  }
+
   async function renderRolesTab() {
     const el = document.getElementById('rolesArea');
     el.innerHTML = `
       <div class="roles-list" id="rolesList">${allRoles.map(r => `
         <div class="role-chip">
           ${escapeHtml(r)}
-          <button class="role-chip-del" onclick="deleteRole('${escapeHtml(r)}')" title="削除">×</button>
+          <button class="role-chip-del" data-role-name="${escapeHtml(r)}" title="削除">×</button>
         </div>`).join('')}
       </div>
       <div class="add-role-row">
         <input type="text" id="newRoleName" placeholder="新しいロール名" style="max-width:220px">
         <button class="btn btn-primary" onclick="addRole()">追加</button>
       </div>`;
+    el.querySelectorAll('.role-chip-del').forEach(btn => {
+      btn.addEventListener('click', () => deleteRole(btn.dataset.roleName));
+    });
   }
 
   async function addRole() {
@@ -417,6 +608,59 @@
     showToast('削除しました');
   }
 
+  // ── カテゴリ ──
+  async function loadCategories() {
+    const { data, error } = await db.from('categories').select('*').order('sort_order');
+    if (error) { console.error('カテゴリ取得エラー:', error.message); categoriesCache = []; }
+    else categoriesCache = data || [];
+    renderCategoryOptions();
+  }
+
+  function renderCategoryOptions() {
+    const sel = document.getElementById('inputCategory');
+    const prev = sel.value;
+    sel.innerHTML = categoriesCache.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+    if (categoriesCache.some(c => c.name === prev)) sel.value = prev;
+  }
+
+  function renderCategoriesTab() {
+    const el = document.getElementById('categoriesArea');
+    el.innerHTML = `
+      <div class="roles-list" id="categoriesList">${categoriesCache.map(c => `
+        <div class="role-chip">
+          ${escapeHtml(c.name)}
+          <button class="role-chip-del" data-cat-id="${c.id}" data-cat-name="${escapeHtml(c.name)}" title="削除">×</button>
+        </div>`).join('')}
+      </div>
+      <div class="add-role-row">
+        <input type="text" id="newCategoryName" placeholder="新しいカテゴリ名" style="max-width:220px">
+        <button class="btn btn-primary" onclick="addCategory()">追加</button>
+      </div>`;
+    el.querySelectorAll('.role-chip-del').forEach(btn => {
+      btn.addEventListener('click', () => deleteCategory(Number(btn.dataset.catId), btn.dataset.catName));
+    });
+  }
+
+  async function addCategory() {
+    const name = document.getElementById('newCategoryName').value.trim();
+    if (!name) return;
+    const nextSort = categoriesCache.length > 0 ? Math.max(...categoriesCache.map(c => c.sort_order || 0)) + 1 : 1;
+    const { error } = await db.from('categories').insert({ name, sort_order: nextSort });
+    if (error) { showToast('追加失敗: ' + error.message); return; }
+    await loadCategories();
+    renderCategoriesTab();
+    showToast('カテゴリを追加しました');
+  }
+
+  async function deleteCategory(id, name) {
+    if (!confirm(`カテゴリ「${name}」を削除しますか？`)) return;
+    const { error } = await db.from('categories').delete().eq('id', id);
+    if (error) { showToast('削除失敗: ' + error.message); return; }
+    await loadCategories();
+    renderCategoriesTab();
+    showToast('削除しました');
+  }
+
   // ── 生徒管理 ──
   async function loadMembers() {
     const el = document.getElementById('membersArea');
@@ -425,18 +669,28 @@
     if (error) { el.innerHTML = '<div class="empty">読み込みエラー: ' + error.message + '</div>'; return; }
     if (!data || data.length === 0) { el.innerHTML = '<div class="empty">まだログインした生徒はいません</div>'; return; }
 
-    const roleChoices = ['general', ...allRoles];
     let rows = '';
     for (const m of data) {
-      const opts = roleChoices.map(r => `<option value="${escapeHtml(r)}"${m.role === r ? ' selected' : ''}>${escapeHtml(r)}</option>`).join('');
-      rows += `<tr><td>${escapeHtml(m.email)}</td><td><select class="role-select" onchange="updateMemberRole('${m.id}', this.value)">${opts}</select></td><td>${new Date(m.created_at).toLocaleDateString('ja-JP')}</td></tr>`;
+      const mRoles = m.roles || [];
+      const checks = allRoles.map(r => `
+        <label class="role-checkbox-item" style="font-size:12px">
+          <input type="checkbox" data-member-id="${escapeHtml(m.id)}" data-role-name="${escapeHtml(r)}" ${mRoles.includes(r) ? 'checked' : ''}>
+          ${escapeHtml(r)}
+        </label>`).join('');
+      rows += `<tr><td>${escapeHtml(m.email)}</td><td><div class="role-checkboxes" style="border:none;padding:0">${checks || '<span style="color:#aaa;font-size:12px">ロールがありません</span>'}</div></td><td>${new Date(m.created_at).toLocaleDateString('ja-JP')}</td></tr>`;
     }
-    el.innerHTML = '<table class="members-table"><thead><tr><th>メールアドレス</th><th>ロール</th><th>初回ログイン</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    el.innerHTML = '<table class="members-table"><thead><tr><th>メールアドレス</th><th>ロール（複数可）</th><th>初回ログイン</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    el.querySelectorAll('input[data-member-id]').forEach(input => {
+      input.addEventListener('change', () => toggleMemberRole(input.dataset.memberId, input.dataset.roleName, input.checked));
+    });
   }
 
-  async function updateMemberRole(id, role) {
-    const { error } = await db.from('members').update({ role }).eq('id', id);
-    if (error) { showToast('更新失敗: ' + error.message); return; }
+  async function toggleMemberRole(id, role, checked) {
+    const { data: cur } = await db.from('members').select('roles').eq('id', id).single();
+    let roles = (cur?.roles || []).filter(r => r !== role);
+    if (checked) roles.push(role);
+    const { error } = await db.from('members').update({ roles }).eq('id', id);
+    if (error) { showToast('更新失敗: ' + error.message); loadMembers(); return; }
     showToast('ロールを更新しました');
   }
 
@@ -550,6 +804,7 @@
     const body = document.getElementById('inputBody').value.trim();
     const published = document.getElementById('inputPublished').checked;
     const target_roles = getSelectedRoles();
+    const mentioned_emails = getSelectedMentionEmails();
 
     if (!title || !body) { showToast('タイトルと本文を入力してください'); return; }
 
@@ -564,11 +819,11 @@
     document.getElementById('uploadProgress').style.display = 'none';
 
     const authorName = (currentMember?.display_name || '').trim() || currentUser.email;
-    const payload = { title, category, body, published, target_roles, file_paths: filePaths, author: authorName };
+    const payload = { title, category, body, published, target_roles, mentioned_emails, file_paths: filePaths, author: authorName };
 
-    const { error } = id
-      ? await db.from('posts').update(payload).eq('id', id)
-      : await db.from('posts').insert(payload);
+    const { data: savedPost, error } = id
+      ? await db.from('posts').update(payload).eq('id', id).select('id, title').single()
+      : await db.from('posts').insert(payload).select('id, title').single();
 
     if (error) { showToast('保存失敗: ' + error.message); return; }
     if (failedUploads.length > 0) {
@@ -576,8 +831,45 @@
     } else {
       showToast(id ? '更新しました！' : '投稿しました！');
     }
+
+    if (mentioned_emails.length > 0 && savedPost) await notifyMentionedMembers(mentioned_emails, savedPost);
+    if (published && savedPost) notifyLine(savedPost.id);
+
     resetForm();
     loadPosts();
+  }
+
+  // ── LINE通知（失敗してもサイト機能には影響させない） ──
+  async function notifyLine(postId) {
+    try {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) return;
+      await fetch('/api/line-notify-post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ postId })
+      });
+    } catch (e) {
+      console.error('LINE通知呼び出し失敗（未設定の場合は無視してよい）:', e.message);
+    }
+  }
+
+  // ── メンション通知 ──
+  async function notifyMentionedMembers(emails, post) {
+    const { data: members, error: membersError } = await db.from('members').select('id, email').in('email', emails);
+    if (membersError) { console.error('メンション対象メンバー取得エラー:', membersError.message); showToast('通知の送信に失敗しました: ' + membersError.message); return; }
+    if (!members || members.length === 0) return;
+
+    const rows = members.map(m => ({
+      member_id: m.id,
+      post_id: post.id,
+      body: `あなたが投稿「${post.title}」でメンションされました`
+    }));
+    const { error: notifyError } = await db.from('notifications').insert(rows);
+    if (notifyError) {
+      console.error('通知insertエラー:', notifyError.message);
+      showToast('メンション通知の送信に失敗しました: ' + notifyError.message);
+    }
   }
 
   // ── 編集 ──
@@ -586,11 +878,13 @@
     if (!data) return;
     document.getElementById('editId').value = id;
     document.getElementById('inputTitle').value = data.title;
+    renderCategoryOptions();
     document.getElementById('inputCategory').value = data.category;
     document.getElementById('inputBody').value = data.body;
     document.getElementById('inputPublished').checked = data.published;
     document.getElementById('formTitle').textContent = '投稿を編集';
     renderRoleCheckboxes(data.target_roles || []);
+    renderMentionCheckboxes(data.mentioned_emails || []);
     existingFilePaths = data.file_paths || [];
     removedFilePaths = [];
     selectedFiles = [];
@@ -613,11 +907,14 @@
   function resetForm() {
     document.getElementById('editId').value = '';
     document.getElementById('inputTitle').value = '';
-    document.getElementById('inputCategory').value = 'お知らせ';
+    renderCategoryOptions();
+    const defaultCat = categoriesCache.find(c => c.name === 'お知らせ');
+    document.getElementById('inputCategory').value = defaultCat ? defaultCat.name : (categoriesCache[0]?.name || '');
     document.getElementById('inputBody').value = '';
     document.getElementById('inputPublished').checked = true;
     document.getElementById('formTitle').textContent = '新規投稿';
     renderRoleCheckboxes([]);
+    renderMentionCheckboxes([]);
     selectedFiles = []; existingFilePaths = []; removedFilePaths = [];
     renderFilePreview();
     document.getElementById('existingFilesArea').style.display = 'none';
@@ -628,6 +925,243 @@
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ── 意見箱 ──
+  const SUGGESTION_STATUS_LABEL = { open: '未対応', read: '確認済み', closed: '対応済み' };
+  const SUGGESTION_NEXT_STATUS = { open: 'read', read: 'closed', closed: 'open' };
+
+  async function loadSuggestions() {
+    const el = document.getElementById('suggestionsArea');
+    el.innerHTML = '<div class="loading">読み込み中...</div>';
+    const { data, error } = await db.from('suggestions').select('*').order('created_at', { ascending: false });
+    if (error) { console.error('意見箱取得エラー:', error.message); el.innerHTML = '<div class="empty">読み込みエラー: ' + escapeHtml(error.message) + '</div>'; return; }
+    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">まだ意見はありません</div>'; return; }
+
+    el.innerHTML = data.map(s => {
+      const date = new Date(s.created_at).toLocaleString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const nextLabel = SUGGESTION_STATUS_LABEL[SUGGESTION_NEXT_STATUS[s.status] || 'open'];
+      return `<div class="suggestion-item">
+        <div class="suggestion-item-meta">
+          <span class="status-badge status-${escapeHtml(s.status)}">${escapeHtml(SUGGESTION_STATUS_LABEL[s.status] || s.status)}</span>
+          <span>${escapeHtml(s.email || '匿名')}</span>
+          <span>${date}</span>
+        </div>
+        <div class="suggestion-item-body">${escapeHtml(s.body)}</div>
+        <div class="suggestion-item-actions">
+          <button class="btn-sm btn-edit" data-suggestion-id="${s.id}" data-next-status="${SUGGESTION_NEXT_STATUS[s.status] || 'open'}">${nextLabel}にする</button>
+        </div>
+      </div>`;
+    }).join('');
+    el.querySelectorAll('[data-suggestion-id]').forEach(btn => {
+      btn.addEventListener('click', () => updateSuggestionStatus(Number(btn.dataset.suggestionId), btn.dataset.nextStatus));
+    });
+  }
+
+  async function updateSuggestionStatus(id, nextStatus) {
+    const { error } = await db.from('suggestions').update({ status: nextStatus }).eq('id', id);
+    if (error) { console.error('意見箱ステータス更新エラー:', error.message); showToast('更新失敗: ' + error.message); return; }
+    showToast('ステータスを更新しました');
+    loadSuggestions();
+  }
+
+  // ── 生徒とのDM ──
+  async function loadDmMemberList() {
+    const el = document.getElementById('dmMemberList');
+    el.innerHTML = '<div class="loading">読み込み中...</div>';
+    const { data, error } = await db.from('members').select('*').order('email');
+    if (error) { console.error('生徒一覧取得エラー:', error.message); el.innerHTML = '<div class="empty">読み込みエラー</div>'; return; }
+    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">生徒がいません</div>'; return; }
+
+    el.innerHTML = data.map(m => `
+      <div class="dm-member-item ${m.id === selectedDmMemberId ? 'active' : ''}" data-member-id="${escapeHtml(m.id)}">
+        ${escapeHtml(m.display_name || m.email)}
+      </div>`).join('');
+    el.querySelectorAll('[data-member-id]').forEach(item => {
+      item.addEventListener('click', () => openDmThread(item.dataset.memberId));
+    });
+  }
+
+  async function openDmThread(memberId) {
+    selectedDmMemberId = memberId;
+    document.querySelectorAll('#dmMemberList .dm-member-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.memberId === memberId);
+    });
+    document.getElementById('dmAdminInput').disabled = false;
+    document.getElementById('dmSendBtn').disabled = false;
+
+    const thread = document.getElementById('dmPanelThread');
+    thread.innerHTML = '<div class="loading">読み込み中...</div>';
+    const { data, error } = await db.from('dm_messages').select('*').eq('member_id', memberId).order('created_at', { ascending: true });
+    if (error) { console.error('DM取得エラー:', error.message); thread.innerHTML = '<div class="empty">読み込みエラー</div>'; return; }
+    currentDmMessages = data || [];
+    renderAdminDmThread();
+  }
+
+  function renderAdminDmThread() {
+    const thread = document.getElementById('dmPanelThread');
+    if (currentDmMessages.length === 0) { thread.innerHTML = '<div class="empty">まだメッセージはありません</div>'; return; }
+    thread.innerHTML = currentDmMessages.map(m => {
+      const date = new Date(m.created_at).toLocaleString('ja-JP', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return `<div class="dm-bubble ${escapeHtml(m.sender)}">
+        <div>${escapeHtml(m.body)}</div>
+        <div class="dm-bubble-date">${date}</div>
+      </div>`;
+    }).join('');
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  async function sendAdminDmMessage() {
+    if (!selectedDmMemberId) return;
+    const input = document.getElementById('dmAdminInput');
+    const body = input.value.trim();
+    if (!body) return;
+    const { data, error } = await db.from('dm_messages')
+      .insert({ member_id: selectedDmMemberId, sender: 'admin', body })
+      .select('*').single();
+    if (error) { console.error('DM送信エラー:', error.message); showToast('送信失敗: ' + error.message); return; }
+    input.value = '';
+    if (data) { currentDmMessages.push(data); renderAdminDmThread(); }
+  }
+
+  // ── 時間割管理 ──
+  const GRADES = ['中1','中2','中3','高1','高2','高3'];
+  const CLASS_NUMS = [1,2,3,4];
+  const WEEKDAYS = ['月','火','水','木','金','土']; // weekday=1が月
+  const PERIODS = [1,2,3,4,5,6,7];
+  const OVERRIDE_TYPE_LABEL = { subject_change: '科目変更', swap: '入れ替え', self_study: '自習', cancelled: 'カット' };
+  let ttInitialized = false;
+  let ttSlotsCache = {}; // key: `${weekday}-${period}` -> subject
+
+  function initTimetableTab() {
+    if (!ttInitialized) {
+      const gradeOptions = GRADES.map(g => `<option value="${g}">${g}</option>`).join('');
+      document.getElementById('ttGradeSelect').innerHTML = gradeOptions;
+      document.getElementById('ovGrade').innerHTML = gradeOptions;
+      const classOptions = CLASS_NUMS.map(c => `<option value="${c}">${c}組</option>`).join('');
+      document.getElementById('ttClassSelect').innerHTML = classOptions;
+      document.getElementById('ovClass').innerHTML = classOptions;
+      const periodOptions = PERIODS.map(p => `<option value="${p}">${p}限</option>`).join('');
+      document.getElementById('ovPeriod').innerHTML = periodOptions;
+      document.getElementById('ovSwapWithPeriod').innerHTML = periodOptions;
+      document.getElementById('ovDate').value = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+
+      document.getElementById('ttGradeSelect').addEventListener('change', loadTimetableGrid);
+      document.getElementById('ttClassSelect').addEventListener('change', loadTimetableGrid);
+      onOverrideTypeChange();
+      ttInitialized = true;
+    }
+    loadTimetableGrid();
+    loadOverridesList();
+  }
+
+  function onOverrideTypeChange() {
+    const type = document.getElementById('ovType').value;
+    document.getElementById('ovSubjectRow').style.display = (type === 'subject_change') ? '' : 'none';
+    document.getElementById('ovSwapRow').style.display = (type === 'swap') ? '' : 'none';
+  }
+
+  async function loadTimetableGrid() {
+    const grade = document.getElementById('ttGradeSelect').value;
+    const classNo = Number(document.getElementById('ttClassSelect').value);
+    const area = document.getElementById('ttGridArea');
+    area.innerHTML = '<div class="loading">読み込み中...</div>';
+
+    const { data, error } = await db.from('timetable_slots').select('*').eq('grade', grade).eq('class_no', classNo);
+    if (error) { console.error('時間割取得エラー:', error.message); area.innerHTML = '<div class="empty">読み込みエラー: ' + escapeHtml(error.message) + '</div>'; return; }
+
+    ttSlotsCache = {};
+    (data || []).forEach(s => { ttSlotsCache[`${s.weekday}-${s.period}`] = s.subject || ''; });
+    renderTimetableGrid(grade, classNo);
+  }
+
+  function renderTimetableGrid(grade, classNo) {
+    const area = document.getElementById('ttGridArea');
+    let html = '<table class="members-table"><thead><tr><th>時限</th>' + WEEKDAYS.map(w => `<th>${w}</th>`).join('') + '</tr></thead><tbody>';
+    PERIODS.forEach(p => {
+      html += `<tr><td>${p}限</td>`;
+      for (let w = 1; w <= WEEKDAYS.length; w++) {
+        const val = ttSlotsCache[`${w}-${p}`] || '';
+        html += `<td><input type="text" data-weekday="${w}" data-period="${p}" value="${escapeHtml(val)}" style="border:none;border-bottom:1px solid var(--line);width:100%;padding:4px 2px;font-size:13px;background:transparent;font-family:inherit;outline:none"></td>`;
+      }
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    area.innerHTML = html;
+    area.querySelectorAll('input[data-weekday]').forEach(input => {
+      input.addEventListener('change', () => saveTimetableSlot(grade, classNo, Number(input.dataset.weekday), Number(input.dataset.period), input.value.trim()));
+    });
+  }
+
+  async function saveTimetableSlot(grade, classNo, weekday, period, subject) {
+    const { error } = await db.from('timetable_slots')
+      .upsert({ grade, class_no: classNo, weekday, period, subject, updated_at: new Date().toISOString() }, { onConflict: 'grade,class_no,weekday,period' });
+    if (error) { console.error('時間割保存エラー:', error.message); showToast('保存失敗: ' + error.message); return; }
+    ttSlotsCache[`${weekday}-${period}`] = subject;
+    showToast('時間割を保存しました');
+  }
+
+  async function addOverride() {
+    const date = document.getElementById('ovDate').value.trim();
+    const grade = document.getElementById('ovGrade').value;
+    const classNo = Number(document.getElementById('ovClass').value);
+    const period = Number(document.getElementById('ovPeriod').value);
+    const type = document.getElementById('ovType').value;
+    const subject = document.getElementById('ovSubject').value.trim();
+    const swapWithPeriod = Number(document.getElementById('ovSwapWithPeriod').value);
+    const note = document.getElementById('ovNote').value.trim();
+
+    if (!date) { showToast('日付を入力してください'); return; }
+    if (type === 'subject_change' && !subject) { showToast('新科目名を入力してください'); return; }
+
+    const payload = { date, grade, class_no: classNo, period, type, note: note || null };
+    if (type === 'subject_change') payload.subject = subject;
+    if (type === 'swap') payload.swap_with_period = swapWithPeriod;
+
+    const { error } = await db.from('timetable_overrides').insert(payload);
+    if (error) { console.error('時間割変更登録エラー:', error.message); showToast('登録失敗: ' + error.message); return; }
+    showToast('時間割変更を登録しました');
+    document.getElementById('ovSubject').value = '';
+    document.getElementById('ovNote').value = '';
+    loadOverridesList();
+  }
+
+  async function loadOverridesList() {
+    const area = document.getElementById('ttOverridesArea');
+    area.innerHTML = '<div class="loading">読み込み中...</div>';
+    const { data, error } = await db.from('timetable_overrides').select('*').order('date', { ascending: false }).order('id', { ascending: false });
+    if (error) { console.error('時間割変更一覧取得エラー:', error.message); area.innerHTML = '<div class="empty">読み込みエラー: ' + escapeHtml(error.message) + '</div>'; return; }
+    if (!data || data.length === 0) { area.innerHTML = '<div class="empty">登録された変更はありません</div>'; return; }
+
+    area.innerHTML = data.map(o => {
+      let detail = '';
+      if (o.type === 'subject_change') detail = `→ ${escapeHtml(o.subject || '')}`;
+      else if (o.type === 'swap') detail = `↔ ${o.swap_with_period}限`;
+      return `<div class="post-item">
+        <div class="post-item-info">
+          <div class="post-item-title">${escapeHtml(o.date)} ${escapeHtml(o.grade)}${o.class_no}組 ${o.period}限</div>
+          <div class="post-item-meta">
+            <span class="tag">${escapeHtml(OVERRIDE_TYPE_LABEL[o.type] || o.type)}</span>
+            <span>${detail}</span>
+            ${o.note ? `<span>${escapeHtml(o.note)}</span>` : ''}
+          </div>
+        </div>
+        <div class="post-item-actions">
+          <button class="btn-sm btn-del" data-override-id="${o.id}">削除</button>
+        </div>
+      </div>`;
+    }).join('');
+    area.querySelectorAll('[data-override-id]').forEach(btn => {
+      btn.addEventListener('click', () => deleteOverride(Number(btn.dataset.overrideId)));
+    });
+  }
+
+  async function deleteOverride(id) {
+    if (!confirm('この時間割変更を削除しますか？')) return;
+    const { error } = await db.from('timetable_overrides').delete().eq('id', id);
+    if (error) { console.error('時間割変更削除エラー:', error.message); showToast('削除失敗: ' + error.message); return; }
+    showToast('削除しました');
+    loadOverridesList();
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
