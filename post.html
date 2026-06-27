@@ -100,11 +100,14 @@
 <script>
   const SUPABASE_URL = 'https://uvqidlzkiuyvqxqttuae.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cWlkbHpraXV5dnF4cXR0dWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0Nzk0MTEsImV4cCI6MjA5ODA1NTQxMX0.VrpNjeEpsfOGJKsSz8uSGxrqiuChT9QjEzgjUnAv1s8';
-  const ALLOWED_DOMAIN = 'stg.nada.ac.jp';
+  // ※テスト中はドメイン制限なし。本番に戻す場合は null → 'stg.nada.ac.jp' に変更
+  const ALLOWED_DOMAIN = null;
   const STORAGE_BUCKET = 'post-files';
 
   const { createClient } = supabase;
-  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, storageKey: 'seitokai-session' }
+  });
 
   let lbImages = [];
   let lbIndex = 0;
@@ -127,7 +130,7 @@
   db.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
       const email = session.user.email;
-      if (email.split('@')[1] !== ALLOWED_DOMAIN) { await db.auth.signOut(); return; }
+      if (ALLOWED_DOMAIN && email.split('@')[1] !== ALLOWED_DOMAIN) { await db.auth.signOut(); return; }
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('mainContent').style.display = 'block';
       document.getElementById('userName').textContent = email;
@@ -139,7 +142,9 @@
   });
 
   async function loginWithGoogle() {
-    await db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.href, queryParams: { hd: ALLOWED_DOMAIN } } });
+    const opts = { redirectTo: location.href };
+    if (ALLOWED_DOMAIN) opts.queryParams = { hd: ALLOWED_DOMAIN };
+    await db.auth.signInWithOAuth({ provider: 'google', options: opts });
   }
 
   async function logout() {

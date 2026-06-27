@@ -118,10 +118,13 @@
   const SUPABASE_URL = 'https://uvqidlzkiuyvqxqttuae.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cWlkbHpraXV5dnF4cXR0dWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0Nzk0MTEsImV4cCI6MjA5ODA1NTQxMX0.VrpNjeEpsfOGJKsSz8uSGxrqiuChT9QjEzgjUnAv1s8';
   const ADMIN_EMAIL = 'j170470@stg.nada.ac.jp';
-  const ALLOWED_DOMAIN = 'stg.nada.ac.jp';
+  // ※テスト中はドメイン制限なし。本番に戻す場合は↓を 'stg.nada.ac.jp' に変更
+  const ALLOWED_DOMAIN = null;
 
   const { createClient } = supabase;
-  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, storageKey: 'seitokai-session' }
+  });
 
   let allPosts = [];
   let currentMember = null;
@@ -129,11 +132,14 @@
   db.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
       const email = session.user.email;
-      if (email.split('@')[1] !== ALLOWED_DOMAIN) {
+
+      // ドメイン制限（ALLOWED_DOMAINがnullなら全員許可）
+      if (ALLOWED_DOMAIN && email.split('@')[1] !== ALLOWED_DOMAIN) {
         await db.auth.signOut();
         showError(`@${ALLOWED_DOMAIN} のアカウントでログインしてください。<br>（現在：${email}）`);
         return;
       }
+
       // membersテーブルにupsert
       await db.from('members').upsert({ id: session.user.id, email }, { onConflict: 'id', ignoreDuplicates: true });
       const { data: member } = await db.from('members').select('*').eq('id', session.user.id).single();
@@ -159,7 +165,9 @@
   }
 
   async function loginWithGoogle() {
-    await db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.href, queryParams: { hd: ALLOWED_DOMAIN } } });
+    const opts = { redirectTo: location.href };
+    if (ALLOWED_DOMAIN) opts.queryParams = { hd: ALLOWED_DOMAIN };
+    await db.auth.signInWithOAuth({ provider: 'google', options: opts });
   }
 
   async function logout() {
