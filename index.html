@@ -356,7 +356,8 @@
     const desc = search.get('error_description') || hash.get('error_description') || search.get('error') || hash.get('error');
     if (desc) {
       history.replaceState(null, '', location.origin + location.pathname);
-      showError('ログインに失敗しました: ' + decodeURIComponent(desc).replace(/\+/g, ' '));
+      // descはURLクエリ由来の値（攻撃者が自由に設定可能）なのでinnerHTMLに渡す前に必ずエスケープする
+      showError('ログインに失敗しました: ' + escapeHtml(decodeURIComponent(desc).replace(/\+/g, ' ')));
     }
   })();
 
@@ -376,7 +377,7 @@
       // ドメイン制限（ALLOWED_DOMAINがnullなら全員許可）
       if (ALLOWED_DOMAIN && emailLower.split('@')[1] !== ALLOWED_DOMAIN.toLowerCase()) {
         await db.auth.signOut();
-        showError(`@${ALLOWED_DOMAIN} のアカウントでログインしてください。<br>（現在：${email}）`);
+        showError(`@${ALLOWED_DOMAIN} のアカウントでログインしてください。<br>（現在：${escapeHtml(email)}）`);
         return;
       }
 
@@ -629,7 +630,7 @@
       const mentionHtml = isMentioned ? '<span class="mention-tag">あなたへのメンション</span>' : '';
       return `<a class="post-card" href="post.html?id=${post.id}">
         <div class="post-meta">
-          <span class="category-tag ${post.category}">${post.category}</span>
+          <span class="category-tag ${escapeHtml(post.category)}">${escapeHtml(post.category)}</span>
           <span class="post-date">${date}</span>
           ${mentionHtml}
           ${rolesHtml}
@@ -827,7 +828,7 @@
     area.innerHTML = weekNavHtml + cardsHtml + remarks;
   }
 
-  function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
   // 一覧・バナーなどのプレビューでは [表示文字](url) 記法をリンクにせず、表示文字だけ残す（カード自体がリンクのためネスト回避）
   function stripLinkSyntax(body) { return String(body).replace(/\[([^\[\]]+)\]\(https?:\/\/[^\s()]+\)/g, '$1'); }

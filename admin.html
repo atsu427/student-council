@@ -984,7 +984,7 @@
         <div class="post-item-info">
           <div class="post-item-title">${escapeHtml(post.title)}</div>
           <div class="post-item-meta">
-            <span class="tag">${post.category}</span>
+            <span class="tag">${escapeHtml(post.category)}</span>
             <span class="status-badge ${post.published ? 'status-published' : 'status-draft'}">${post.published ? '公開中' : '下書き'}</span>
             ${post.is_special ? '<span class="tag" style="background:var(--vermillion);color:var(--paper)">特別メッセージ</span>' : ''}
             ${scheduledNote}
@@ -1481,7 +1481,7 @@
     if (overrideArchiveOpen) loadOverrideArchive();
   }
 
-  function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
   function toDatetimeLocalValue(iso) {
     if (!iso) return '';

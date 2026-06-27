@@ -280,7 +280,7 @@
     document.getElementById('content').innerHTML = `
       <div class="post-card">
         <div class="post-meta">
-          <span class="category-tag ${data.category}">${data.category}</span>
+          <span class="category-tag ${escapeHtml(data.category)}">${escapeHtml(data.category)}</span>
           <span class="post-date">${date}</span>
         </div>
         <h2>${escapeHtml(data.title)}</h2>
@@ -311,7 +311,7 @@
     document.getElementById('content').innerHTML = `<div class="error-msg">${msg}</div>`;
   }
 
-  function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
   // 本文中の [表示文字](https://...) 記法をリンクに変換する（escapeHtml後の文字列に対して適用するので安全）
   function renderBodyHtml(body) {
