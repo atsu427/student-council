@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>生徒会 お知らせ</title>
+  <title>灘校生徒会 お知らせ</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -133,10 +133,7 @@
     .category-tag.募集 { background: #fff3e0; color: #e65100; }
     .category-tag.その他 { background: #f3e5f5; color: #6a1b9a; }
 
-    .post-date {
-      font-size: 12px;
-      color: #888;
-    }
+    .post-date { font-size: 12px; color: #888; }
 
     .post-title {
       font-size: 17px;
@@ -155,19 +152,14 @@
       overflow: hidden;
     }
 
-    .loading {
-      text-align: center;
-      padding: 60px;
+    .post-has-files {
+      font-size: 12px;
       color: #888;
-      font-size: 14px;
+      margin-top: 8px;
     }
 
-    .empty {
-      text-align: center;
-      padding: 60px;
-      color: #aaa;
-    }
-
+    .loading { text-align: center; padding: 60px; color: #888; font-size: 14px; }
+    .empty { text-align: center; padding: 60px; color: #aaa; }
     .empty p { font-size: 15px; }
 
     footer {
@@ -182,7 +174,7 @@
 <body>
 
 <header>
-  <h1>🏫 生徒会</h1>
+  <h1>灘校生徒会</h1>
   <a href="admin.html">管理者ログイン</a>
 </header>
 
@@ -204,7 +196,7 @@
   <div class="loading">読み込み中...</div>
 </div>
 
-<footer>© 生徒会</footer>
+<footer>© 灘校生徒会</footer>
 
 <script>
   const SUPABASE_URL = 'https://uvqidlzkiuyvqxqttuae.supabase.co';
@@ -214,7 +206,6 @@
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let allPosts = [];
-  let currentCat = '';
 
   async function loadPosts() {
     const { data, error } = await db
@@ -233,7 +224,6 @@
   }
 
   function filterPosts(cat) {
-    currentCat = cat;
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.cat === cat);
     });
@@ -250,6 +240,8 @@
 
     grid.innerHTML = posts.map(post => {
       const date = new Date(post.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+      const filesNote = (post.file_paths && post.file_paths.length > 0)
+        ? `<div class="post-has-files">添付ファイル ${post.file_paths.length}件</div>` : '';
       return `
         <a class="post-card" href="post.html?id=${post.id}">
           <div class="post-meta">
@@ -258,13 +250,14 @@
           </div>
           <div class="post-title">${escapeHtml(post.title)}</div>
           <div class="post-excerpt">${escapeHtml(post.body)}</div>
+          ${filesNote}
         </a>
       `;
     }).join('');
   }
 
   function escapeHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
   loadPosts();

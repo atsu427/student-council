@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>お知らせ詳細 | 生徒会</title>
+  <title>お知らせ詳細 | 灘校生徒会</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,16 +25,7 @@
       gap: 16px;
     }
 
-    header a {
-      color: #a0c4ff;
-      text-decoration: none;
-      font-size: 14px;
-    }
-
-    header h1 {
-      font-size: 18px;
-      font-weight: 700;
-    }
+    header h1 { font-size: 18px; font-weight: 700; }
 
     .container {
       max-width: 720px;
@@ -105,30 +96,122 @@
       color: #333;
       white-space: pre-wrap;
       word-break: break-word;
+      margin-bottom: 32px;
     }
 
-    .loading {
-      text-align: center;
-      padding: 80px;
-      color: #aaa;
+    /* ファイル添付セクション */
+    .attachments {
+      border-top: 1px solid #eee;
+      padding-top: 24px;
+      margin-top: 8px;
     }
 
-    .error {
-      text-align: center;
-      padding: 80px;
-      color: #d32f2f;
+    .attachments h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #444;
+      margin-bottom: 12px;
     }
+
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #f7f8fa;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #1a1a2e;
+      font-size: 14px;
+      border: 1px solid #e5e7eb;
+      transition: background 0.2s;
+    }
+
+    .file-item:hover { background: #e8f0fe; }
+
+    .file-icon { font-size: 18px; flex-shrink: 0; }
+
+    .file-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-size { font-size: 12px; color: #888; flex-shrink: 0; }
+
+    .image-preview {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .image-preview img {
+      width: 100%;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      border: 1px solid #e5e7eb;
+    }
+
+    .image-preview img:hover { opacity: 0.85; }
+
+    /* ライトボックス */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .lightbox.open { display: flex; }
+
+    .lightbox img {
+      max-width: 100%;
+      max-height: 90vh;
+      border-radius: 8px;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      color: #fff;
+      font-size: 32px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .loading { text-align: center; padding: 80px; color: #aaa; }
+    .error { text-align: center; padding: 80px; color: #d32f2f; }
   </style>
 </head>
 <body>
 
 <header>
-  <h1><a href="index.html" style="color:#fff;text-decoration:none;">🏫 生徒会</a></h1>
+  <h1><a href="index.html" style="color:#fff;text-decoration:none;">灘校生徒会</a></h1>
 </header>
 
 <div class="container">
   <a class="back-link" href="index.html">← お知らせ一覧に戻る</a>
   <div id="content"><div class="loading">読み込み中...</div></div>
+</div>
+
+<!-- ライトボックス -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <span class="lightbox-close">&times;</span>
+  <img id="lightboxImg" src="" alt="">
 </div>
 
 <script>
@@ -137,6 +220,24 @@
 
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function getFileIcon(name) {
+    const ext = name.split('.').pop().toLowerCase();
+    if (['jpg','jpeg','png','gif','webp','svg'].includes(ext)) return '🖼️';
+    if (['pdf'].includes(ext)) return '📄';
+    if (['doc','docx'].includes(ext)) return '📝';
+    if (['xls','xlsx'].includes(ext)) return '📊';
+    if (['ppt','pptx'].includes(ext)) return '📑';
+    if (['zip','rar','7z'].includes(ext)) return '🗜️';
+    if (['mp4','mov','avi'].includes(ext)) return '🎬';
+    if (['mp3','wav','m4a'].includes(ext)) return '🎵';
+    return '📎';
+  }
+
+  function isImage(name) {
+    const ext = name.split('.').pop().toLowerCase();
+    return ['jpg','jpeg','png','gif','webp'].includes(ext);
+  }
 
   async function loadPost() {
     const params = new URLSearchParams(location.search);
@@ -152,9 +253,51 @@
 
     if (error || !data) { showError('記事が見つかりません'); return; }
 
-    document.title = data.title + ' | 生徒会';
+    document.title = data.title + ' | 灘校生徒会';
 
     const date = new Date(data.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    // ファイル表示の構築
+    let filesHtml = '';
+    if (data.file_paths && data.file_paths.length > 0) {
+      const imageFiles = data.file_paths.filter(p => isImage(p.split('/').pop()));
+      const otherFiles = data.file_paths.filter(p => !isImage(p.split('/').pop()));
+
+      let imageHtml = '';
+      if (imageFiles.length > 0) {
+        const imgTags = imageFiles.map(path => {
+          const { data: urlData } = db.storage.from('post-files').getPublicUrl(path);
+          const url = urlData.publicUrl;
+          const name = path.split('/').pop();
+          return `<img src="${url}" alt="${escapeHtml(name)}" onclick="openLightbox('${url}')" loading="lazy">`;
+        }).join('');
+        imageHtml = `<div class="image-preview">${imgTags}</div>`;
+      }
+
+      let otherHtml = '';
+      if (otherFiles.length > 0) {
+        const items = otherFiles.map(path => {
+          const { data: urlData } = db.storage.from('post-files').getPublicUrl(path);
+          const url = urlData.publicUrl;
+          const name = path.split('/').pop();
+          return `
+            <a class="file-item" href="${url}" target="_blank" download>
+              <span class="file-icon">${getFileIcon(name)}</span>
+              <span class="file-name">${escapeHtml(name)}</span>
+            </a>
+          `;
+        }).join('');
+        otherHtml = `<div class="file-list">${items}</div>`;
+      }
+
+      filesHtml = `
+        <div class="attachments">
+          <h3>添付ファイル（${data.file_paths.length}件）</h3>
+          ${imageHtml}
+          ${otherHtml}
+        </div>
+      `;
+    }
 
     document.getElementById('content').innerHTML = `
       <div class="post-card">
@@ -165,8 +308,19 @@
         <h2>${escapeHtml(data.title)}</h2>
         <div class="post-author">投稿者：${escapeHtml(data.author)}</div>
         <div class="post-body">${escapeHtml(data.body)}</div>
+        ${filesHtml}
       </div>
     `;
+  }
+
+  function openLightbox(url) {
+    document.getElementById('lightboxImg').src = url;
+    document.getElementById('lightbox').classList.add('open');
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.getElementById('lightboxImg').src = '';
   }
 
   function showError(msg) {
@@ -174,7 +328,7 @@
   }
 
   function escapeHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
   loadPost();

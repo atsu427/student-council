@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>管理画面 | 生徒会</title>
+  <title>管理画面 | 灘校生徒会</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,12 +27,7 @@
 
     header h1 { font-size: 18px; font-weight: 700; }
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
+    .header-right { display: flex; align-items: center; gap: 16px; }
     .user-name { font-size: 13px; color: #a0c4ff; }
 
     .btn {
@@ -63,7 +58,7 @@
     }
     .btn-google:hover { background: #f5f5f5; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
-    /* Login screen */
+    /* ログイン画面 */
     #loginScreen {
       display: flex;
       align-items: center;
@@ -83,9 +78,37 @@
     }
 
     .login-card h2 { font-size: 24px; margin-bottom: 8px; }
-    .login-card p { color: #666; font-size: 14px; margin-bottom: 32px; }
+    .login-card p { color: #666; font-size: 14px; margin-bottom: 32px; line-height: 1.7; }
 
-    /* Admin screen */
+    .login-note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* エラー画面 */
+    #errorScreen {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 60px);
+      padding: 24px;
+    }
+
+    .error-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 48px 40px;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .error-card h2 { font-size: 22px; margin-bottom: 12px; color: #d32f2f; }
+    .error-card p { font-size: 14px; color: #555; margin-bottom: 24px; line-height: 1.7; }
+
+    /* 管理画面 */
     #adminScreen { display: none; }
 
     .admin-container {
@@ -102,7 +125,6 @@
       border-bottom: 2px solid #1a1a2e;
     }
 
-    /* Post form */
     .post-form {
       background: #fff;
       border-radius: 16px;
@@ -111,9 +133,7 @@
       margin-bottom: 40px;
     }
 
-    .form-row {
-      margin-bottom: 20px;
-    }
+    .form-row { margin-bottom: 20px; }
 
     label {
       display: block;
@@ -136,11 +156,82 @@
       color: #1a1a2e;
     }
 
-    input[type="text"]:focus, select:focus, textarea:focus {
-      border-color: #1a73e8;
-    }
+    input[type="text"]:focus, select:focus, textarea:focus { border-color: #1a73e8; }
 
     textarea { min-height: 180px; resize: vertical; line-height: 1.7; }
+
+    /* ファイルアップロード */
+    .file-drop-area {
+      border: 2px dashed #d0d5dd;
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: #fafbfc;
+    }
+
+    .file-drop-area:hover, .file-drop-area.drag-over {
+      border-color: #1a73e8;
+      background: #e8f0fe;
+    }
+
+    .file-drop-area p { font-size: 14px; color: #666; margin-bottom: 8px; }
+    .file-drop-area span { font-size: 12px; color: #aaa; }
+
+    input[type="file"] { display: none; }
+
+    .file-preview-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .file-preview-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      background: #f0f4ff;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .file-preview-item span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .file-remove {
+      background: none;
+      border: none;
+      color: #d32f2f;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+
+    .upload-progress {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #1a73e8;
+      display: none;
+    }
+
+    /* 既存添付ファイル */
+    .existing-files { margin-top: 12px; }
+    .existing-file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 10px;
+      background: #f7f8fa;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 6px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .existing-file-item span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .form-actions {
       display: flex;
@@ -160,7 +251,7 @@
 
     .publish-toggle input { width: auto; cursor: pointer; }
 
-    /* Posts list */
+    /* 投稿一覧 */
     .posts-list { display: grid; gap: 12px; }
 
     .post-item {
@@ -183,17 +274,9 @@
       text-overflow: ellipsis;
     }
 
-    .post-item-meta {
-      font-size: 12px;
-      color: #888;
-      margin-top: 4px;
-    }
+    .post-item-meta { font-size: 12px; color: #888; margin-top: 4px; }
 
-    .post-item-actions {
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-    }
+    .post-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
     .btn-sm {
       padding: 5px 14px;
@@ -250,7 +333,7 @@
 <body>
 
 <header>
-  <h1>🏫 生徒会 管理画面</h1>
+  <h1>灘校生徒会 管理画面</h1>
   <div class="header-right">
     <span class="user-name" id="userName"></span>
     <button class="btn btn-outline" onclick="logout()">ログアウト</button>
@@ -261,11 +344,21 @@
 <div id="loginScreen">
   <div class="login-card">
     <h2>管理者ログイン</h2>
-    <p>Googleアカウントでログインしてください</p>
+    <p>灘校のGoogleアカウント（@stg.nada.ac.jp）でログインしてください</p>
     <button class="btn btn-google" onclick="loginWithGoogle()">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Googleでログイン
     </button>
+    <p class="login-note">※ 管理者権限はj170470@stg.nada.ac.jpのみ</p>
+  </div>
+</div>
+
+<!-- アクセス拒否画面 -->
+<div id="errorScreen" style="display:none; align-items:center; justify-content:center; min-height:calc(100vh - 60px); padding:24px;">
+  <div class="error-card">
+    <h2>アクセス権限がありません</h2>
+    <p id="errorMsg">このページにアクセスするには管理者権限が必要です。</p>
+    <button class="btn btn-outline" style="color:#555;border-color:#ccc;" onclick="logout()">ログアウトして戻る</button>
   </div>
 </div>
 
@@ -273,7 +366,6 @@
 <div id="adminScreen">
   <div class="admin-container">
 
-    <!-- 投稿フォーム -->
     <div class="section-title" id="formTitle">新規投稿</div>
     <div class="post-form">
       <input type="hidden" id="editId">
@@ -295,6 +387,26 @@
         <label>本文</label>
         <textarea id="inputBody" placeholder="内容を入力してください"></textarea>
       </div>
+
+      <!-- ファイル添付 -->
+      <div class="form-row">
+        <label>添付ファイル（画像・PDF・Officeファイルなど）</label>
+
+        <!-- 編集時の既存ファイル -->
+        <div id="existingFilesArea" style="display:none; margin-bottom:12px;">
+          <div style="font-size:12px; color:#666; margin-bottom:6px;">現在の添付ファイル</div>
+          <div id="existingFilesList"></div>
+        </div>
+
+        <div class="file-drop-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
+          <p>クリックまたはファイルをドロップ</p>
+          <span>画像・PDF・Word・Excel・PowerPoint など（1ファイル最大50MB）</span>
+        </div>
+        <input type="file" id="fileInput" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,.csv">
+        <div class="file-preview-list" id="filePreviewList"></div>
+        <div class="upload-progress" id="uploadProgress">アップロード中...</div>
+      </div>
+
       <div class="form-actions">
         <label class="publish-toggle">
           <input type="checkbox" id="inputPublished" checked>
@@ -306,7 +418,6 @@
       </div>
     </div>
 
-    <!-- 投稿一覧 -->
     <div class="section-title">投稿一覧</div>
     <div class="posts-list" id="postsList">
       <div class="empty">読み込み中...</div>
@@ -321,51 +432,174 @@
   const SUPABASE_URL = 'https://uvqidlzkiuyvqxqttuae.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cWlkbHpraXV5dnF4cXR0dWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0Nzk0MTEsImV4cCI6MjA5ODA1NTQxMX0.VrpNjeEpsfOGJKsSz8uSGxrqiuChT9QjEzgjUnAv1s8';
 
+  const ADMIN_EMAIL = 'j170470@stg.nada.ac.jp';
+  const ALLOWED_DOMAIN = 'stg.nada.ac.jp';
+  const STORAGE_BUCKET = 'post-files';
+
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let currentUser = null;
+  let selectedFiles = [];        // 新規追加ファイル
+  let existingFilePaths = [];    // 編集時の既存ファイルパス（削除対象管理）
+  let removedFilePaths = [];     // 削除するファイルパス
 
-  // 認証状態を監視
-  db.auth.onAuthStateChange((event, session) => {
+  // ── 認証状態監視 ──
+  db.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
+      const email = session.user.email;
+      const domain = email.split('@')[1];
+
+      // ドメインチェック
+      if (domain !== ALLOWED_DOMAIN) {
+        await db.auth.signOut();
+        showError(`@${ALLOWED_DOMAIN} のアカウントでログインしてください。<br>（現在：${email}）`);
+        return;
+      }
+
+      // 管理者チェック
+      if (email !== ADMIN_EMAIL) {
+        await db.auth.signOut();
+        showError(`管理者（${ADMIN_EMAIL}）のみログインできます。<br>（現在：${email}）`);
+        return;
+      }
+
       currentUser = session.user;
       document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('errorScreen').style.display = 'none';
       document.getElementById('adminScreen').style.display = 'block';
-      document.getElementById('userName').textContent = session.user.email;
+      document.getElementById('userName').textContent = email;
       loadPosts();
     } else {
       currentUser = null;
-      document.getElementById('loginScreen').style.display = 'flex';
+      if (document.getElementById('errorScreen').style.display !== 'flex') {
+        document.getElementById('loginScreen').style.display = 'flex';
+      }
       document.getElementById('adminScreen').style.display = 'none';
     }
   });
 
+  function showError(msg) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminScreen').style.display = 'none';
+    const es = document.getElementById('errorScreen');
+    es.style.display = 'flex';
+    document.getElementById('errorMsg').innerHTML = msg;
+  }
+
   async function loginWithGoogle() {
     await db.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: location.href }
+      options: {
+        redirectTo: location.href,
+        queryParams: { hd: ALLOWED_DOMAIN }   // Googleのドメインヒント
+      }
     });
   }
 
   async function logout() {
     await db.auth.signOut();
+    document.getElementById('errorScreen').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
   }
 
-  async function loadPosts() {
-    const { data, error } = await db
-      .from('posts')
-      .select('*')
-      .order('created_at', { ascending: false });
+  // ── ファイル選択 ──
+  const dropArea = document.getElementById('dropArea');
+  const fileInput = document.getElementById('fileInput');
 
+  fileInput.addEventListener('change', () => {
+    addFiles(Array.from(fileInput.files));
+    fileInput.value = '';
+  });
+
+  dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('drag-over'); });
+  dropArea.addEventListener('dragleave', () => dropArea.classList.remove('drag-over'));
+  dropArea.addEventListener('drop', e => {
+    e.preventDefault();
+    dropArea.classList.remove('drag-over');
+    addFiles(Array.from(e.dataTransfer.files));
+  });
+
+  function addFiles(files) {
+    files.forEach(f => {
+      if (!selectedFiles.find(sf => sf.name === f.name && sf.size === f.size)) {
+        selectedFiles.push(f);
+      }
+    });
+    renderFilePreview();
+  }
+
+  function renderFilePreview() {
+    const list = document.getElementById('filePreviewList');
+    if (selectedFiles.length === 0) { list.innerHTML = ''; return; }
+    list.innerHTML = selectedFiles.map((f, i) => `
+      <div class="file-preview-item">
+        <span>${escapeHtml(f.name)}</span>
+        <button class="file-remove" onclick="removeFile(${i})">×</button>
+      </div>
+    `).join('');
+  }
+
+  function removeFile(i) {
+    selectedFiles.splice(i, 1);
+    renderFilePreview();
+  }
+
+  function renderExistingFiles(paths) {
+    const area = document.getElementById('existingFilesArea');
+    const list = document.getElementById('existingFilesList');
+    if (!paths || paths.length === 0) { area.style.display = 'none'; return; }
+    area.style.display = 'block';
+    list.innerHTML = paths.map(path => {
+      const name = path.split('/').pop();
+      const isRemoved = removedFilePaths.includes(path);
+      return `
+        <div class="existing-file-item" id="ef_${btoa(path).replace(/=/g,'')}">
+          <span style="${isRemoved ? 'text-decoration:line-through;color:#aaa;' : ''}">${escapeHtml(name)}</span>
+          ${isRemoved
+            ? `<button class="btn-sm btn-edit" onclick="restoreFile('${path}')">戻す</button>`
+            : `<button class="btn-sm btn-del" onclick="markRemoveFile('${path}')">削除</button>`}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function markRemoveFile(path) {
+    if (!removedFilePaths.includes(path)) removedFilePaths.push(path);
+    renderExistingFiles(existingFilePaths);
+  }
+
+  function restoreFile(path) {
+    removedFilePaths = removedFilePaths.filter(p => p !== path);
+    renderExistingFiles(existingFilePaths);
+  }
+
+  // ── ファイルアップロード ──
+  async function uploadFiles(postId) {
+    const uploaded = [];
+    for (const file of selectedFiles) {
+      const ext = file.name.split('.').pop();
+      const safeName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `${postId}/${safeName}`;
+      const { error } = await db.storage.from(STORAGE_BUCKET).upload(path, file, { upsert: false });
+      if (error) { console.error('Upload error:', error); continue; }
+      uploaded.push(path);
+    }
+    return uploaded;
+  }
+
+  // ── 投稿一覧 ──
+  async function loadPosts() {
+    const { data, error } = await db.from('posts').select('*').order('created_at', { ascending: false });
     const list = document.getElementById('postsList');
     if (error || !data || data.length === 0) {
       list.innerHTML = '<div class="empty">投稿はまだありません</div>';
       return;
     }
-
     list.innerHTML = data.map(post => {
       const date = new Date(post.created_at).toLocaleDateString('ja-JP');
+      const filesNote = (post.file_paths && post.file_paths.length > 0)
+        ? ` 　📎 ${post.file_paths.length}件` : '';
       return `
         <div class="post-item">
           <div class="post-item-info">
@@ -375,7 +609,7 @@
               <span class="status-badge ${post.published ? 'status-published' : 'status-draft'}">
                 ${post.published ? '公開中' : '下書き'}
               </span>
-              　${date}　${escapeHtml(post.author)}
+              　${date}　${escapeHtml(post.author)}${filesNote}
             </div>
           </div>
           <div class="post-item-actions">
@@ -387,6 +621,7 @@
     }).join('');
   }
 
+  // ── 保存 ──
   async function savePost() {
     const id = document.getElementById('editId').value;
     const title = document.getElementById('inputTitle').value.trim();
@@ -396,16 +631,38 @@
 
     if (!title || !body) { showToast('タイトルと本文を入力してください'); return; }
 
+    document.getElementById('uploadProgress').style.display = selectedFiles.length > 0 ? 'block' : 'none';
+
+    let filePaths = [];
+
+    if (id) {
+      // 編集：既存ファイルから削除対象を除外
+      filePaths = existingFilePaths.filter(p => !removedFilePaths.includes(p));
+      // 削除対象をStorageから削除
+      for (const path of removedFilePaths) {
+        await db.storage.from(STORAGE_BUCKET).remove([path]);
+      }
+    }
+
+    // 新規ファイルをアップロード
+    const postId = id || `tmp_${Date.now()}`;
+    const newPaths = await uploadFiles(id || postId);
+    filePaths = [...filePaths, ...newPaths];
+
+    document.getElementById('uploadProgress').style.display = 'none';
+
     const payload = {
       title, category, body, published,
-      author: currentUser?.email || '生徒会'
+      author: currentUser?.email || '生徒会',
+      file_paths: filePaths
     };
 
-    let error;
+    let error, data;
     if (id) {
       ({ error } = await db.from('posts').update(payload).eq('id', id));
     } else {
-      ({ error } = await db.from('posts').insert(payload));
+      ({ error, data } = await db.from('posts').insert(payload).select().single());
+      // tmpフォルダをIDフォルダに移動（Supabaseは直接移動不可のため、パスをそのまま記録）
     }
 
     if (error) { showToast('保存に失敗しました: ' + error.message); return; }
@@ -415,6 +672,7 @@
     loadPosts();
   }
 
+  // ── 編集 ──
   async function editPost(id) {
     const { data } = await db.from('posts').select('*').eq('id', id).single();
     if (!data) return;
@@ -426,11 +684,26 @@
     document.getElementById('inputPublished').checked = data.published;
     document.getElementById('formTitle').textContent = '投稿を編集';
 
+    // 既存ファイルの表示
+    existingFilePaths = data.file_paths || [];
+    removedFilePaths = [];
+    selectedFiles = [];
+    renderFilePreview();
+    renderExistingFiles(existingFilePaths);
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // ── 削除 ──
   async function deletePost(id) {
-    if (!confirm('この投稿を削除しますか？')) return;
+    if (!confirm('この投稿を削除しますか？添付ファイルも全て削除されます。')) return;
+
+    // Storageのファイルも削除
+    const { data } = await db.from('posts').select('file_paths').eq('id', id).single();
+    if (data?.file_paths?.length > 0) {
+      await db.storage.from(STORAGE_BUCKET).remove(data.file_paths);
+    }
+
     const { error } = await db.from('posts').delete().eq('id', id);
     if (error) { showToast('削除に失敗しました'); return; }
     showToast('削除しました');
@@ -444,6 +717,12 @@
     document.getElementById('inputBody').value = '';
     document.getElementById('inputPublished').checked = true;
     document.getElementById('formTitle').textContent = '新規投稿';
+    selectedFiles = [];
+    existingFilePaths = [];
+    removedFilePaths = [];
+    renderFilePreview();
+    document.getElementById('existingFilesArea').style.display = 'none';
+    document.getElementById('existingFilesList').innerHTML = '';
   }
 
   function showToast(msg) {
