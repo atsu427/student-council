@@ -1152,8 +1152,14 @@
     if (!confirm('この投稿を削除しますか？添付ファイルも削除されます。')) return;
     const { data } = await db.from('posts').select('file_paths').eq('id', id).single();
     if (data?.file_paths?.length > 0) await db.storage.from(STORAGE_BUCKET).remove(data.file_paths);
+
+    // notifications.post_id がこの投稿を参照していると外部キー制約で削除に失敗するため、先に解除する
+    // （メンション通知を受け取った投稿を削除しようとすると起きていた不具合への対処）
+    const { error: notifError } = await db.from('notifications').update({ post_id: null }).eq('post_id', id);
+    if (notifError) console.error('通知のpost_id解除エラー:', notifError.message);
+
     const { error } = await db.from('posts').delete().eq('id', id);
-    if (error) { showToast('削除失敗'); return; }
+    if (error) { console.error('投稿削除エラー:', error.message); showToast('削除失敗: ' + error.message); return; }
     showToast('削除しました');
     loadPosts();
   }
