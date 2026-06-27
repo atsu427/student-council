@@ -3,17 +3,7 @@
 -- Supabase の SQL Editor で実行してください（上から順に1回だけ）
 -- ============================================================
 
--- ── 0. 管理者判定関数 ──────────────────────────────
--- members.roles 配列に「管理者」が含まれているかで判定する
-create or replace function is_admin() returns boolean
-language sql security definer stable as $$
-  select exists (
-    select 1 from members
-    where id = auth.uid() and roles @> array['管理者']::text[]
-  );
-$$;
-
--- ── 1. members: 複数ロール対応 ─────────────────────
+-- ── 0. members: 複数ロール対応（is_admin()がこの列を参照するため先に追加） ──
 alter table members add column if not exists roles text[] not null default '{}'::text[];
 alter table members add column if not exists display_name text;
 alter table members add column if not exists line_user_id text;
@@ -25,6 +15,16 @@ update members set roles = array[role] where role is not null and role <> '' and
 -- 既定の管理者メールには必ず管理者ロールを付与
 update members set roles = array(select distinct unnest(roles || array['管理者']))
 where lower(email) = 'j170470@stg.nada.ac.jp';
+
+-- ── 1. 管理者判定関数 ──────────────────────────────
+-- members.roles 配列に「管理者」が含まれているかで判定する
+create or replace function is_admin() returns boolean
+language sql security definer stable as $$
+  select exists (
+    select 1 from members
+    where id = auth.uid() and roles @> array['管理者']::text[]
+  );
+$$;
 
 -- members RLS
 alter table members enable row level security;
