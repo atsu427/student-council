@@ -50,10 +50,11 @@ async function getLineUserIdsByRoles(env, roles) {
 function isImagePath(path) { return /\.(jpe?g|png|gif|webp)$/i.test(path); }
 
 // LINEは1リクエストあたり最大5メッセージまでなので、テキスト1件+画像は最大4件までにする
-function buildPostMessages(post, env) {
+function buildPostMessages(post, env, isCorrection) {
   const excerpt = (post.body || '').replace(/\[([^\[\]]+)\]\(https?:\/\/[^\s()]+\)/g, '$1').slice(0, 100);
   const specialPrefix = post.is_special ? '【重要】' : '';
-  const text = `【生徒会からのお知らせ】\n${specialPrefix}[${post.category || 'お知らせ'}] ${post.title}\n\n${excerpt}${(post.body || '').length > 100 ? '…' : ''}`;
+  const correctionPrefix = isCorrection ? '【訂正】' : '';
+  const text = `【生徒会からのお知らせ】${correctionPrefix}\n${specialPrefix}[${post.category || 'お知らせ'}] ${post.title}\n\n${excerpt}${(post.body || '').length > 100 ? '…' : ''}`;
   const messages = [{ type: 'text', text }];
 
   const imagePaths = (post.file_paths || []).filter(isImagePath).slice(0, 4);
@@ -62,15 +63,6 @@ function buildPostMessages(post, env) {
     messages.push({ type: 'image', originalContentUrl: url, previewImageUrl: url });
   }
   return messages;
-}
-
-async function lineBroadcast(env, messages) {
-  const res = await fetch('https://api.line.me/v2/bot/message/broadcast', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.LINE_CHANNEL_ACCESS_TOKEN}` },
-    body: JSON.stringify({ messages })
-  });
-  if (!res.ok) console.error('LINE broadcast失敗:', res.status, await res.text());
 }
 
 async function linePush(env, to, messages) {
@@ -93,7 +85,7 @@ export async function onRequestPost(context) {
     if (!user?.id) return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401 });
     if (!(await isAdmin(env, user.id))) return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403 });
 
-    const { postId } = await request.json();
+    const { postId, isCorrection } = await request.json();
     const post = await getPost(env, postId);
     if (!post) return new Response(JSON.stringify({ error: 'post not found' }), { status: 404 });
     if (!post.published) return new Response(JSON.stringify({ skipped: 'not published' }), { status: 200 });
@@ -102,8 +94,7 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ skipped: 'LINE未設定（環境変数LINE_CHANNEL_ACCESS_TOKEN未設定）' }), { status: 200 });
     }
 
-    await lineBroadcast(env, buildPostMessages(post, env));
-
+    // メンション（個人・ロール）が誰にも設定されていない投稿は、誰にもLINE通知を送らない
     const [byEmail, byRole] = await Promise.all([
       getLineUserIdsByEmails(env, post.mentioned_emails),
       getLineUserIdsByRoles(env, post.mentioned_roles)
@@ -111,8 +102,13 @@ export async function onRequestPost(context) {
     const mentionedMap = new Map();
     [...byEmail, ...byRole].forEach(m => mentionedMap.set(m.id, m));
     const mentioned = Array.from(mentionedMap.values());
+    if (mentioned.length === 0) {
+      return new Response(JSON.stringify({ skipped: 'メンションが設定されていないためLINE通知は送信されません' }), { status: 200 });
+    }
+
+    const messages = buildPostMessages(post, env, !!isCorrection);
     for (const m of mentioned) {
-      await linePush(env, m.line_user_id, [{ type: 'text', text: `【メンション通知】\n「${post.title}」であなたが言及されました。\n${env.SITE_URL || ''}` }]);
+      await linePush(env, m.line_user_id, messages);
     }
 
     return new Response(JSON.stringify({ ok: true, mentioned: mentioned.length }), { status: 200 });

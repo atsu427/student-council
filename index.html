@@ -44,6 +44,8 @@
     .btn-outline:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.7)}
     .btn-admin{background:transparent;color:var(--paper);border:none;font-size:12px;padding:0;font-weight:500;text-decoration:underline;text-decoration-color:rgba(255,255,255,.4);text-underline-offset:3px;transition:text-decoration-color .15s}
     .btn-admin:hover{text-decoration-color:var(--paper)}
+    .btn-copy-sm{background:var(--paper-deep);color:var(--ink-soft);border:1px solid var(--line);border-radius:var(--radius-sm);font-size:11px;padding:4px 10px;cursor:pointer;font-family:inherit}
+    .btn-copy-sm:hover{background:var(--paper);color:var(--ink)}
     .hero{background:var(--ink);color:var(--paper);padding:0 32px 44px;text-align:left;border-bottom:1px solid rgba(255,255,255,.15)}
     .hero-inner{max-width:760px;margin:0 auto;padding-top:40px;border-top:1px solid rgba(255,255,255,.25);position:relative}
     .hero-inner::before{content:'';position:absolute;top:-1px;left:0;width:48px;height:3px;background:var(--vermillion)}
@@ -165,6 +167,15 @@
     /* 通知ベルアイコン */
     .bell-icon{width:18px;height:18px;display:block}
     /* 時間割：学年内4クラスをカードで並列表示 */
+    .tt-week-nav{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+    .tt-week-arrow{flex-shrink:0;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--paper);color:var(--ink-soft);font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+    .tt-week-arrow:hover{background:var(--paper-deep)}
+    .tt-day-tabs{display:flex;gap:4px;flex:1;overflow-x:auto;min-width:0}
+    .tt-day-tab{flex:1;min-width:44px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--paper);color:var(--ink-soft);font-size:12px;cursor:pointer;font-family:inherit}
+    .tt-day-tab span{font-size:10px;color:var(--ink-faint)}
+    .tt-day-tab.active{background:var(--vermillion-tint);border-color:var(--vermillion);color:var(--vermillion);font-weight:700}
+    .tt-day-tab.active span{color:var(--vermillion)}
+    @media (max-width:540px){ .tt-week-arrow{font-size:11px;padding:6px 8px} }
     .tt-class-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
     @media (max-width:900px){ .tt-class-grid{grid-template-columns:repeat(2,1fr)} }
     @media (max-width:540px){ .tt-class-grid{grid-template-columns:1fr} }
@@ -268,7 +279,7 @@
   <!-- 時間割 -->
   <div class="page-section" id="tab-timetable">
     <div class="side-section" style="margin-top:0;border-top:none">
-      <h3>今日の時間割</h3>
+      <h3>時間割</h3>
       <div class="form-row" style="max-width:200px;margin-bottom:18px">
         <label>学年</label>
         <select id="ttStudentGrade"></select>
@@ -305,8 +316,10 @@
       <p style="font-size:13px;color:var(--ink-soft);line-height:1.8;margin-bottom:14px">
         公式LINEを友だち追加し、下の連携コードをトークに送信すると、あなた宛のメンション通知をLINEでも受け取れるようになります。
       </p>
-      <p style="font-size:13px;margin-bottom:10px">連携コード: <strong id="lineLinkCode">-</strong>
-        <span id="lineLinkedBadge" style="display:none;color:#3d6b4a;font-weight:700;margin-left:8px">連携済み</span>
+      <p style="font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        連携コード: <strong id="lineLinkCode">-</strong>
+        <button class="btn-copy-sm" onclick="copyLineLinkCode()">コピー</button>
+        <span id="lineLinkedBadge" style="display:none;color:#3d6b4a;font-weight:700">連携済み</span>
       </p>
       <a class="btn-secondary" id="lineFriendBtn" href="#" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">公式LINEを友だち追加</a>
     </div>
@@ -334,6 +347,18 @@
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: true, storageKey: 'seitokai-session' }
   });
+
+  // Google認証からのリダイレクト時にエラーが返ってきた場合（同意拒否・設定不備など）に
+  // 画面が何も起きず止まって見えてしまうのを防ぐため、ここで明示的に表示する
+  (function showAuthCallbackErrorIfAny() {
+    const search = new URLSearchParams(location.search);
+    const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const desc = search.get('error_description') || hash.get('error_description') || search.get('error') || hash.get('error');
+    if (desc) {
+      history.replaceState(null, '', location.origin + location.pathname);
+      showError('ログインに失敗しました: ' + decodeURIComponent(desc).replace(/\+/g, ' '));
+    }
+  })();
 
   let allPosts = [];
   let currentMember = null;
@@ -370,7 +395,7 @@
       initStudentTimetable();
       loadSpecialMessages();
 
-      syncMember(session.user.id, email);
+      syncMember(session.user.id, email, session.user.user_metadata?.full_name || session.user.user_metadata?.name || '');
       loadNotifications(session.user.id);
       loadDmThread(session.user.id);
     } else {
@@ -381,10 +406,11 @@
 
   // membersテーブルへの登録・ロール取得はバックグラウンドで行う
   // （失敗してもログイン自体やお知らせ表示はブロックしない）
-  async function syncMember(userId, email) {
+  async function syncMember(userId, email, googleName) {
     try {
+      // 初回ログイン時の表示名の既定値はGoogleアカウント名にする（既存ユーザーは上書きしない）
       const { error: upsertError } = await db.from('members')
-        .upsert({ id: userId, email, roles: ['general'] }, { onConflict: 'id', ignoreDuplicates: true });
+        .upsert({ id: userId, email, roles: ['general'], display_name: googleName || null }, { onConflict: 'id', ignoreDuplicates: true });
       if (upsertError) console.error('members登録エラー:', upsertError.message);
 
       const { data: member, error: memberError } = await db.from('members').select('*').eq('id', userId).single();
@@ -410,6 +436,17 @@
     document.getElementById('lineLinkCode').textContent = member?.line_link_code || '-';
     document.getElementById('lineFriendBtn').href = LINE_OA_URL;
     document.getElementById('lineLinkedBadge').style.display = member?.line_user_id ? 'inline' : 'none';
+  }
+
+  async function copyLineLinkCode() {
+    const code = document.getElementById('lineLinkCode').textContent.trim();
+    if (!code || code === '-') return;
+    try {
+      await navigator.clipboard.writeText(code);
+      showToast('連携コードをコピーしました');
+    } catch (e) {
+      showToast('コピーに失敗しました。長押しして手動でコピーしてください');
+    }
   }
 
   // ── 通知（メンション） ──
@@ -493,16 +530,19 @@
   }
 
   async function loginWithGoogle() {
-    const opts = { redirectTo: location.href };
+    // redirectTo は location.href ではなく origin+pathname にする
+    // （ログアウト直後に再ログインすると、前回のOAuthコールバック用クエリ/ハッシュが
+    //   URLに残っていて新しい認証コードと混在し、ログインに失敗することがあるため）
+    const opts = { redirectTo: location.origin + location.pathname };
     if (ALLOWED_DOMAIN) opts.queryParams = { hd: ALLOWED_DOMAIN };
     await db.auth.signInWithOAuth({ provider: 'google', options: opts });
   }
 
   async function logout() {
-    await db.auth.signOut();
-    document.getElementById('errorScreen').style.display = 'none';
-    document.getElementById('mainContent').style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'flex';
+    try { await db.auth.signOut(); } catch (e) { console.error('ログアウトエラー:', e.message); }
+    // 画面表示の切り替えだけでなく、クライアントの内部状態（セッション・ロック等）を
+    // 完全にリセットするため、ログアウト後は必ずページ全体をリロードする
+    location.href = location.origin + location.pathname;
   }
 
   let currentCategoryFilter = '';
@@ -661,7 +701,20 @@
   const TT_GRADES = ['中1','中2','中3','高1','高2','高3'];
   const TT_CLASS_NUMS = [1,2,3,4];
   const TT_PERIODS = [1,2,3,4,5,6,7];
+  const TT_WEEKDAY_LABELS = ['月','火','水','木','金','土'];
   let ttStudentInitialized = false;
+
+  // 表示中の日付（1週間分を曜日タブで切り替えて確認できるようにする）
+  let ttSelectedDate = new Date();
+
+  function mondayOf(date) {
+    const d = new Date(date);
+    const jsDay = d.getDay(); // 0=日
+    const diff = jsDay === 0 ? -6 : 1 - jsDay;
+    d.setDate(d.getDate() + diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
 
   function initStudentTimetable() {
     if (ttStudentInitialized) return;
@@ -671,30 +724,60 @@
     loadStudentTimetable();
   }
 
+  function shiftTtWeek(days) {
+    const d = new Date(ttSelectedDate);
+    d.setDate(d.getDate() + days);
+    ttSelectedDate = d;
+    loadStudentTimetable();
+  }
+
+  function selectTtDate(dateStr) {
+    ttSelectedDate = new Date(dateStr + 'T00:00:00');
+    loadStudentTimetable();
+  }
+
+  function renderTtWeekNav(selectedDateStr) {
+    const monday = mondayOf(ttSelectedDate);
+    let html = '<div class="tt-week-nav">';
+    html += `<button class="tt-week-arrow" onclick="shiftTtWeek(-7)">◀ 前週</button>`;
+    html += '<div class="tt-day-tabs">';
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const dStr = d.toLocaleDateString('en-CA');
+      const md = `${d.getMonth() + 1}/${d.getDate()}`;
+      html += `<button class="tt-day-tab${dStr === selectedDateStr ? ' active' : ''}" onclick="selectTtDate('${dStr}')">${TT_WEEKDAY_LABELS[i]}<span>${md}</span></button>`;
+    }
+    html += '</div>';
+    html += `<button class="tt-week-arrow" onclick="shiftTtWeek(7)">次週 ▶</button>`;
+    html += '</div>';
+    return html;
+  }
+
   async function loadStudentTimetable() {
     const grade = document.getElementById('ttStudentGrade').value;
     const area = document.getElementById('ttStudentArea');
-    area.innerHTML = '<div class="dm-empty">読み込み中...</div>';
+    const dateStr = ttSelectedDate.toLocaleDateString('en-CA'); // YYYY-MM-DD
+    const weekNavHtml = renderTtWeekNav(dateStr);
+    area.innerHTML = weekNavHtml + '<div class="dm-empty">読み込み中...</div>';
 
-    const today = new Date();
     // JSの getDay() は 0=日,1=月...6=土。weekdayは1=月〜6=土なので日曜(0)は対象外。
-    const jsDay = today.getDay();
+    const jsDay = ttSelectedDate.getDay();
     const weekday = jsDay === 0 ? null : jsDay;
-    const dateStr = today.toLocaleDateString('en-CA'); // YYYY-MM-DD
 
-    if (!weekday) { area.innerHTML = '<div class="dm-empty">本日（日曜）は時間割がありません</div>'; return; }
+    if (!weekday) { area.innerHTML = weekNavHtml + '<div class="dm-empty">この日（日曜）は時間割がありません</div>'; return; }
 
     const [{ data: slots, error: slotsError }, { data: overrides, error: overridesError }] = await Promise.all([
       db.from('timetable_slots').select('*').eq('grade', grade).eq('weekday', weekday),
       db.from('timetable_overrides').select('*').eq('grade', grade).eq('date', dateStr)
     ]);
-    if (slotsError) { console.error('時間割取得エラー:', slotsError.message); area.innerHTML = '<div class="dm-empty">読み込みに失敗しました</div>'; return; }
+    if (slotsError) { console.error('時間割取得エラー:', slotsError.message); area.innerHTML = weekNavHtml + '<div class="dm-empty">読み込みに失敗しました</div>'; return; }
     if (overridesError) console.error('時間割変更取得エラー:', overridesError.message);
 
-    renderStudentTimetable(slots || [], overrides || []);
+    renderStudentTimetable(slots || [], overrides || [], dateStr, weekNavHtml);
   }
 
-  function renderStudentTimetable(slots, overrides) {
+  function renderStudentTimetable(slots, overrides, dateStr, weekNavHtml) {
     const area = document.getElementById('ttStudentArea');
 
     // クラスごとの時限→科目（標準時間割）
@@ -722,7 +805,7 @@
       });
       const itemsHtml = rows.length > 0
         ? rows.map((r, i) => `<li><span class="tt-period-no">${i + 1}限</span><span class="tt-period-subject${r.changed ? ' tt-changed' : ''}">${escapeHtml(r.subject)}</span></li>`).join('')
-        : '<li class="tt-empty-note">本日の授業はありません</li>';
+        : '<li class="tt-empty-note">この日の授業はありません</li>';
       cardsHtml += `<div class="tt-class-card"><h4>${c}組</h4><ol>${itemsHtml}</ol></div>`;
     });
     cardsHtml += '</div>';
@@ -736,11 +819,12 @@
         return `${o.class_no}組 ${o.period}限：${origSubject} がカットされました${o.note ? `（${o.note}）` : ''}`;
       });
 
+    const dateLabel = dateStr ? new Date(dateStr + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' }) : '';
     const remarks = remarkLines.length > 0
-      ? `<div class="tt-remarks"><h4>備考（本日のカット）</h4><ul>${remarkLines.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`
-      : `<div class="tt-remarks"><h4>備考</h4><p style="font-size:13px;color:var(--ink-faint)">本日のカットはありません</p></div>`;
+      ? `<div class="tt-remarks"><h4>備考（${dateLabel}のカット）</h4><ul>${remarkLines.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`
+      : `<div class="tt-remarks"><h4>備考</h4><p style="font-size:13px;color:var(--ink-faint)">${dateLabel}のカットはありません</p></div>`;
 
-    area.innerHTML = cardsHtml + remarks;
+    area.innerHTML = weekNavHtml + cardsHtml + remarks;
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

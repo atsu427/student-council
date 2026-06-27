@@ -62,6 +62,8 @@
     .btn-google{background:var(--paper);color:var(--ink);border:1px solid var(--line-strong);display:flex;align-items:center;gap:10px;font-size:14px;padding:13px 24px;border-radius:var(--radius-md);cursor:pointer;width:100%;justify-content:center;font-weight:500;transition:background-color .15s,color .15s,border-color .15s,box-shadow .15s;font-family:inherit}
     .btn-google:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);box-shadow:var(--shadow-md)}
     .login-note{margin-top:18px;font-size:11px;color:var(--ink-faint)}
+    .btn-back-link{display:inline-block;margin-top:18px;font-size:13px;color:var(--ink-soft);text-decoration:none}
+    .btn-back-link:hover{text-decoration:underline;color:var(--ink)}
     #errorScreen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--ink)}
     .error-card{background:var(--paper);border-radius:var(--radius-lg);padding:56px 44px;text-align:center;box-shadow:var(--shadow-lg);max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
     .error-card h2{font-size:21px;margin-bottom:14px;color:var(--vermillion)}
@@ -202,6 +204,7 @@
       Googleでログイン
     </button>
     <p class="login-note">※ 管理者（j170470@stg.nada.ac.jp）のみ</p>
+    <a href="index.html" class="btn-back-link">← 生徒用ページに戻る</a>
   </div>
 </div>
 
@@ -211,6 +214,7 @@
     <h2>アクセス権限がありません</h2>
     <p id="errorMsg"></p>
     <button class="btn btn-outline" style="color:var(--ink-soft);border-color:var(--line-strong)" onclick="logout()">ログアウト</button>
+    <a href="index.html" class="btn-back-link">← 生徒用ページに戻る</a>
   </div>
 </div>
 
@@ -357,12 +361,12 @@
       </div>
       <div id="ttGridArea" style="margin-top:10px"><div class="loading">学年・クラスを選択してください</div></div>
 
-      <div class="section-title" style="margin-top:48px">本日の時間割変更</div>
+      <div class="section-title" style="margin-top:48px">時間割変更の登録（任意の日付を指定可能）</div>
       <div class="post-form">
         <div class="form-row" style="display:flex;gap:16px;flex-wrap:wrap">
           <div style="flex:1;min-width:140px">
             <label>日付</label>
-            <input type="text" id="ovDate" placeholder="YYYY-MM-DD">
+            <input type="date" id="ovDate">
           </div>
           <div style="flex:1;min-width:120px">
             <label>学年</label>
@@ -401,8 +405,13 @@
         </div>
       </div>
 
-      <div class="section-title">登録済みの変更（日付降順）</div>
+      <div class="section-title">今後の変更（日付昇順）</div>
       <div id="ttOverridesArea"><div class="loading">読み込み中...</div></div>
+
+      <div class="section-title" style="margin-top:40px;cursor:pointer" onclick="toggleOverrideArchive()">
+        アーカイブ（過去の変更） <span id="ttArchiveToggleLabel" style="font-size:12px;color:var(--ink-faint);font-weight:400">（タップで表示）</span>
+      </div>
+      <div id="ttOverridesArchiveArea" style="display:none"><div class="loading">読み込み中...</div></div>
     </div>
 
     <!-- 意見箱タブ -->
@@ -468,6 +477,17 @@
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: true, storageKey: 'seitokai-session' }
   });
+
+  // Google認証からのリダイレクト時にエラーが返ってきた場合に画面を明示的に表示する
+  (function showAuthCallbackErrorIfAny() {
+    const search = new URLSearchParams(location.search);
+    const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const desc = search.get('error_description') || hash.get('error_description') || search.get('error') || hash.get('error');
+    if (desc) {
+      history.replaceState(null, '', location.origin + location.pathname);
+      showError('ログインに失敗しました: ' + decodeURIComponent(desc).replace(/\+/g, ' '));
+    }
+  })();
 
   const ADMIN_ROLE = '管理者';
   let currentUser = null;
@@ -544,15 +564,19 @@
   }
 
   async function loginWithGoogle() {
-    const opts = { redirectTo: location.href };
+    // redirectTo は location.href ではなく origin+pathname にする
+    // （ログアウト直後に再ログインすると、前回のOAuthコールバック用クエリ/ハッシュが
+    //   URLに残っていて新しい認証コードと混在し、ログインに失敗することがあるため）
+    const opts = { redirectTo: location.origin + location.pathname };
     if (ALLOWED_DOMAIN) opts.queryParams = { hd: ALLOWED_DOMAIN };
     await db.auth.signInWithOAuth({ provider: 'google', options: opts });
   }
 
   async function logout() {
-    await db.auth.signOut();
-    document.getElementById('errorScreen').style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'flex';
+    try { await db.auth.signOut(); } catch (e) { console.error('ログアウトエラー:', e.message); }
+    // クライアントの内部状態（セッション・ロック等）を完全にリセットするため、
+    // ログアウト後は必ずページ全体をリロードする
+    location.href = location.origin + location.pathname;
   }
 
   // ── タブ切り替え ──
@@ -769,7 +793,10 @@
             <div class="member-card-email">${escapeHtml(m.display_name ? `${m.display_name}（${m.email}）` : m.email)}</div>
             <div class="member-card-date">初回ログイン: ${new Date(m.created_at).toLocaleDateString('ja-JP')}</div>
           </div>
-          <button class="btn-sm btn-del" data-del-member-id="${escapeHtml(m.id)}" data-del-member-email="${escapeHtml(m.email)}">削除</button>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn-sm btn-edit" data-edit-name-id="${escapeHtml(m.id)}" data-edit-name-current="${escapeHtml(m.display_name || '')}">名前を編集</button>
+            <button class="btn-sm btn-del" data-del-member-id="${escapeHtml(m.id)}" data-del-member-email="${escapeHtml(m.email)}">削除</button>
+          </div>
         </div>
         <div class="role-checkboxes" style="margin-top:10px">${checks || '<span style="color:#aaa;font-size:12px">ロールがありません</span>'}</div>
       </div>`;
@@ -781,6 +808,21 @@
     el.querySelectorAll('button[data-del-member-id]').forEach(btn => {
       btn.addEventListener('click', () => deleteMember(btn.dataset.delMemberId, btn.dataset.delMemberEmail));
     });
+    el.querySelectorAll('button[data-edit-name-id]').forEach(btn => {
+      btn.addEventListener('click', () => editMemberName(btn.dataset.editNameId, btn.dataset.editNameCurrent));
+    });
+  }
+
+  async function editMemberName(id, currentName) {
+    const newName = prompt('表示名を入力してください（空にするとメールアドレス表示に戻ります）', currentName || '');
+    if (newName === null) return; // キャンセル
+    const display_name = newName.trim() || null;
+    const { error } = await db.from('members').update({ display_name }).eq('id', id);
+    if (error) { showToast('更新失敗: ' + error.message); return; }
+    const cached = membersListCache.find(m => m.id === id);
+    if (cached) cached.display_name = display_name;
+    showToast('表示名を更新しました');
+    renderMembersList();
   }
 
   async function deleteMember(id, email) {
@@ -953,7 +995,7 @@
         </div>
         <div class="post-item-actions">
           <button class="btn-sm btn-edit" onclick="editPost(${post.id})">編集</button>
-          <button class="btn-sm" style="background:var(--green-tint);color:var(--green)" onclick="notifyLine(${post.id}, true)" title="LINEに今すぐ通知を送る">LINE通知</button>
+          <button class="btn-sm" style="background:var(--green-tint);color:var(--green)" onclick="manualNotify(${post.id})" title="メンションした生徒にサイト内通知・LINEを今すぐ送る">通知を送る</button>
           <button class="btn-sm btn-del" onclick="deletePost(${post.id})">削除</button>
         </div>
       </div>`;
@@ -1001,23 +1043,39 @@
       showToast(id ? '更新しました！' : (isScheduledFuture ? `投稿を予約しました（${new Date(publish_at).toLocaleString('ja-JP')}に公開）` : '投稿しました！'));
     }
 
-    if ((mentioned_emails.length > 0 || mentioned_roles.length > 0) && savedPost) await notifyMentionedMembers(mentioned_emails, mentioned_roles, savedPost);
-    // 公開時刻が未来に指定されている場合、自動でのLINE通知は送らない（その時刻になってから一覧の「LINE通知」ボタンで手動送信する）
-    if (published && savedPost && !isScheduledFuture) notifyLine(savedPost.id);
+    const hasMentions = mentioned_emails.length > 0 || mentioned_roles.length > 0;
+    const isEdit = !!id;
+    if (hasMentions && savedPost && !isScheduledFuture) {
+      if (!isEdit) {
+        // 新規投稿はそのまま通知（サイト内通知＋LINE）
+        await notifyMentionedMembers(mentioned_emails, mentioned_roles, savedPost, false);
+        notifyLine(savedPost.id, false, false);
+      } else {
+        // 既存投稿の編集では毎回自動でLINEが飛ぶと煩わしいため、送るかどうかを確認し、
+        // 送る場合は新規お知らせと区別できるよう「訂正」として通知する
+        const wantsNotify = confirm('編集内容をメンションした生徒にサイト内通知・LINEで「訂正」として送信しますか？');
+        if (wantsNotify) {
+          await notifyMentionedMembers(mentioned_emails, mentioned_roles, savedPost, true);
+          notifyLine(savedPost.id, false, true);
+        }
+      }
+    }
+    // 公開時刻が未来に指定されている場合、メンション通知・LINE通知は送らない
+    // （その時刻になってから投稿一覧の「通知を送る」ボタンで手動送信する）
 
     resetForm();
     loadPosts();
   }
 
-  // ── LINE通知（失敗してもサイト機能には影響させない） ──
-  async function notifyLine(postId, manual) {
+  // ── LINE通知（失敗してもサイト機能には影響させない。メンション先が無い投稿は何も送信しない） ──
+  async function notifyLine(postId, manual, isCorrection) {
     try {
       const { data: { session } } = await db.auth.getSession();
       if (!session) return;
       const res = await fetch('/api/line-notify-post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ postId })
+        body: JSON.stringify({ postId, isCorrection: !!isCorrection })
       });
       if (manual) {
         const result = await res.json().catch(() => ({}));
@@ -1029,8 +1087,19 @@
     }
   }
 
+  // 投稿一覧の「通知を送る」ボタン用（予約投稿が公開時刻を過ぎた後の手動送信や再送に使う）
+  async function manualNotify(postId) {
+    const post = postsListCache.find(p => p.id === postId);
+    if (!post) return;
+    const hasMentions = (post.mentioned_emails || []).length > 0 || (post.mentioned_roles || []).length > 0;
+    if (!hasMentions) { showToast('メンションが設定されていないため、通知対象がありません'); return; }
+    await notifyMentionedMembers(post.mentioned_emails, post.mentioned_roles, post, false);
+    await notifyLine(postId, true, false);
+  }
+
   // ── メンション通知（個人指定＋ロール指定の両方をまとめて通知。重複は除く） ──
-  async function notifyMentionedMembers(emails, roles, post) {
+  // メンションが誰にも設定されていない場合は呼び出し側でスキップされるため、ここに来た時点で必ず対象が存在する
+  async function notifyMentionedMembers(emails, roles, post, isCorrection) {
     const queries = [];
     if (emails.length > 0) queries.push(db.from('members').select('id, email').in('email', emails));
     if (roles.length > 0) queries.push(db.from('members').select('id, email').overlaps('roles', roles));
@@ -1045,7 +1114,7 @@
     const rows = Array.from(memberMap.values()).map(m => ({
       member_id: m.id,
       post_id: post.id,
-      body: `あなたが投稿「${post.title}」でメンションされました`
+      body: isCorrection ? `投稿「${post.title}」が訂正されました` : `あなたが投稿「${post.title}」でメンションされました`
     }));
     const { error: notifyError } = await db.from('notifications').insert(rows);
     if (notifyError) {
@@ -1258,7 +1327,7 @@
       document.getElementById('ovClass').innerHTML = classOptions;
       const periodOptions = PERIODS.map(p => `<option value="${p}">${p}限</option>`).join('');
       document.getElementById('ovPeriod').innerHTML = periodOptions;
-      document.getElementById('ovDate').value = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+      document.getElementById('ovDate').value = new Date().toLocaleDateString('en-CA');
 
       document.getElementById('ttGradeSelect').addEventListener('change', loadTimetableGrid);
       document.getElementById('ttClassSelect').addEventListener('change', loadTimetableGrid);
@@ -1337,33 +1406,64 @@
     loadOverridesList();
   }
 
+  function renderOverrideItem(o) {
+    let detail = '';
+    if (o.type === 'subject_change') detail = `→ ${escapeHtml(o.subject || '')}`;
+    return `<div class="post-item">
+      <div class="post-item-info">
+        <div class="post-item-title">${escapeHtml(o.date)} ${escapeHtml(o.grade)}${o.class_no}組 ${o.period}限</div>
+        <div class="post-item-meta">
+          <span class="tag">${escapeHtml(OVERRIDE_TYPE_LABEL[o.type] || o.type)}</span>
+          <span>${detail}</span>
+          ${o.note ? `<span>${escapeHtml(o.note)}</span>` : ''}
+        </div>
+      </div>
+      <div class="post-item-actions">
+        <button class="btn-sm btn-del" data-override-id="${o.id}">削除</button>
+      </div>
+    </div>`;
+  }
+
+  function bindOverrideDeleteButtons(el) {
+    el.querySelectorAll('[data-override-id]').forEach(btn => {
+      btn.addEventListener('click', () => deleteOverride(Number(btn.dataset.overrideId)));
+    });
+  }
+
+  let overrideArchiveOpen = false;
+  let overrideArchiveLoaded = false;
+
+  // 日付が過去になった変更は、今後の変更一覧からは外れ「アーカイブ」側にのみ表示される（自動）
   async function loadOverridesList() {
     const area = document.getElementById('ttOverridesArea');
     area.innerHTML = '<div class="loading">読み込み中...</div>';
-    const { data, error } = await db.from('timetable_overrides').select('*').order('date', { ascending: false }).order('id', { ascending: false });
+    const todayStr = new Date().toLocaleDateString('en-CA');
+    const { data, error } = await db.from('timetable_overrides').select('*').gte('date', todayStr).order('date', { ascending: true }).order('id', { ascending: true });
     if (error) { console.error('時間割変更一覧取得エラー:', error.message); area.innerHTML = '<div class="empty">読み込みエラー: ' + escapeHtml(error.message) + '</div>'; return; }
-    if (!data || data.length === 0) { area.innerHTML = '<div class="empty">登録された変更はありません</div>'; return; }
+    if (!data || data.length === 0) { area.innerHTML = '<div class="empty">今後の変更予定はありません</div>'; return; }
 
-    area.innerHTML = data.map(o => {
-      let detail = '';
-      if (o.type === 'subject_change') detail = `→ ${escapeHtml(o.subject || '')}`;
-      return `<div class="post-item">
-        <div class="post-item-info">
-          <div class="post-item-title">${escapeHtml(o.date)} ${escapeHtml(o.grade)}${o.class_no}組 ${o.period}限</div>
-          <div class="post-item-meta">
-            <span class="tag">${escapeHtml(OVERRIDE_TYPE_LABEL[o.type] || o.type)}</span>
-            <span>${detail}</span>
-            ${o.note ? `<span>${escapeHtml(o.note)}</span>` : ''}
-          </div>
-        </div>
-        <div class="post-item-actions">
-          <button class="btn-sm btn-del" data-override-id="${o.id}">削除</button>
-        </div>
-      </div>`;
-    }).join('');
-    area.querySelectorAll('[data-override-id]').forEach(btn => {
-      btn.addEventListener('click', () => deleteOverride(Number(btn.dataset.overrideId)));
-    });
+    area.innerHTML = data.map(renderOverrideItem).join('');
+    bindOverrideDeleteButtons(area);
+    overrideArchiveLoaded = false; // 削除等があり得るので次回開いた時に再取得する
+  }
+
+  function toggleOverrideArchive() {
+    overrideArchiveOpen = !overrideArchiveOpen;
+    document.getElementById('ttOverridesArchiveArea').style.display = overrideArchiveOpen ? 'block' : 'none';
+    document.getElementById('ttArchiveToggleLabel').textContent = overrideArchiveOpen ? '（タップで非表示）' : '（タップで表示）';
+    if (overrideArchiveOpen && !overrideArchiveLoaded) loadOverrideArchive();
+  }
+
+  async function loadOverrideArchive() {
+    const area = document.getElementById('ttOverridesArchiveArea');
+    area.innerHTML = '<div class="loading">読み込み中...</div>';
+    const todayStr = new Date().toLocaleDateString('en-CA');
+    const { data, error } = await db.from('timetable_overrides').select('*').lt('date', todayStr).order('date', { ascending: false }).order('id', { ascending: false });
+    if (error) { console.error('時間割変更アーカイブ取得エラー:', error.message); area.innerHTML = '<div class="empty">読み込みエラー: ' + escapeHtml(error.message) + '</div>'; return; }
+    overrideArchiveLoaded = true;
+    if (!data || data.length === 0) { area.innerHTML = '<div class="empty">過去の変更はありません</div>'; return; }
+    area.innerHTML = data.map(renderOverrideItem).join('');
+    bindOverrideDeleteButtons(area);
   }
 
   async function deleteOverride(id) {
@@ -1372,6 +1472,7 @@
     if (error) { console.error('時間割変更削除エラー:', error.message); showToast('削除失敗: ' + error.message); return; }
     showToast('削除しました');
     loadOverridesList();
+    if (overrideArchiveOpen) loadOverrideArchive();
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
