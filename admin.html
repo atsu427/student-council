@@ -6,423 +6,217 @@
   <title>管理画面 | 灘校生徒会</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-      background: #f7f8fa;
-      color: #1a1a2e;
-      min-height: 100vh;
-    }
-
-    header {
-      background: #1a1a2e;
-      color: #fff;
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 60px;
-    }
-
-    header h1 { font-size: 18px; font-weight: 700; }
-
-    .header-right { display: flex; align-items: center; gap: 16px; }
-    .user-name { font-size: 13px; color: #a0c4ff; }
-
-    .btn {
-      padding: 8px 20px;
-      border-radius: 8px;
-      border: none;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-primary { background: #1a73e8; color: #fff; }
-    .btn-primary:hover { background: #1557b0; }
-    .btn-danger { background: #d32f2f; color: #fff; }
-    .btn-danger:hover { background: #b71c1c; }
-    .btn-outline { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.4); }
-    .btn-outline:hover { background: rgba(255,255,255,0.1); }
-    .btn-google {
-      background: #fff;
-      color: #444;
-      border: 1.5px solid #ddd;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 15px;
-      padding: 12px 24px;
-    }
-    .btn-google:hover { background: #f5f5f5; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-
-    /* ログイン画面 */
-    #loginScreen {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: calc(100vh - 60px);
-      padding: 24px;
-    }
-
-    .login-card {
-      background: #fff;
-      border-radius: 20px;
-      padding: 48px 40px;
-      text-align: center;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
-      max-width: 400px;
-      width: 100%;
-    }
-
-    .login-card h2 { font-size: 24px; margin-bottom: 8px; }
-    .login-card p { color: #666; font-size: 14px; margin-bottom: 32px; line-height: 1.7; }
-
-    .login-note {
-      margin-top: 20px;
-      font-size: 12px;
-      color: #999;
-    }
-
-    /* エラー画面 */
-    #errorScreen {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      min-height: calc(100vh - 60px);
-      padding: 24px;
-    }
-
-    .error-card {
-      background: #fff;
-      border-radius: 20px;
-      padding: 48px 40px;
-      text-align: center;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
-      max-width: 400px;
-      width: 100%;
-    }
-
-    .error-card h2 { font-size: 22px; margin-bottom: 12px; color: #d32f2f; }
-    .error-card p { font-size: 14px; color: #555; margin-bottom: 24px; line-height: 1.7; }
-
-    /* 管理画面 */
-    #adminScreen { display: none; }
-
-    .admin-container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 32px 24px 80px;
-    }
-
-    .section-title {
-      font-size: 20px;
-      font-weight: 800;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid #1a1a2e;
-    }
-
-    .post-form {
-      background: #fff;
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-      margin-bottom: 40px;
-    }
-
-    .form-row { margin-bottom: 20px; }
-
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 700;
-      color: #444;
-      margin-bottom: 6px;
-    }
-
-    input[type="text"], select, textarea {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1.5px solid #d0d5dd;
-      border-radius: 8px;
-      font-size: 15px;
-      font-family: inherit;
-      transition: border-color 0.2s;
-      outline: none;
-      background: #fff;
-      color: #1a1a2e;
-    }
-
-    input[type="text"]:focus, select:focus, textarea:focus { border-color: #1a73e8; }
-
-    textarea { min-height: 180px; resize: vertical; line-height: 1.7; }
-
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;background:#f7f8fa;color:#1a1a2e;min-height:100vh}
+    header{background:#1a1a2e;color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px}
+    header h1{font-size:18px;font-weight:700}
+    .header-right{display:flex;align-items:center;gap:12px}
+    .user-name{font-size:13px;color:#a0c4ff}
+    .btn{padding:8px 18px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block}
+    .btn-primary{background:#1a73e8;color:#fff}
+    .btn-primary:hover{background:#1557b0}
+    .btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4)}
+    .btn-outline:hover{background:rgba(255,255,255,.1)}
+    .btn-view{background:#a0c4ff;color:#1a1a2e;font-weight:700}
+    .btn-view:hover{background:#fff}
+    /* ログイン */
+    #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+    .login-card{background:#fff;border-radius:20px;padding:48px 40px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.1);max-width:400px;width:100%}
+    .login-card h2{font-size:24px;margin-bottom:8px}
+    .login-card p{color:#666;font-size:14px;margin-bottom:32px;line-height:1.7}
+    .btn-google{background:#fff;color:#444;border:1.5px solid #ddd;display:flex;align-items:center;gap:10px;font-size:15px;padding:12px 24px;border-radius:8px;cursor:pointer;width:100%;justify-content:center;font-weight:600;transition:all .2s}
+    .btn-google:hover{background:#f5f5f5}
+    .login-note{margin-top:16px;font-size:12px;color:#999}
+    #errorScreen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+    .error-card{background:#fff;border-radius:20px;padding:48px 40px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.1);max-width:400px;width:100%}
+    .error-card h2{font-size:22px;margin-bottom:12px;color:#d32f2f}
+    .error-card p{font-size:14px;color:#555;margin-bottom:24px;line-height:1.7}
+    #adminScreen{display:none}
+    /* タブ */
+    .tabs{display:flex;gap:0;border-bottom:2px solid #e5e7eb;margin-bottom:28px}
+    .tab{padding:12px 24px;font-size:15px;font-weight:600;color:#888;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s}
+    .tab.active{color:#1a1a2e;border-bottom-color:#1a1a2e}
+    .tab:hover{color:#1a1a2e}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    /* コンテナ */
+    .admin-container{max-width:960px;margin:0 auto;padding:32px 24px 80px}
+    .section-title{font-size:20px;font-weight:800;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #1a1a2e;display:flex;align-items:center;justify-content:space-between}
+    /* フォーム */
+    .post-form{background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:32px}
+    .form-row{margin-bottom:20px}
+    label{display:block;font-size:13px;font-weight:700;color:#444;margin-bottom:6px}
+    input[type="text"],select,textarea{width:100%;padding:10px 14px;border:1.5px solid #d0d5dd;border-radius:8px;font-size:15px;font-family:inherit;outline:none;background:#fff;color:#1a1a2e;transition:border-color .2s}
+    input[type="text"]:focus,select:focus,textarea:focus{border-color:#1a73e8}
+    textarea{min-height:160px;resize:vertical;line-height:1.7}
+    /* ロール選択チェックボックス */
+    .role-checkboxes{display:flex;flex-wrap:wrap;gap:10px;padding:12px;background:#f7f8fa;border-radius:8px;border:1.5px solid #d0d5dd}
+    .role-checkbox-item{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+    .role-checkbox-item input{cursor:pointer;width:15px;height:15px}
     /* ファイルアップロード */
-    .file-drop-area {
-      border: 2px dashed #d0d5dd;
-      border-radius: 8px;
-      padding: 24px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      background: #fafbfc;
-    }
-
-    .file-drop-area:hover, .file-drop-area.drag-over {
-      border-color: #1a73e8;
-      background: #e8f0fe;
-    }
-
-    .file-drop-area p { font-size: 14px; color: #666; margin-bottom: 8px; }
-    .file-drop-area span { font-size: 12px; color: #aaa; }
-
-    input[type="file"] { display: none; }
-
-    .file-preview-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 12px;
-    }
-
-    .file-preview-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 12px;
-      background: #f0f4ff;
-      border-radius: 8px;
-      font-size: 13px;
-    }
-
-    .file-preview-item span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-    .file-remove {
-      background: none;
-      border: none;
-      color: #d32f2f;
-      cursor: pointer;
-      font-size: 16px;
-      padding: 0 4px;
-      flex-shrink: 0;
-    }
-
-    .upload-progress {
-      margin-top: 8px;
-      font-size: 13px;
-      color: #1a73e8;
-      display: none;
-    }
-
-    /* 既存添付ファイル */
-    .existing-files { margin-top: 12px; }
-    .existing-file-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 6px 10px;
-      background: #f7f8fa;
-      border-radius: 6px;
-      font-size: 13px;
-      margin-bottom: 6px;
-      border: 1px solid #e5e7eb;
-    }
-
-    .existing-file-item span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-    .form-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .publish-toggle {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .publish-toggle input { width: auto; cursor: pointer; }
-
+    .file-drop-area{border:2px dashed #d0d5dd;border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:#fafbfc}
+    .file-drop-area:hover,.file-drop-area.drag-over{border-color:#1a73e8;background:#e8f0fe}
+    .file-drop-area p{font-size:14px;color:#666;margin-bottom:4px}
+    .file-drop-area span{font-size:12px;color:#aaa}
+    input[type="file"]{display:none}
+    .file-preview-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+    .file-preview-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f0f4ff;border-radius:8px;font-size:13px}
+    .file-preview-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .file-remove{background:none;border:none;color:#d32f2f;cursor:pointer;font-size:18px;padding:0 2px;flex-shrink:0}
+    .existing-files{margin-bottom:10px}
+    .existing-file-item{display:flex;align-items:center;gap:10px;padding:7px 12px;background:#f7f8fa;border-radius:7px;font-size:13px;margin-bottom:5px;border:1px solid #e5e7eb}
+    .existing-file-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .upload-progress{font-size:13px;color:#1a73e8;display:none;margin-top:8px}
+    .form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+    .publish-toggle{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+    .publish-toggle input{width:auto;cursor:pointer}
     /* 投稿一覧 */
-    .posts-list { display: grid; gap: 12px; }
-
-    .post-item {
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px 20px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .post-item-info { flex: 1; min-width: 0; }
-
-    .post-item-title {
-      font-weight: 700;
-      font-size: 15px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .post-item-meta { font-size: 12px; color: #888; margin-top: 4px; }
-
-    .post-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
-
-    .btn-sm {
-      padding: 5px 14px;
-      font-size: 12px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .btn-edit { background: #e8f0fe; color: #1a73e8; }
-    .btn-edit:hover { background: #d2e3fc; }
-    .btn-del { background: #fce8e8; color: #d32f2f; }
-    .btn-del:hover { background: #f5c6c6; }
-
-    .status-badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 10px;
-    }
-
-    .status-published { background: #e8f5e9; color: #2e7d32; }
-    .status-draft { background: #f5f5f5; color: #999; }
-
-    .category-tag {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 10px;
-      background: #e8f0fe;
-      color: #1a73e8;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 32px;
-      right: 24px;
-      background: #1a1a2e;
-      color: #fff;
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-size: 14px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      z-index: 1000;
-    }
-
-    .toast.show { opacity: 1; }
-
-    .empty { color: #aaa; text-align: center; padding: 40px; font-size: 14px; }
+    .posts-list{display:grid;gap:10px}
+    .post-item{background:#fff;border-radius:12px;padding:16px 20px;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;align-items:center;gap:14px}
+    .post-item-info{flex:1;min-width:0}
+    .post-item-title{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+    .post-item-meta{font-size:12px;color:#888;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .post-item-actions{display:flex;gap:6px;flex-shrink:0}
+    .btn-sm{padding:5px 13px;font-size:12px;border-radius:6px;border:none;cursor:pointer;font-weight:600}
+    .btn-edit{background:#e8f0fe;color:#1a73e8}
+    .btn-edit:hover{background:#d2e3fc}
+    .btn-del{background:#fce8e8;color:#d32f2f}
+    .btn-del:hover{background:#f5c6c6}
+    .status-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
+    .status-published{background:#e8f5e9;color:#2e7d32}
+    .status-draft{background:#f5f5f5;color:#999}
+    .tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:#e8f0fe;color:#1a73e8}
+    .role-tag-sm{font-size:11px;padding:2px 7px;border-radius:10px;background:#fef9e7;color:#b7791f;border:1px solid #fde68a}
+    /* 生徒管理 */
+    .members-table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+    .members-table th{background:#1a1a2e;color:#fff;padding:12px 16px;text-align:left;font-size:13px;font-weight:600}
+    .members-table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #f0f0f0}
+    .members-table tr:last-child td{border-bottom:none}
+    .members-table tr:hover td{background:#f7f8fa}
+    .role-select{padding:5px 10px;border:1.5px solid #d0d5dd;border-radius:6px;font-size:13px;background:#fff;cursor:pointer}
+    /* ロール管理 */
+    .roles-list{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+    .role-chip{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #d0d5dd;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600}
+    .role-chip-del{background:none;border:none;color:#d32f2f;cursor:pointer;font-size:16px;line-height:1}
+    .add-role-row{display:flex;gap:8px;margin-top:4px}
+    .add-role-row input{flex:1;max-width:200px}
+    /* トースト */
+    .toast{position:fixed;bottom:32px;right:24px;background:#1a1a2e;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .3s;z-index:1000}
+    .toast.show{opacity:1}
+    .empty{color:#aaa;text-align:center;padding:40px;font-size:14px}
+    .loading{color:#aaa;text-align:center;padding:40px;font-size:14px}
   </style>
 </head>
 <body>
 
-<header>
-  <h1>灘校生徒会 管理画面</h1>
-  <div class="header-right">
-    <span class="user-name" id="userName"></span>
-    <button class="btn btn-outline" onclick="logout()">ログアウト</button>
-  </div>
-</header>
-
-<!-- ログイン画面 -->
+<!-- ログイン -->
 <div id="loginScreen">
   <div class="login-card">
     <h2>管理者ログイン</h2>
-    <p>灘校のGoogleアカウント（@stg.nada.ac.jp）でログインしてください</p>
-    <button class="btn btn-google" onclick="loginWithGoogle()">
+    <p>灘校のGoogleアカウントでログインしてください</p>
+    <button class="btn-google" onclick="loginWithGoogle()">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Googleでログイン
     </button>
-    <p class="login-note">※ 管理者権限はj170470@stg.nada.ac.jpのみ</p>
+    <p class="login-note">※ 管理者（j170470@stg.nada.ac.jp）のみ</p>
   </div>
 </div>
 
-<!-- アクセス拒否画面 -->
-<div id="errorScreen" style="display:none; align-items:center; justify-content:center; min-height:calc(100vh - 60px); padding:24px;">
+<!-- アクセス拒否 -->
+<div id="errorScreen">
   <div class="error-card">
     <h2>アクセス権限がありません</h2>
-    <p id="errorMsg">このページにアクセスするには管理者権限が必要です。</p>
-    <button class="btn btn-outline" style="color:#555;border-color:#ccc;" onclick="logout()">ログアウトして戻る</button>
+    <p id="errorMsg"></p>
+    <button class="btn btn-outline" style="color:#555;border-color:#ccc" onclick="logout()">ログアウト</button>
   </div>
 </div>
 
 <!-- 管理画面 -->
 <div id="adminScreen">
+  <header>
+    <h1>灘校生徒会 管理画面</h1>
+    <div class="header-right">
+      <span class="user-name" id="userName"></span>
+      <a href="index.html" class="btn btn-view">お知らせを見る</a>
+      <button class="btn btn-outline" onclick="logout()">ログアウト</button>
+    </div>
+  </header>
+
   <div class="admin-container">
-
-    <div class="section-title" id="formTitle">新規投稿</div>
-    <div class="post-form">
-      <input type="hidden" id="editId">
-      <div class="form-row">
-        <label>タイトル</label>
-        <input type="text" id="inputTitle" placeholder="お知らせのタイトルを入力">
-      </div>
-      <div class="form-row">
-        <label>カテゴリ</label>
-        <select id="inputCategory">
-          <option value="お知らせ">お知らせ</option>
-          <option value="行事">行事</option>
-          <option value="部活">部活</option>
-          <option value="募集">募集</option>
-          <option value="その他">その他</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <label>本文</label>
-        <textarea id="inputBody" placeholder="内容を入力してください"></textarea>
-      </div>
-
-      <!-- ファイル添付 -->
-      <div class="form-row">
-        <label>添付ファイル（画像・PDF・Officeファイルなど）</label>
-
-        <!-- 編集時の既存ファイル -->
-        <div id="existingFilesArea" style="display:none; margin-bottom:12px;">
-          <div style="font-size:12px; color:#666; margin-bottom:6px;">現在の添付ファイル</div>
-          <div id="existingFilesList"></div>
-        </div>
-
-        <div class="file-drop-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
-          <p>クリックまたはファイルをドロップ</p>
-          <span>画像・PDF・Word・Excel・PowerPoint など（1ファイル最大50MB）</span>
-        </div>
-        <input type="file" id="fileInput" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,.csv">
-        <div class="file-preview-list" id="filePreviewList"></div>
-        <div class="upload-progress" id="uploadProgress">アップロード中...</div>
-      </div>
-
-      <div class="form-actions">
-        <label class="publish-toggle">
-          <input type="checkbox" id="inputPublished" checked>
-          すぐに公開する
-        </label>
-        <div style="flex:1"></div>
-        <button class="btn btn-outline" style="color:#555;border-color:#ccc;" onclick="resetForm()">キャンセル</button>
-        <button class="btn btn-primary" onclick="savePost()">保存する</button>
-      </div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('posts')">投稿管理</div>
+      <div class="tab" onclick="switchTab('members')">生徒管理</div>
+      <div class="tab" onclick="switchTab('roles')">ロール管理</div>
     </div>
 
-    <div class="section-title">投稿一覧</div>
-    <div class="posts-list" id="postsList">
-      <div class="empty">読み込み中...</div>
+    <!-- 投稿管理タブ -->
+    <div class="tab-content active" id="tab-posts">
+      <div class="section-title" id="formTitle">新規投稿</div>
+      <div class="post-form">
+        <input type="hidden" id="editId">
+        <div class="form-row">
+          <label>タイトル</label>
+          <input type="text" id="inputTitle" placeholder="お知らせのタイトル">
+        </div>
+        <div class="form-row">
+          <label>カテゴリ</label>
+          <select id="inputCategory">
+            <option value="お知らせ">お知らせ</option>
+            <option value="行事">行事</option>
+            <option value="部活">部活</option>
+            <option value="募集">募集</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>本文</label>
+          <textarea id="inputBody" placeholder="内容を入力"></textarea>
+        </div>
+        <div class="form-row">
+          <label>対象ロール（未選択＝全員に表示）</label>
+          <div class="role-checkboxes" id="roleCheckboxes">
+            <span style="font-size:13px;color:#aaa">読み込み中...</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>添付ファイル</label>
+          <div id="existingFilesArea" style="display:none" class="existing-files">
+            <div style="font-size:12px;color:#666;margin-bottom:6px">現在の添付ファイル</div>
+            <div id="existingFilesList"></div>
+          </div>
+          <div class="file-drop-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
+            <p>クリックまたはドロップでファイル追加</p>
+            <span>画像・PDF・Word・Excel・PowerPoint など（最大50MB）</span>
+          </div>
+          <input type="file" id="fileInput" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,.csv">
+          <div class="file-preview-list" id="filePreviewList"></div>
+          <div class="upload-progress" id="uploadProgress">アップロード中...</div>
+        </div>
+        <div class="form-actions">
+          <label class="publish-toggle">
+            <input type="checkbox" id="inputPublished" checked> すぐに公開する
+          </label>
+          <div style="flex:1"></div>
+          <button class="btn" style="background:#f0f0f0;color:#555" onclick="resetForm()">キャンセル</button>
+          <button class="btn btn-primary" onclick="savePost()">保存する</button>
+        </div>
+      </div>
+
+      <div class="section-title">投稿一覧</div>
+      <div class="posts-list" id="postsList"><div class="loading">読み込み中...</div></div>
     </div>
 
+    <!-- 生徒管理タブ -->
+    <div class="tab-content" id="tab-members">
+      <div class="section-title">ログイン済み生徒一覧</div>
+      <div id="membersArea"><div class="loading">読み込み中...</div></div>
+    </div>
+
+    <!-- ロール管理タブ -->
+    <div class="tab-content" id="tab-roles">
+      <div class="section-title">ロール一覧</div>
+      <div id="rolesArea"><div class="loading">読み込み中...</div></div>
+    </div>
   </div>
 </div>
 
@@ -431,7 +225,6 @@
 <script>
   const SUPABASE_URL = 'https://uvqidlzkiuyvqxqttuae.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cWlkbHpraXV5dnF4cXR0dWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0Nzk0MTEsImV4cCI6MjA5ODA1NTQxMX0.VrpNjeEpsfOGJKsSz8uSGxrqiuChT9QjEzgjUnAv1s8';
-
   const ADMIN_EMAIL = 'j170470@stg.nada.ac.jp';
   const ALLOWED_DOMAIN = 'stg.nada.ac.jp';
   const STORAGE_BUCKET = 'post-files';
@@ -440,35 +233,31 @@
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let currentUser = null;
-  let selectedFiles = [];        // 新規追加ファイル
-  let existingFilePaths = [];    // 編集時の既存ファイルパス（削除対象管理）
-  let removedFilePaths = [];     // 削除するファイルパス
+  let selectedFiles = [];
+  let existingFilePaths = [];
+  let removedFilePaths = [];
+  let allRoles = [];
 
-  // ── 認証状態監視 ──
+  // ── 認証 ──
   db.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
       const email = session.user.email;
-      const domain = email.split('@')[1];
-
-      // ドメインチェック
-      if (domain !== ALLOWED_DOMAIN) {
+      if (email.split('@')[1] !== ALLOWED_DOMAIN) {
         await db.auth.signOut();
-        showError(`@${ALLOWED_DOMAIN} のアカウントでログインしてください。<br>（現在：${email}）`);
+        showError(`@${ALLOWED_DOMAIN} のアカウントでログインしてください。`);
         return;
       }
-
-      // 管理者チェック
       if (email !== ADMIN_EMAIL) {
         await db.auth.signOut();
-        showError(`管理者（${ADMIN_EMAIL}）のみログインできます。<br>（現在：${email}）`);
+        showError(`管理者（${ADMIN_EMAIL}）のみアクセスできます。`);
         return;
       }
-
       currentUser = session.user;
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('errorScreen').style.display = 'none';
       document.getElementById('adminScreen').style.display = 'block';
       document.getElementById('userName').textContent = email;
+      await loadRoles();
       loadPosts();
     } else {
       currentUser = null;
@@ -482,19 +271,12 @@
   function showError(msg) {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminScreen').style.display = 'none';
-    const es = document.getElementById('errorScreen');
-    es.style.display = 'flex';
-    document.getElementById('errorMsg').innerHTML = msg;
+    document.getElementById('errorScreen').style.display = 'flex';
+    document.getElementById('errorMsg').textContent = msg;
   }
 
   async function loginWithGoogle() {
-    await db.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: location.href,
-        queryParams: { hd: ALLOWED_DOMAIN }   // Googleのドメインヒント
-      }
-    });
+    await db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.href, queryParams: { hd: ALLOWED_DOMAIN } } });
   }
 
   async function logout() {
@@ -503,47 +285,125 @@
     document.getElementById('loginScreen').style.display = 'flex';
   }
 
-  // ── ファイル選択 ──
+  // ── タブ切り替え ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['posts','members','roles'][i] === name));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    if (name === 'members') loadMembers();
+    if (name === 'roles') renderRolesTab();
+  }
+
+  // ── ロール ──
+  async function loadRoles() {
+    const { data } = await db.from('roles').select('*').order('id');
+    allRoles = (data || []).map(r => r.name);
+    renderRoleCheckboxes([]);
+  }
+
+  function renderRoleCheckboxes(selectedRoles) {
+    const el = document.getElementById('roleCheckboxes');
+    if (allRoles.length === 0) { el.innerHTML = '<span style="font-size:13px;color:#aaa">ロールがありません（ロール管理から追加）</span>'; return; }
+    el.innerHTML = allRoles.map(r => `
+      <label class="role-checkbox-item">
+        <input type="checkbox" name="targetRole" value="${escapeHtml(r)}" ${selectedRoles.includes(r) ? 'checked' : ''}>
+        ${escapeHtml(r)}
+      </label>`).join('');
+  }
+
+  function getSelectedRoles() {
+    return Array.from(document.querySelectorAll('input[name="targetRole"]:checked')).map(el => el.value);
+  }
+
+  async function renderRolesTab() {
+    const el = document.getElementById('rolesArea');
+    el.innerHTML = `
+      <div class="roles-list" id="rolesList">${allRoles.map(r => `
+        <div class="role-chip">
+          ${escapeHtml(r)}
+          <button class="role-chip-del" onclick="deleteRole('${escapeHtml(r)}')" title="削除">×</button>
+        </div>`).join('')}
+      </div>
+      <div class="add-role-row">
+        <input type="text" id="newRoleName" placeholder="新しいロール名" style="max-width:220px">
+        <button class="btn btn-primary" onclick="addRole()">追加</button>
+      </div>`;
+  }
+
+  async function addRole() {
+    const name = document.getElementById('newRoleName').value.trim();
+    if (!name) return;
+    const { error } = await db.from('roles').insert({ name });
+    if (error) { showToast('追加失敗: ' + error.message); return; }
+    await loadRoles();
+    renderRolesTab();
+    showToast('ロールを追加しました');
+  }
+
+  async function deleteRole(name) {
+    if (!confirm(`ロール「${name}」を削除しますか？`)) return;
+    const { error } = await db.from('roles').delete().eq('name', name);
+    if (error) { showToast('削除失敗'); return; }
+    await loadRoles();
+    renderRolesTab();
+    showToast('削除しました');
+  }
+
+  // ── 生徒管理 ──
+  async function loadMembers() {
+    const el = document.getElementById('membersArea');
+    const { data, error } = await db.from('members').select('*').order('created_at', { ascending: false });
+    if (error || !data || data.length === 0) { el.innerHTML = '<div class="empty">まだログインした生徒はいません</div>'; return; }
+
+    const roleOptions = allRoles.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('');
+
+    el.innerHTML = `<table class="members-table">
+      <thead><tr><th>メールアドレス</th><th>ロール</th><th>初回ログイン</th></tr></thead>
+      <tbody>
+        ${data.map(m => `<tr>
+          <td>${escapeHtml(m.email)}</td>
+          <td>
+            <select class="role-select" onchange="updateMemberRole('${m.id}', this.value)">
+              <option value="general" ${m.role === 'general' ? 'selected' : ''}>general（一般）</option>
+              ${roleOptions.replace(`value="${m.role}"`, `value="${m.role}" selected`)}
+            </select>
+          </td>
+          <td>${new Date(m.created_at).toLocaleDateString('ja-JP')}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  async function updateMemberRole(id, role) {
+    const { error } = await db.from('members').update({ role }).eq('id', id);
+    if (error) { showToast('更新失敗: ' + error.message); return; }
+    showToast('ロールを更新しました');
+  }
+
+  // ── ファイル操作 ──
   const dropArea = document.getElementById('dropArea');
   const fileInput = document.getElementById('fileInput');
 
-  fileInput.addEventListener('change', () => {
-    addFiles(Array.from(fileInput.files));
-    fileInput.value = '';
-  });
-
+  fileInput.addEventListener('change', () => { addFiles(Array.from(fileInput.files)); fileInput.value = ''; });
   dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('drag-over'); });
   dropArea.addEventListener('dragleave', () => dropArea.classList.remove('drag-over'));
-  dropArea.addEventListener('drop', e => {
-    e.preventDefault();
-    dropArea.classList.remove('drag-over');
-    addFiles(Array.from(e.dataTransfer.files));
-  });
+  dropArea.addEventListener('drop', e => { e.preventDefault(); dropArea.classList.remove('drag-over'); addFiles(Array.from(e.dataTransfer.files)); });
 
   function addFiles(files) {
-    files.forEach(f => {
-      if (!selectedFiles.find(sf => sf.name === f.name && sf.size === f.size)) {
-        selectedFiles.push(f);
-      }
-    });
+    files.forEach(f => { if (!selectedFiles.find(sf => sf.name === f.name && sf.size === f.size)) selectedFiles.push(f); });
     renderFilePreview();
   }
 
   function renderFilePreview() {
     const list = document.getElementById('filePreviewList');
-    if (selectedFiles.length === 0) { list.innerHTML = ''; return; }
     list.innerHTML = selectedFiles.map((f, i) => `
       <div class="file-preview-item">
         <span>${escapeHtml(f.name)}</span>
         <button class="file-remove" onclick="removeFile(${i})">×</button>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
 
-  function removeFile(i) {
-    selectedFiles.splice(i, 1);
-    renderFilePreview();
-  }
+  function removeFile(i) { selectedFiles.splice(i, 1); renderFilePreview(); }
 
   function renderExistingFiles(paths) {
     const area = document.getElementById('existingFilesArea');
@@ -552,38 +412,27 @@
     area.style.display = 'block';
     list.innerHTML = paths.map(path => {
       const name = path.split('/').pop();
-      const isRemoved = removedFilePaths.includes(path);
-      return `
-        <div class="existing-file-item" id="ef_${btoa(path).replace(/=/g,'')}">
-          <span style="${isRemoved ? 'text-decoration:line-through;color:#aaa;' : ''}">${escapeHtml(name)}</span>
-          ${isRemoved
-            ? `<button class="btn-sm btn-edit" onclick="restoreFile('${path}')">戻す</button>`
-            : `<button class="btn-sm btn-del" onclick="markRemoveFile('${path}')">削除</button>`}
-        </div>
-      `;
+      const removed = removedFilePaths.includes(path);
+      return `<div class="existing-file-item">
+        <span style="${removed ? 'text-decoration:line-through;color:#aaa' : ''}">${escapeHtml(name)}</span>
+        ${removed
+          ? `<button class="btn-sm btn-edit" onclick="restoreFile('${path}')">元に戻す</button>`
+          : `<button class="btn-sm btn-del" onclick="markRemoveFile('${path}')">削除</button>`}
+      </div>`;
     }).join('');
   }
 
-  function markRemoveFile(path) {
-    if (!removedFilePaths.includes(path)) removedFilePaths.push(path);
-    renderExistingFiles(existingFilePaths);
-  }
+  function markRemoveFile(path) { if (!removedFilePaths.includes(path)) removedFilePaths.push(path); renderExistingFiles(existingFilePaths); }
+  function restoreFile(path) { removedFilePaths = removedFilePaths.filter(p => p !== path); renderExistingFiles(existingFilePaths); }
 
-  function restoreFile(path) {
-    removedFilePaths = removedFilePaths.filter(p => p !== path);
-    renderExistingFiles(existingFilePaths);
-  }
-
-  // ── ファイルアップロード ──
   async function uploadFiles(postId) {
     const uploaded = [];
     for (const file of selectedFiles) {
       const ext = file.name.split('.').pop();
-      const safeName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-      const path = `${postId}/${safeName}`;
-      const { error } = await db.storage.from(STORAGE_BUCKET).upload(path, file, { upsert: false });
-      if (error) { console.error('Upload error:', error); continue; }
-      uploaded.push(path);
+      const safe = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `${postId}/${safe}`;
+      const { error } = await db.storage.from(STORAGE_BUCKET).upload(path, file);
+      if (!error) uploaded.push(path);
     }
     return uploaded;
   }
@@ -592,32 +441,28 @@
   async function loadPosts() {
     const { data, error } = await db.from('posts').select('*').order('created_at', { ascending: false });
     const list = document.getElementById('postsList');
-    if (error || !data || data.length === 0) {
-      list.innerHTML = '<div class="empty">投稿はまだありません</div>';
-      return;
-    }
+    if (error || !data || data.length === 0) { list.innerHTML = '<div class="empty">投稿はまだありません</div>'; return; }
     list.innerHTML = data.map(post => {
       const date = new Date(post.created_at).toLocaleDateString('ja-JP');
-      const filesNote = (post.file_paths && post.file_paths.length > 0)
-        ? ` 　📎 ${post.file_paths.length}件` : '';
-      return `
-        <div class="post-item">
-          <div class="post-item-info">
-            <div class="post-item-title">${escapeHtml(post.title)}</div>
-            <div class="post-item-meta">
-              <span class="category-tag">${post.category}</span>
-              <span class="status-badge ${post.published ? 'status-published' : 'status-draft'}">
-                ${post.published ? '公開中' : '下書き'}
-              </span>
-              　${date}　${escapeHtml(post.author)}${filesNote}
-            </div>
-          </div>
-          <div class="post-item-actions">
-            <button class="btn-sm btn-edit" onclick="editPost(${post.id})">編集</button>
-            <button class="btn-sm btn-del" onclick="deletePost(${post.id})">削除</button>
+      const rolesHtml = (post.target_roles && post.target_roles.length > 0)
+        ? post.target_roles.map(r => `<span class="role-tag-sm">${escapeHtml(r)}</span>`).join('') : '<span style="font-size:11px;color:#aaa">全員</span>';
+      const filesNote = (post.file_paths && post.file_paths.length > 0) ? `📎${post.file_paths.length}` : '';
+      return `<div class="post-item">
+        <div class="post-item-info">
+          <div class="post-item-title">${escapeHtml(post.title)}</div>
+          <div class="post-item-meta">
+            <span class="tag">${post.category}</span>
+            <span class="status-badge ${post.published ? 'status-published' : 'status-draft'}">${post.published ? '公開中' : '下書き'}</span>
+            ${rolesHtml}
+            <span>${date}</span>
+            ${filesNote ? `<span>${filesNote}</span>` : ''}
           </div>
         </div>
-      `;
+        <div class="post-item-actions">
+          <button class="btn-sm btn-edit" onclick="editPost(${post.id})">編集</button>
+          <button class="btn-sm btn-del" onclick="deletePost(${post.id})">削除</button>
+        </div>
+      </div>`;
     }).join('');
   }
 
@@ -628,45 +473,27 @@
     const category = document.getElementById('inputCategory').value;
     const body = document.getElementById('inputBody').value.trim();
     const published = document.getElementById('inputPublished').checked;
+    const target_roles = getSelectedRoles();
 
     if (!title || !body) { showToast('タイトルと本文を入力してください'); return; }
 
-    document.getElementById('uploadProgress').style.display = selectedFiles.length > 0 ? 'block' : 'none';
+    if (selectedFiles.length > 0) document.getElementById('uploadProgress').style.display = 'block';
 
-    let filePaths = [];
+    let filePaths = id ? existingFilePaths.filter(p => !removedFilePaths.includes(p)) : [];
+    if (id) for (const path of removedFilePaths) await db.storage.from(STORAGE_BUCKET).remove([path]);
 
-    if (id) {
-      // 編集：既存ファイルから削除対象を除外
-      filePaths = existingFilePaths.filter(p => !removedFilePaths.includes(p));
-      // 削除対象をStorageから削除
-      for (const path of removedFilePaths) {
-        await db.storage.from(STORAGE_BUCKET).remove([path]);
-      }
-    }
-
-    // 新規ファイルをアップロード
-    const postId = id || `tmp_${Date.now()}`;
-    const newPaths = await uploadFiles(id || postId);
+    const tmpId = id || `tmp_${Date.now()}`;
+    const newPaths = await uploadFiles(tmpId);
     filePaths = [...filePaths, ...newPaths];
-
     document.getElementById('uploadProgress').style.display = 'none';
 
-    const payload = {
-      title, category, body, published,
-      author: currentUser?.email || '生徒会',
-      file_paths: filePaths
-    };
+    const payload = { title, category, body, published, target_roles, file_paths: filePaths, author: currentUser.email };
 
-    let error, data;
-    if (id) {
-      ({ error } = await db.from('posts').update(payload).eq('id', id));
-    } else {
-      ({ error, data } = await db.from('posts').insert(payload).select().single());
-      // tmpフォルダをIDフォルダに移動（Supabaseは直接移動不可のため、パスをそのまま記録）
-    }
+    const { error } = id
+      ? await db.from('posts').update(payload).eq('id', id)
+      : await db.from('posts').insert(payload);
 
-    if (error) { showToast('保存に失敗しました: ' + error.message); return; }
-
+    if (error) { showToast('保存失敗: ' + error.message); return; }
     showToast(id ? '更新しました！' : '投稿しました！');
     resetForm();
     loadPosts();
@@ -676,36 +503,28 @@
   async function editPost(id) {
     const { data } = await db.from('posts').select('*').eq('id', id).single();
     if (!data) return;
-
     document.getElementById('editId').value = id;
     document.getElementById('inputTitle').value = data.title;
     document.getElementById('inputCategory').value = data.category;
     document.getElementById('inputBody').value = data.body;
     document.getElementById('inputPublished').checked = data.published;
     document.getElementById('formTitle').textContent = '投稿を編集';
-
-    // 既存ファイルの表示
+    renderRoleCheckboxes(data.target_roles || []);
     existingFilePaths = data.file_paths || [];
     removedFilePaths = [];
     selectedFiles = [];
     renderFilePreview();
     renderExistingFiles(existingFilePaths);
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // ── 削除 ──
   async function deletePost(id) {
-    if (!confirm('この投稿を削除しますか？添付ファイルも全て削除されます。')) return;
-
-    // Storageのファイルも削除
+    if (!confirm('この投稿を削除しますか？添付ファイルも削除されます。')) return;
     const { data } = await db.from('posts').select('file_paths').eq('id', id).single();
-    if (data?.file_paths?.length > 0) {
-      await db.storage.from(STORAGE_BUCKET).remove(data.file_paths);
-    }
-
+    if (data?.file_paths?.length > 0) await db.storage.from(STORAGE_BUCKET).remove(data.file_paths);
     const { error } = await db.from('posts').delete().eq('id', id);
-    if (error) { showToast('削除に失敗しました'); return; }
+    if (error) { showToast('削除失敗'); return; }
     showToast('削除しました');
     loadPosts();
   }
@@ -717,12 +536,10 @@
     document.getElementById('inputBody').value = '';
     document.getElementById('inputPublished').checked = true;
     document.getElementById('formTitle').textContent = '新規投稿';
-    selectedFiles = [];
-    existingFilePaths = [];
-    removedFilePaths = [];
+    renderRoleCheckboxes([]);
+    selectedFiles = []; existingFilePaths = []; removedFilePaths = [];
     renderFilePreview();
     document.getElementById('existingFilesArea').style.display = 'none';
-    document.getElementById('existingFilesList').innerHTML = '';
   }
 
   function showToast(msg) {
@@ -732,9 +549,7 @@
     setTimeout(() => t.classList.remove('show'), 2800);
   }
 
-  function escapeHtml(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
+  function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
 </html>

@@ -6,297 +6,210 @@
   <title>お知らせ詳細 | 灘校生徒会</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-      background: #f7f8fa;
-      color: #1a1a2e;
-      min-height: 100vh;
-    }
-
-    header {
-      background: #1a1a2e;
-      color: #fff;
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      height: 60px;
-      gap: 16px;
-    }
-
-    header h1 { font-size: 18px; font-weight: 700; }
-
-    .container {
-      max-width: 720px;
-      margin: 40px auto;
-      padding: 0 24px 80px;
-    }
-
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: #555;
-      text-decoration: none;
-      font-size: 14px;
-      margin-bottom: 24px;
-    }
-
-    .back-link:hover { color: #1a1a2e; }
-
-    .post-card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 40px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    }
-
-    .post-meta {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .category-tag {
-      font-size: 12px;
-      font-weight: 700;
-      padding: 4px 12px;
-      border-radius: 20px;
-      background: #e8f0fe;
-      color: #1a73e8;
-    }
-
-    .category-tag.行事 { background: #fce8e8; color: #d32f2f; }
-    .category-tag.部活 { background: #e8f5e9; color: #2e7d32; }
-    .category-tag.募集 { background: #fff3e0; color: #e65100; }
-    .category-tag.その他 { background: #f3e5f5; color: #6a1b9a; }
-
-    .post-date { font-size: 13px; color: #888; }
-
-    h2 {
-      font-size: clamp(20px, 4vw, 28px);
-      font-weight: 800;
-      line-height: 1.4;
-      margin-bottom: 8px;
-    }
-
-    .post-author {
-      font-size: 13px;
-      color: #888;
-      margin-bottom: 32px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .post-body {
-      font-size: 16px;
-      line-height: 1.9;
-      color: #333;
-      white-space: pre-wrap;
-      word-break: break-word;
-      margin-bottom: 32px;
-    }
-
-    /* ファイル添付セクション */
-    .attachments {
-      border-top: 1px solid #eee;
-      padding-top: 24px;
-      margin-top: 8px;
-    }
-
-    .attachments h3 {
-      font-size: 14px;
-      font-weight: 700;
-      color: #444;
-      margin-bottom: 12px;
-    }
-
-    .file-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .file-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      background: #f7f8fa;
-      border-radius: 8px;
-      text-decoration: none;
-      color: #1a1a2e;
-      font-size: 14px;
-      border: 1px solid #e5e7eb;
-      transition: background 0.2s;
-    }
-
-    .file-item:hover { background: #e8f0fe; }
-
-    .file-icon { font-size: 18px; flex-shrink: 0; }
-
-    .file-name {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .file-size { font-size: 12px; color: #888; flex-shrink: 0; }
-
-    .image-preview {
-      margin-top: 16px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 12px;
-    }
-
-    .image-preview img {
-      width: 100%;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: opacity 0.2s;
-      border: 1px solid #e5e7eb;
-    }
-
-    .image-preview img:hover { opacity: 0.85; }
-
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;background:#f7f8fa;color:#1a1a2e;min-height:100vh}
+    header{background:#1a1a2e;color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px}
+    header h1{font-size:18px;font-weight:700}
+    .header-right{display:flex;align-items:center;gap:16px}
+    .user-name{font-size:13px;color:#a0c4ff}
+    .btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4);padding:6px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+    .btn-outline:hover{background:rgba(255,255,255,.1)}
+    .container{max-width:720px;margin:40px auto;padding:0 24px 80px}
+    .back-link{display:inline-flex;align-items:center;gap:6px;color:#555;text-decoration:none;font-size:14px;margin-bottom:24px}
+    .back-link:hover{color:#1a1a2e}
+    .post-card{background:#fff;border-radius:16px;padding:40px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+    .post-meta{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+    .category-tag{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:#e8f0fe;color:#1a73e8}
+    .category-tag.行事{background:#fce8e8;color:#d32f2f}
+    .category-tag.部活{background:#e8f5e9;color:#2e7d32}
+    .category-tag.募集{background:#fff3e0;color:#e65100}
+    .category-tag.その他{background:#f3e5f5;color:#6a1b9a}
+    .post-date{font-size:13px;color:#888}
+    h2{font-size:clamp(20px,4vw,28px);font-weight:800;line-height:1.4;margin-bottom:8px}
+    .post-author{font-size:13px;color:#888;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid #eee}
+    .post-body{font-size:16px;line-height:1.9;color:#333;white-space:pre-wrap;word-break:break-word;margin-bottom:32px}
+    /* 添付ファイル */
+    .attachments{border-top:1px solid #eee;padding-top:28px}
+    .attachments h3{font-size:15px;font-weight:700;color:#333;margin-bottom:16px}
+    /* 画像グリッド */
+    .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:16px}
+    .image-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid #e5e7eb;transition:opacity .2s}
+    .image-grid img:hover{opacity:.85}
+    /* ファイルリスト */
+    .file-list{display:flex;flex-direction:column;gap:8px}
+    .file-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#f7f8fa;border-radius:8px;border:1px solid #e5e7eb;text-decoration:none;color:#1a1a2e;transition:background .2s}
+    .file-item:hover{background:#e8f0fe}
+    .file-icon{font-size:20px;flex-shrink:0}
+    .file-info{flex:1;min-width:0}
+    .file-name{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .file-action{font-size:12px;color:#1a73e8;flex-shrink:0;font-weight:600}
     /* ライトボックス */
-    .lightbox {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      z-index: 999;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    .lightbox.open { display: flex; }
-
-    .lightbox img {
-      max-width: 100%;
-      max-height: 90vh;
-      border-radius: 8px;
-    }
-
-    .lightbox-close {
-      position: absolute;
-      top: 16px;
-      right: 20px;
-      color: #fff;
-      font-size: 32px;
-      cursor: pointer;
-      line-height: 1;
-    }
-
-    .loading { text-align: center; padding: 80px; color: #aaa; }
-    .error { text-align: center; padding: 80px; color: #d32f2f; }
+    #lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:999;align-items:center;justify-content:center;padding:20px}
+    #lightbox.open{display:flex}
+    #lightbox img{max-width:100%;max-height:90vh;border-radius:8px;object-fit:contain}
+    .lb-close{position:absolute;top:16px;right:20px;color:#fff;font-size:36px;cursor:pointer;line-height:1;user-select:none}
+    .lb-nav{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:36px;cursor:pointer;user-select:none;padding:12px;background:rgba(0,0,0,.3);border-radius:50%}
+    #lbPrev{left:16px}
+    #lbNext{right:16px}
+    /* ログイン画面 */
+    #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+    .login-card{background:#fff;border-radius:20px;padding:48px 40px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.1);max-width:400px;width:100%}
+    .login-card h2{font-size:24px;margin-bottom:8px}
+    .login-card p{color:#666;font-size:14px;margin-bottom:32px}
+    .btn-google{background:#fff;color:#444;border:1.5px solid #ddd;display:flex;align-items:center;gap:10px;font-size:15px;padding:12px 24px;border-radius:8px;cursor:pointer;width:100%;justify-content:center;font-weight:600;transition:all .2s}
+    .btn-google:hover{background:#f5f5f5}
+    #mainContent{display:none}
+    .loading{text-align:center;padding:80px;color:#aaa}
+    .error-msg{text-align:center;padding:80px;color:#d32f2f}
   </style>
 </head>
 <body>
 
-<header>
-  <h1><a href="index.html" style="color:#fff;text-decoration:none;">灘校生徒会</a></h1>
-</header>
-
-<div class="container">
-  <a class="back-link" href="index.html">← お知らせ一覧に戻る</a>
-  <div id="content"><div class="loading">読み込み中...</div></div>
+<div id="loginScreen">
+  <div class="login-card">
+    <h2>灘校生徒会</h2>
+    <p>続けるにはログインが必要です</p>
+    <button class="btn-google" onclick="loginWithGoogle()">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Googleでログイン
+    </button>
+  </div>
 </div>
 
-<!-- ライトボックス -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <span class="lightbox-close">&times;</span>
-  <img id="lightboxImg" src="" alt="">
+<div id="mainContent">
+  <header>
+    <h1><a href="index.html" style="color:#fff;text-decoration:none">灘校生徒会</a></h1>
+    <div class="header-right">
+      <span class="user-name" id="userName"></span>
+      <button class="btn-outline" onclick="logout()">ログアウト</button>
+    </div>
+  </header>
+  <div class="container">
+    <a class="back-link" href="index.html">← お知らせ一覧に戻る</a>
+    <div id="content"><div class="loading">読み込み中...</div></div>
+  </div>
+</div>
+
+<div id="lightbox" onclick="closeLightbox()">
+  <span class="lb-close">&times;</span>
+  <span class="lb-nav" id="lbPrev" onclick="event.stopPropagation();lbMove(-1)">&#8249;</span>
+  <img id="lbImg" src="" alt="">
+  <span class="lb-nav" id="lbNext" onclick="event.stopPropagation();lbMove(1)">&#8250;</span>
 </div>
 
 <script>
   const SUPABASE_URL = 'https://uvqidlzkiuyvqxqttuae.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cWlkbHpraXV5dnF4cXR0dWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0Nzk0MTEsImV4cCI6MjA5ODA1NTQxMX0.VrpNjeEpsfOGJKsSz8uSGxrqiuChT9QjEzgjUnAv1s8';
+  const ALLOWED_DOMAIN = 'stg.nada.ac.jp';
+  const STORAGE_BUCKET = 'post-files';
 
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  let lbImages = [];
+  let lbIndex = 0;
+
+  function isImage(name) { return /\.(jpg|jpeg|png|gif|webp)$/i.test(name); }
+  function isPdf(name) { return /\.pdf$/i.test(name); }
+
   function getFileIcon(name) {
-    const ext = name.split('.').pop().toLowerCase();
-    if (['jpg','jpeg','png','gif','webp','svg'].includes(ext)) return '🖼️';
-    if (['pdf'].includes(ext)) return '📄';
-    if (['doc','docx'].includes(ext)) return '📝';
-    if (['xls','xlsx'].includes(ext)) return '📊';
-    if (['ppt','pptx'].includes(ext)) return '📑';
-    if (['zip','rar','7z'].includes(ext)) return '🗜️';
-    if (['mp4','mov','avi'].includes(ext)) return '🎬';
-    if (['mp3','wav','m4a'].includes(ext)) return '🎵';
+    if (isImage(name)) return '🖼️';
+    if (isPdf(name)) return '📄';
+    if (/\.(doc|docx)$/i.test(name)) return '📝';
+    if (/\.(xls|xlsx)$/i.test(name)) return '📊';
+    if (/\.(ppt|pptx)$/i.test(name)) return '📑';
+    if (/\.(zip|rar|7z)$/i.test(name)) return '🗜️';
+    if (/\.(mp4|mov|avi)$/i.test(name)) return '🎬';
+    if (/\.(mp3|wav|m4a)$/i.test(name)) return '🎵';
     return '📎';
   }
 
-  function isImage(name) {
-    const ext = name.split('.').pop().toLowerCase();
-    return ['jpg','jpeg','png','gif','webp'].includes(ext);
+  db.auth.onAuthStateChange(async (event, session) => {
+    if (session?.user) {
+      const email = session.user.email;
+      if (email.split('@')[1] !== ALLOWED_DOMAIN) { await db.auth.signOut(); return; }
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+      document.getElementById('userName').textContent = email;
+      loadPost(session.user);
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('mainContent').style.display = 'none';
+    }
+  });
+
+  async function loginWithGoogle() {
+    await db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.href, queryParams: { hd: ALLOWED_DOMAIN } } });
   }
 
-  async function loadPost() {
-    const params = new URLSearchParams(location.search);
-    const id = params.get('id');
+  async function logout() {
+    await db.auth.signOut();
+  }
+
+  async function loadPost(user) {
+    const id = new URLSearchParams(location.search).get('id');
     if (!id) { showError('記事が見つかりません'); return; }
 
-    const { data, error } = await db
-      .from('posts')
-      .select('*')
-      .eq('id', id)
-      .eq('published', true)
-      .single();
-
+    const { data, error } = await db.from('posts').select('*').eq('id', id).eq('published', true).single();
     if (error || !data) { showError('記事が見つかりません'); return; }
 
-    document.title = data.title + ' | 灘校生徒会';
+    // ロール制限チェック
+    if (data.target_roles && data.target_roles.length > 0) {
+      const { data: member } = await db.from('members').select('role').eq('id', user.id).single();
+      const myRole = member?.role || 'general';
+      if (!data.target_roles.includes(myRole) && !data.target_roles.includes('全体')) {
+        showError('この記事を閲覧する権限がありません');
+        return;
+      }
+    }
 
+    document.title = data.title + ' | 灘校生徒会';
     const date = new Date(data.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    // ファイル表示の構築
+    // ファイル分類
     let filesHtml = '';
     if (data.file_paths && data.file_paths.length > 0) {
-      const imageFiles = data.file_paths.filter(p => isImage(p.split('/').pop()));
-      const otherFiles = data.file_paths.filter(p => !isImage(p.split('/').pop()));
+      const imagePaths = data.file_paths.filter(p => isImage(p.split('/').pop()));
+      const otherPaths = data.file_paths.filter(p => !isImage(p.split('/').pop()));
 
-      let imageHtml = '';
-      if (imageFiles.length > 0) {
-        const imgTags = imageFiles.map(path => {
-          const { data: urlData } = db.storage.from('post-files').getPublicUrl(path);
-          const url = urlData.publicUrl;
-          const name = path.split('/').pop();
-          return `<img src="${url}" alt="${escapeHtml(name)}" onclick="openLightbox('${url}')" loading="lazy">`;
-        }).join('');
-        imageHtml = `<div class="image-preview">${imgTags}</div>`;
+      lbImages = imagePaths.map(path => {
+        const { data: u } = db.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+        return u.publicUrl;
+      });
+
+      // 画像グリッド
+      let imgHtml = '';
+      if (imagePaths.length > 0) {
+        imgHtml = `<div class="image-grid">` +
+          imagePaths.map((path, i) => {
+            const { data: u } = db.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+            const name = path.split('/').pop();
+            return `<img src="${u.publicUrl}" alt="${escapeHtml(name)}" onclick="openLightbox(${i})" loading="lazy">`;
+          }).join('') +
+          `</div>`;
       }
 
+      // その他ファイルリスト
       let otherHtml = '';
-      if (otherFiles.length > 0) {
-        const items = otherFiles.map(path => {
-          const { data: urlData } = db.storage.from('post-files').getPublicUrl(path);
-          const url = urlData.publicUrl;
-          const name = path.split('/').pop();
-          return `
-            <a class="file-item" href="${url}" target="_blank" download>
+      if (otherPaths.length > 0) {
+        otherHtml = `<div class="file-list">` +
+          otherPaths.map(path => {
+            const { data: u } = db.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+            const name = path.split('/').pop();
+            const action = isPdf(name) ? 'ダウンロード' : 'ダウンロード';
+            return `<a class="file-item" href="${u.publicUrl}" target="_blank" download="${escapeHtml(name)}">
               <span class="file-icon">${getFileIcon(name)}</span>
-              <span class="file-name">${escapeHtml(name)}</span>
-            </a>
-          `;
-        }).join('');
-        otherHtml = `<div class="file-list">${items}</div>`;
+              <div class="file-info"><div class="file-name">${escapeHtml(name)}</div></div>
+              <span class="file-action">${action} ↓</span>
+            </a>`;
+          }).join('') +
+          `</div>`;
       }
 
-      filesHtml = `
-        <div class="attachments">
-          <h3>添付ファイル（${data.file_paths.length}件）</h3>
-          ${imageHtml}
-          ${otherHtml}
-        </div>
-      `;
+      filesHtml = `<div class="attachments">
+        <h3>添付ファイル（${data.file_paths.length}件）</h3>
+        ${imgHtml}${otherHtml}
+      </div>`;
     }
 
     document.getElementById('content').innerHTML = `
@@ -309,29 +222,31 @@
         <div class="post-author">投稿者：${escapeHtml(data.author)}</div>
         <div class="post-body">${escapeHtml(data.body)}</div>
         ${filesHtml}
-      </div>
-    `;
+      </div>`;
   }
 
-  function openLightbox(url) {
-    document.getElementById('lightboxImg').src = url;
+  function openLightbox(i) {
+    lbIndex = i;
+    document.getElementById('lbImg').src = lbImages[i];
     document.getElementById('lightbox').classList.add('open');
+    document.getElementById('lbPrev').style.display = lbImages.length > 1 ? 'flex' : 'none';
+    document.getElementById('lbNext').style.display = lbImages.length > 1 ? 'flex' : 'none';
+  }
+
+  function lbMove(dir) {
+    lbIndex = (lbIndex + dir + lbImages.length) % lbImages.length;
+    document.getElementById('lbImg').src = lbImages[lbIndex];
   }
 
   function closeLightbox() {
     document.getElementById('lightbox').classList.remove('open');
-    document.getElementById('lightboxImg').src = '';
   }
 
   function showError(msg) {
-    document.getElementById('content').innerHTML = `<div class="error">${msg}</div>`;
+    document.getElementById('content').innerHTML = `<div class="error-msg">${msg}</div>`;
   }
 
-  function escapeHtml(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  loadPost();
+  function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
 </html>
