@@ -158,10 +158,16 @@
     const { data, error } = await db.from('posts').select('*').eq('id', id).eq('published', true).single();
     if (error || !data) { showError('記事が見つかりません'); return; }
 
-    // ロール制限チェック
+    // ロール制限チェック（members取得に失敗してもgeneral扱いで処理を継続する）
     if (data.target_roles && data.target_roles.length > 0) {
-      const { data: member } = await db.from('members').select('role').eq('id', user.id).single();
-      const myRole = member?.role || 'general';
+      let myRole = 'general';
+      try {
+        const { data: member, error: memberError } = await db.from('members').select('role').eq('id', user.id).single();
+        if (memberError) console.error('members取得エラー:', memberError.message);
+        myRole = member?.role || 'general';
+      } catch (e) {
+        console.error('members取得エラー:', e);
+      }
       if (!data.target_roles.includes(myRole) && !data.target_roles.includes('全体')) {
         showError('この記事を閲覧する権限がありません');
         return;

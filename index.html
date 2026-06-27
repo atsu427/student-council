@@ -140,26 +140,44 @@
         return;
       }
 
-      // membersテーブルに登録（初回のみinsert。onConflictで重複・競合を無視）
-      const { error: upsertError } = await db.from('members')
-        .upsert({ id: session.user.id, email, role: 'general' }, { onConflict: 'id', ignoreDuplicates: true });
-      if (upsertError) console.error('members登録エラー:', upsertError.message);
-
-      const { data: member, error: memberError } = await db.from('members').select('*').eq('id', session.user.id).single();
-      if (memberError) console.error('members取得エラー:', memberError.message);
-      currentMember = member;
-
+      // 認証が確認できた時点で即座にメイン画面を表示する
+      // （membersテーブルの登録・取得を待って画面遷移すると、その処理が
+      //   失敗・遅延した場合にログイン画面のまま止まって見えてしまうため）
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('errorScreen').style.display = 'none';
       document.getElementById('mainContent').style.display = 'block';
       document.getElementById('userName').textContent = email;
       if (email === ADMIN_EMAIL) document.getElementById('adminLink').style.display = 'inline-block';
       loadPosts();
+
+      syncMember(session.user.id, email);
     } else {
       document.getElementById('loginScreen').style.display = 'flex';
       document.getElementById('mainContent').style.display = 'none';
     }
   });
+
+  // membersテーブルへの登録・ロール取得はバックグラウンドで行う
+  // （失敗してもログイン自体やお知らせ表示はブロックしない）
+  async function syncMember(userId, email) {
+    try {
+      const { error: upsertError } = await db.from('members')
+        .upsert({ id: userId, email, role: 'general' }, { onConflict: 'id', ignoreDuplicates: true });
+      if (upsertError) console.error('members登録エラー:', upsertError.message);
+
+      const { data: member, error: memberError } = await db.from('members').select('*').eq('id', userId).single();
+      if (memberError) console.error('members取得エラー:', memberError.message);
+
+      if (member && member.role !== currentMember?.role) {
+        currentMember = member;
+        loadPosts(); // ロールが判明したら対象お知らせを再読込
+      } else {
+        currentMember = member;
+      }
+    } catch (e) {
+      console.error('members同期エラー:', e);
+    }
+  }
 
   function showError(msg) {
     document.getElementById('loginScreen').style.display = 'none';
