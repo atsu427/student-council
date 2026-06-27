@@ -230,7 +230,9 @@
   const STORAGE_BUCKET = 'post-files';
 
   const { createClient } = supabase;
-  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, storageKey: 'seitokai-session' }
+  });
 
   let currentUser = null;
   let selectedFiles = [];
@@ -352,26 +354,18 @@
   // ── 生徒管理 ──
   async function loadMembers() {
     const el = document.getElementById('membersArea');
+    el.innerHTML = '<div class="loading">読み込み中...</div>';
     const { data, error } = await db.from('members').select('*').order('created_at', { ascending: false });
-    if (error || !data || data.length === 0) { el.innerHTML = '<div class="empty">まだログインした生徒はいません</div>'; return; }
+    if (error) { el.innerHTML = '<div class="empty">読み込みエラー: ' + error.message + '</div>'; return; }
+    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">まだログインした生徒はいません</div>'; return; }
 
-    const roleOptions = allRoles.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('');
-
-    el.innerHTML = `<table class="members-table">
-      <thead><tr><th>メールアドレス</th><th>ロール</th><th>初回ログイン</th></tr></thead>
-      <tbody>
-        ${data.map(m => `<tr>
-          <td>${escapeHtml(m.email)}</td>
-          <td>
-            <select class="role-select" onchange="updateMemberRole('${m.id}', this.value)">
-              <option value="general" ${m.role === 'general' ? 'selected' : ''}>general（一般）</option>
-              ${roleOptions.replace(`value="${m.role}"`, `value="${m.role}" selected`)}
-            </select>
-          </td>
-          <td>${new Date(m.created_at).toLocaleDateString('ja-JP')}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
+    const roleChoices = ['general', ...allRoles];
+    let rows = '';
+    for (const m of data) {
+      const opts = roleChoices.map(r => '<option value="' + escapeHtml(r) + '"' + (m.role === r ? ' selected' : '') + '>' + escapeHtml(r) + '</option>').join('');
+      rows += '<tr><td>' + escapeHtml(m.email) + '</td><td><select class="role-select" onchange="updateMemberRole('' + m.id + '', this.value)">' + opts + '</select></td><td>' + new Date(m.created_at).toLocaleDateString('ja-JP') + '</td></tr>';
+    }
+    el.innerHTML = '<table class="members-table"><thead><tr><th>メールアドレス</th><th>ロール</th><th>初回ログイン</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
 
   async function updateMemberRole(id, role) {

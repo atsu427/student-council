@@ -140,8 +140,11 @@
         return;
       }
 
-      // membersテーブルにupsert
-      await db.from('members').upsert({ id: session.user.id, email }, { onConflict: 'id', ignoreDuplicates: true });
+      // membersテーブルに登録（初回のみinsert）
+      const { data: existing } = await db.from('members').select('id').eq('id', session.user.id).single();
+      if (!existing) {
+        await db.from('members').insert({ id: session.user.id, email, role: 'general' });
+      }
       const { data: member } = await db.from('members').select('*').eq('id', session.user.id).single();
       currentMember = member;
 
