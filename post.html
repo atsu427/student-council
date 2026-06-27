@@ -7,26 +7,26 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
     :root{
-      --ink:#1f2420;
-      --ink-soft:#4b5048;
-      --paper:#f5f2ea;
-      --paper-deep:#ece6d8;
-      --line:#cdc4ab;
-      --vermillion:#a23b2e;
-      --gold:#9c7a32;
+      --ink:#1d2024;
+      --ink-soft:#5c636d;
+      --paper:#ffffff;
+      --paper-deep:#f3f4f6;
+      --line:#e2e5ea;
+      --vermillion:#b4332a;
+      --gold:#9a7b2e;
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
-    h2,.login-card h2{font-family:'Shippori Mincho',serif}
+    body{font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN','Helvetica Neue',Arial,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+    h2,.login-card h2{font-family:inherit}
     header{background:var(--ink);color:var(--paper);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;border-bottom:3px solid var(--vermillion)}
-    header h1{font-size:19px;font-weight:700;font-family:'Shippori Mincho',serif;letter-spacing:.06em}
+    header h1{font-size:19px;font-weight:700;font-family:inherit;letter-spacing:.06em}
     .header-right{display:flex;align-items:center;gap:18px}
-    .user-name{font-size:12px;color:#cfc6ad}
-    .btn-outline{background:transparent;color:var(--paper);border:1px solid rgba(245,242,234,.45);padding:7px 18px;border-radius:0;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
-    .btn-outline:hover{background:rgba(245,242,234,.1)}
+    .user-name{font-size:12px;color:#c4c9d2}
+    .btn-outline{background:transparent;color:var(--paper);border:1px solid rgba(255,255,255,.45);padding:7px 18px;border-radius:0;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+    .btn-outline:hover{background:rgba(255,255,255,.1)}
     .container{max-width:680px;margin:0 auto;padding:48px 32px 96px}
     .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--ink-soft);text-decoration:none;font-size:13px;margin-bottom:32px;border-bottom:1px solid transparent;padding-bottom:2px}
     .back-link:hover{color:var(--vermillion);border-bottom-color:var(--vermillion)}
@@ -37,9 +37,9 @@
     .category-tag.部活{color:#3d6b4a}
     .category-tag.募集{color:#a25f1f}
     .category-tag.その他{color:#5a4a6b}
-    .post-date{font-size:13px;color:#8c8470;font-family:'Shippori Mincho',serif}
+    .post-date{font-size:13px;color:#8a909a;font-family:inherit}
     h2{font-size:clamp(22px,4vw,30px);font-weight:700;line-height:1.5;margin-bottom:14px;letter-spacing:.02em}
-    .post-author{font-size:13px;color:#8c8470;margin-bottom:36px;padding-bottom:28px;border-bottom:1px solid var(--line)}
+    .post-author{font-size:13px;color:#8a909a;margin-bottom:36px;padding-bottom:28px;border-bottom:1px solid var(--line)}
     .post-body{font-size:16px;line-height:2;color:var(--ink);white-space:pre-wrap;word-break:break-word;margin-bottom:36px}
     /* 添付ファイル */
     .attachments{border-top:1px solid var(--line);padding-top:30px}
@@ -72,8 +72,8 @@
     .btn-google{background:var(--paper);color:var(--ink);border:1px solid var(--ink);display:flex;align-items:center;gap:10px;font-size:14px;padding:13px 24px;border-radius:0;cursor:pointer;width:100%;justify-content:center;font-weight:500;transition:all .15s;font-family:inherit}
     .btn-google:hover{background:var(--ink);color:var(--paper)}
     #mainContent{display:none}
-    .loading{text-align:center;padding:80px;color:#a89f87;font-family:'Shippori Mincho',serif}
-    .error-msg{text-align:center;padding:80px;color:var(--vermillion);font-family:'Shippori Mincho',serif}
+    .loading{text-align:center;padding:80px;color:#9aa0aa;font-family:inherit}
+    .error-msg{text-align:center;padding:80px;color:var(--vermillion);font-family:inherit}
   </style>
 </head>
 <body>
@@ -91,7 +91,7 @@
 
 <div id="mainContent">
   <header>
-    <h1><a href="index.html" style="color:#f5f2ea;text-decoration:none">灘校生徒会</a></h1>
+    <h1><a href="index.html" style="color:#ffffff;text-decoration:none">灘校生徒会</a></h1>
     <div class="header-right">
       <span class="user-name" id="userName"></span>
       <button class="btn-outline" onclick="logout()">ログアウト</button>

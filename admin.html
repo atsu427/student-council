@@ -7,29 +7,29 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
     :root{
-      --ink:#1f2420;
-      --ink-soft:#4b5048;
-      --paper:#f5f2ea;
-      --paper-deep:#ece6d8;
-      --line:#cdc4ab;
-      --vermillion:#a23b2e;
-      --gold:#9c7a32;
+      --ink:#1d2024;
+      --ink-soft:#5c636d;
+      --paper:#ffffff;
+      --paper-deep:#f3f4f6;
+      --line:#e2e5ea;
+      --vermillion:#b4332a;
+      --gold:#9a7b2e;
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
-    h2,.login-card h2,.error-card h2{font-family:'Shippori Mincho',serif}
+    body{font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN','Helvetica Neue',Arial,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+    h2,.login-card h2,.error-card h2{font-family:inherit}
     header{background:var(--ink);color:var(--paper);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;border-bottom:3px solid var(--vermillion)}
-    header h1{font-size:18px;font-weight:700;font-family:'Shippori Mincho',serif;letter-spacing:.04em}
+    header h1{font-size:18px;font-weight:700;font-family:inherit;letter-spacing:.04em}
     .header-right{display:flex;align-items:center;gap:16px}
-    .user-name{font-size:12px;color:#cfc6ad}
+    .user-name{font-size:12px;color:#c4c9d2}
     .btn{padding:8px 20px;border-radius:0;border:none;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s;text-decoration:none;display:inline-block;font-family:inherit}
     .btn-primary{background:var(--vermillion);color:var(--paper)}
     .btn-primary:hover{background:#8a3024}
-    .btn-outline{background:transparent;color:var(--paper);border:1px solid rgba(245,242,234,.45)}
-    .btn-outline:hover{background:rgba(245,242,234,.1)}
+    .btn-outline{background:transparent;color:var(--paper);border:1px solid rgba(255,255,255,.45)}
+    .btn-outline:hover{background:rgba(255,255,255,.1)}
     .btn-view{background:transparent;color:var(--paper);font-weight:500;border:1px solid var(--gold)}
     .btn-view:hover{background:var(--gold);color:var(--ink)}
     /* ログイン */
@@ -39,7 +39,7 @@
     .login-card p{color:var(--ink-soft);font-size:13px;margin-bottom:36px;line-height:1.8}
     .btn-google{background:var(--paper);color:var(--ink);border:1px solid var(--ink);display:flex;align-items:center;gap:10px;font-size:14px;padding:13px 24px;border-radius:0;cursor:pointer;width:100%;justify-content:center;font-weight:500;transition:all .15s;font-family:inherit}
     .btn-google:hover{background:var(--ink);color:var(--paper)}
-    .login-note{margin-top:18px;font-size:11px;color:#a89f87}
+    .login-note{margin-top:18px;font-size:11px;color:#9aa0aa}
     #errorScreen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--ink)}
     .error-card{background:var(--paper);border-radius:0;padding:56px 44px;text-align:center;box-shadow:none;max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
     .error-card h2{font-size:21px;margin-bottom:14px;color:var(--vermillion)}
@@ -54,7 +54,7 @@
     .tab-content.active{display:block}
     /* コンテナ */
     .admin-container{max-width:900px;margin:0 auto;padding:40px 32px 96px}
-    .section-title{font-size:17px;font-weight:700;margin-bottom:22px;padding-bottom:0;border-bottom:none;display:flex;align-items:center;justify-content:flex-start;font-family:'Shippori Mincho',serif;letter-spacing:.04em}
+    .section-title{font-size:17px;font-weight:700;margin-bottom:22px;padding-bottom:0;border-bottom:none;display:flex;align-items:center;justify-content:flex-start;font-family:inherit;letter-spacing:.04em}
     .section-title::before{content:'';display:inline-block;width:14px;height:1px;background:var(--vermillion);margin-right:10px;vertical-align:middle}
     /* フォーム */
     .post-form{background:transparent;border-radius:0;padding:0 0 36px;box-shadow:none;margin-bottom:44px;border-bottom:1px solid var(--line)}
@@ -69,9 +69,9 @@
     .role-checkbox-item input{cursor:pointer;width:15px;height:15px;accent-color:var(--vermillion)}
     /* ファイルアップロード */
     .file-drop-area{border:1px dashed var(--line);border-radius:0;padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:var(--paper-deep)}
-    .file-drop-area:hover,.file-drop-area.drag-over{border-color:var(--vermillion);background:#e7ddc7}
+    .file-drop-area:hover,.file-drop-area.drag-over{border-color:var(--vermillion);background:#e9ecf1}
     .file-drop-area p{font-size:13px;color:var(--ink-soft);margin-bottom:4px}
-    .file-drop-area span{font-size:11px;color:#a89f87}
+    .file-drop-area span{font-size:11px;color:#9aa0aa}
     input[type="file"]{display:none}
     .file-preview-list{display:flex;flex-direction:column;gap:0;margin-top:10px}
     .file-preview-item{display:flex;align-items:center;gap:10px;padding:9px 4px;background:transparent;border-radius:0;border-bottom:1px solid var(--line);font-size:13px}
@@ -88,8 +88,8 @@
     .posts-list{display:block}
     .post-item{background:transparent;border-radius:0;padding:16px 4px;box-shadow:none;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px}
     .post-item-info{flex:1;min-width:0}
-    .post-item-title{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;font-family:'Shippori Mincho',serif}
-    .post-item-meta{font-size:12px;color:#8c8470;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .post-item-title{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;font-family:inherit}
+    .post-item-meta{font-size:12px;color:#8a909a;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     .post-item-actions{display:flex;gap:6px;flex-shrink:0}
     .btn-sm{padding:5px 14px;font-size:12px;border-radius:0;border:1px solid transparent;cursor:pointer;font-weight:500}
     .btn-edit{background:transparent;color:var(--gold);border-color:var(--gold)}
@@ -98,7 +98,7 @@
     .btn-del:hover{background:var(--vermillion);color:var(--paper)}
     .status-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:0}
     .status-published{background:transparent;color:#3d6b4a;border:1px solid #3d6b4a}
-    .status-draft{background:transparent;color:#a89f87;border:1px solid var(--line)}
+    .status-draft{background:transparent;color:#9aa0aa;border:1px solid var(--line)}
     .tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:0;background:none;color:var(--vermillion);border-bottom:1px solid currentColor}
     .role-tag-sm{font-size:11px;padding:2px 8px;border-radius:0;background:var(--paper-deep);color:var(--ink-soft);border:1px solid var(--line)}
     /* 生徒管理 */
@@ -117,8 +117,8 @@
     /* トースト */
     .toast{position:fixed;bottom:32px;right:24px;background:var(--ink);color:var(--paper);padding:12px 24px;border-radius:0;font-size:13px;opacity:0;transition:opacity .3s;z-index:1000;border-left:3px solid var(--vermillion)}
     .toast.show{opacity:1}
-    .empty{color:#a89f87;text-align:center;padding:40px;font-size:13px}
-    .loading{color:#a89f87;text-align:center;padding:40px;font-size:13px;font-family:'Shippori Mincho',serif}
+    .empty{color:#9aa0aa;text-align:center;padding:40px;font-size:13px}
+    .loading{color:#9aa0aa;text-align:center;padding:40px;font-size:13px;font-family:inherit}
   </style>
 </head>
 <body>
@@ -161,6 +161,7 @@
       <div class="tab active" onclick="switchTab('posts')">投稿管理</div>
       <div class="tab" onclick="switchTab('members')">生徒管理</div>
       <div class="tab" onclick="switchTab('roles')">ロール管理</div>
+      <div class="tab" onclick="switchTab('profile')">プロフィール</div>
     </div>
 
     <!-- 投稿管理タブ -->
@@ -211,7 +212,7 @@
             <input type="checkbox" id="inputPublished" checked> すぐに公開する
           </label>
           <div style="flex:1"></div>
-          <button class="btn" style="background:transparent;color:#4b5048;border:1px solid #cdc4ab" onclick="resetForm()">キャンセル</button>
+          <button class="btn" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line)" onclick="resetForm()">キャンセル</button>
           <button class="btn btn-primary" onclick="savePost()">保存する</button>
         </div>
       </div>
@@ -231,6 +232,22 @@
       <div class="section-title">ロール一覧</div>
       <div id="rolesArea"><div class="loading">読み込み中...</div></div>
     </div>
+
+    <!-- プロフィールタブ -->
+    <div class="tab-content" id="tab-profile">
+      <div class="section-title">プロフィール</div>
+      <div class="post-form">
+        <div class="form-row">
+          <label>表示名（投稿者欄に表示される名前）</label>
+          <input type="text" id="profileName" placeholder="例：生徒会 広報">
+          <p style="font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.7">設定するとお知らせの投稿者欄にこの名前が表示されます。未設定の場合はメールアドレスが表示されます。</p>
+        </div>
+        <div class="form-actions">
+          <div style="flex:1"></div>
+          <button class="btn btn-primary" onclick="saveProfile()">保存する</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -249,7 +266,9 @@
     auth: { persistSession: true, storageKey: 'seitokai-session' }
   });
 
+  const ADMIN_ROLE = '管理者';
   let currentUser = null;
+  let currentMember = null;
   let selectedFiles = [];
   let existingFilePaths = [];
   let removedFilePaths = [];
@@ -262,30 +281,44 @@
       const email = (session.user.email || '').trim();
       const emailLower = email.toLowerCase();
       if (ALLOWED_DOMAIN && emailLower.split('@')[1] !== ALLOWED_DOMAIN.toLowerCase()) {
-        await db.auth.signOut();
         showError(`@${ALLOWED_DOMAIN} のアカウントでログインしてください。`);
         return;
       }
-      if (emailLower !== ADMIN_EMAIL.toLowerCase()) {
-        console.error('管理者メール不一致:', JSON.stringify(email), '!=', JSON.stringify(ADMIN_EMAIL));
-        await db.auth.signOut();
-        showError(`管理者（${ADMIN_EMAIL}）のみアクセスできます。`);
+      currentUser = session.user;
+
+      // 既定の管理者メールは初回から「管理者」ロールを付与（ブートストラップ）
+      if (emailLower === ADMIN_EMAIL.toLowerCase()) {
+        const { error: bootError } = await db.from('members')
+          .upsert({ id: currentUser.id, email, role: ADMIN_ROLE }, { onConflict: 'id' });
+        if (bootError) console.error('管理者ブートストラップ失敗:', bootError.message);
+      }
+
+      // 自分のメンバー情報（ロール・プロフィール名）を取得。無ければ一般として登録。
+      let { data: member, error: memberError } = await db.from('members').select('*').eq('id', currentUser.id).single();
+      if (memberError && memberError.code === 'PGRST116') {
+        await db.from('members').upsert({ id: currentUser.id, email, role: 'general' }, { onConflict: 'id' });
+        ({ data: member } = await db.from('members').select('*').eq('id', currentUser.id).single());
+      } else if (memberError) {
+        console.error('members取得エラー:', memberError.message);
+      }
+      currentMember = member || null;
+
+      // 「管理者」ロールを持つ人だけ管理画面に入れる
+      // （signOutはindex.html等と共有セッションを消すので呼ばず、エラー画面表示のみ）
+      if (currentMember?.role !== ADMIN_ROLE) {
+        showError('管理者ロールを持つアカウントのみアクセスできます。');
         return;
       }
-      currentUser = session.user;
+
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('errorScreen').style.display = 'none';
       document.getElementById('adminScreen').style.display = 'block';
-      document.getElementById('userName').textContent = email;
+      document.getElementById('userName').textContent = currentMember.display_name || email;
       await loadRoles();
       loadPosts();
-
-      // 管理者自身もmembersに登録（生徒一覧に表示されるように）
-      const { error: selfUpsertError } = await db.from('members')
-        .upsert({ id: currentUser.id, email, role: 'admin' }, { onConflict: 'id' });
-      if (selfUpsertError) console.error('管理者のmembers登録エラー:', selfUpsertError.message);
     } else {
       currentUser = null;
+      currentMember = null;
       if (document.getElementById('errorScreen').style.display !== 'flex') {
         document.getElementById('loginScreen').style.display = 'flex';
       }
@@ -314,17 +347,25 @@
 
   // ── タブ切り替え ──
   function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['posts','members','roles'][i] === name));
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['posts','members','roles','profile'][i] === name));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
     if (name === 'members') loadMembers();
     if (name === 'roles') renderRolesTab();
+    if (name === 'profile') renderProfileTab();
   }
 
   // ── ロール ──
   async function loadRoles() {
     const { data } = await db.from('roles').select('*').order('id');
-    allRoles = (data || []).map(r => r.name);
+    let names = (data || []).map(r => r.name);
+    // 「管理者」ロールが無ければ追加（管理画面アクセス権の付与に使う）
+    if (!names.includes(ADMIN_ROLE)) {
+      const { error } = await db.from('roles').insert({ name: ADMIN_ROLE });
+      if (error) console.error('管理者ロール作成エラー:', error.message);
+      else names = [ADMIN_ROLE, ...names];
+    }
+    allRoles = names;
     renderRoleCheckboxes([]);
   }
 
@@ -397,6 +438,20 @@
     const { error } = await db.from('members').update({ role }).eq('id', id);
     if (error) { showToast('更新失敗: ' + error.message); return; }
     showToast('ロールを更新しました');
+  }
+
+  // ── プロフィール ──
+  function renderProfileTab() {
+    document.getElementById('profileName').value = currentMember?.display_name || '';
+  }
+
+  async function saveProfile() {
+    const name = document.getElementById('profileName').value.trim();
+    const { error } = await db.from('members').update({ display_name: name || null }).eq('id', currentUser.id);
+    if (error) { showToast('保存失敗: ' + error.message); return; }
+    if (currentMember) currentMember.display_name = name || null;
+    document.getElementById('userName').textContent = name || currentUser.email;
+    showToast('プロフィールを保存しました');
   }
 
   // ── ファイル操作 ──
@@ -508,7 +563,8 @@
     filePaths = [...filePaths, ...newPaths];
     document.getElementById('uploadProgress').style.display = 'none';
 
-    const payload = { title, category, body, published, target_roles, file_paths: filePaths, author: currentUser.email };
+    const authorName = (currentMember?.display_name || '').trim() || currentUser.email;
+    const payload = { title, category, body, published, target_roles, file_paths: filePaths, author: authorName };
 
     const { error } = id
       ? await db.from('posts').update(payload).eq('id', id)
