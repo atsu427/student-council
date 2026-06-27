@@ -265,6 +265,11 @@
       document.getElementById('userName').textContent = email;
       await loadRoles();
       loadPosts();
+
+      // 管理者自身もmembersに登録（生徒一覧に表示されるように）
+      const { error: selfUpsertError } = await db.from('members')
+        .upsert({ id: currentUser.id, email, role: 'admin' }, { onConflict: 'id' });
+      if (selfUpsertError) console.error('管理者のmembers登録エラー:', selfUpsertError.message);
     } else {
       currentUser = null;
       if (document.getElementById('errorScreen').style.display !== 'flex') {
@@ -426,15 +431,17 @@
   function restoreFile(path) { removedFilePaths = removedFilePaths.filter(p => p !== path); renderExistingFiles(existingFilePaths); }
 
   async function uploadFiles(postId) {
-    const uploaded = [];
-    for (const file of selectedFiles) {
+    const results = await Promise.all(selectedFiles.map(file => {
       const ext = file.name.split('.').pop();
       const safe = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
       const path = `${postId}/${safe}`;
-      const { error } = await db.storage.from(STORAGE_BUCKET).upload(path, file);
-      if (!error) uploaded.push(path);
-    }
-    return uploaded;
+      return db.storage.from(STORAGE_BUCKET).upload(path, file)
+        .then(({ error }) => ({ path, name: file.name, error }));
+    }));
+    const uploaded = results.filter(r => !r.error).map(r => r.path);
+    const failed = results.filter(r => r.error);
+    failed.forEach(r => console.error('ファイルアップロード失敗:', r.name, r.error.message));
+    return { uploaded, failed };
   }
 
   // ── 投稿一覧 ──
@@ -483,7 +490,7 @@
     if (id) for (const path of removedFilePaths) await db.storage.from(STORAGE_BUCKET).remove([path]);
 
     const tmpId = id || `tmp_${Date.now()}`;
-    const newPaths = await uploadFiles(tmpId);
+    const { uploaded: newPaths, failed: failedUploads } = await uploadFiles(tmpId);
     filePaths = [...filePaths, ...newPaths];
     document.getElementById('uploadProgress').style.display = 'none';
 
@@ -494,7 +501,11 @@
       : await db.from('posts').insert(payload);
 
     if (error) { showToast('保存失敗: ' + error.message); return; }
-    showToast(id ? '更新しました！' : '投稿しました！');
+    if (failedUploads.length > 0) {
+      showToast(`保存しましたが、${failedUploads.length}件のファイルがアップロードできませんでした（${failedUploads[0].error.message}）`);
+    } else {
+      showToast(id ? '更新しました！' : '投稿しました！');
+    }
     resetForm();
     loadPosts();
   }
