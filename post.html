@@ -5,62 +5,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>お知らせ詳細 | 灘校生徒会</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
+    :root{
+      --ink:#1f2420;
+      --ink-soft:#4b5048;
+      --paper:#f5f2ea;
+      --paper-deep:#ece6d8;
+      --line:#cdc4ab;
+      --vermillion:#a23b2e;
+      --gold:#9c7a32;
+    }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;background:#f7f8fa;color:#1a1a2e;min-height:100vh}
-    header{background:#1a1a2e;color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px}
-    header h1{font-size:18px;font-weight:700}
-    .header-right{display:flex;align-items:center;gap:16px}
-    .user-name{font-size:13px;color:#a0c4ff}
-    .btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4);padding:6px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
-    .btn-outline:hover{background:rgba(255,255,255,.1)}
-    .container{max-width:720px;margin:40px auto;padding:0 24px 80px}
-    .back-link{display:inline-flex;align-items:center;gap:6px;color:#555;text-decoration:none;font-size:14px;margin-bottom:24px}
-    .back-link:hover{color:#1a1a2e}
-    .post-card{background:#fff;border-radius:16px;padding:40px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
-    .post-meta{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-    .category-tag{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:#e8f0fe;color:#1a73e8}
-    .category-tag.行事{background:#fce8e8;color:#d32f2f}
-    .category-tag.部活{background:#e8f5e9;color:#2e7d32}
-    .category-tag.募集{background:#fff3e0;color:#e65100}
-    .category-tag.その他{background:#f3e5f5;color:#6a1b9a}
-    .post-date{font-size:13px;color:#888}
-    h2{font-size:clamp(20px,4vw,28px);font-weight:800;line-height:1.4;margin-bottom:8px}
-    .post-author{font-size:13px;color:#888;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid #eee}
-    .post-body{font-size:16px;line-height:1.9;color:#333;white-space:pre-wrap;word-break:break-word;margin-bottom:32px}
+    body{font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+    h2,.login-card h2{font-family:'Shippori Mincho',serif}
+    header{background:var(--ink);color:var(--paper);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;border-bottom:3px solid var(--vermillion)}
+    header h1{font-size:19px;font-weight:700;font-family:'Shippori Mincho',serif;letter-spacing:.06em}
+    .header-right{display:flex;align-items:center;gap:18px}
+    .user-name{font-size:12px;color:#cfc6ad}
+    .btn-outline{background:transparent;color:var(--paper);border:1px solid rgba(245,242,234,.45);padding:7px 18px;border-radius:0;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+    .btn-outline:hover{background:rgba(245,242,234,.1)}
+    .container{max-width:680px;margin:0 auto;padding:48px 32px 96px}
+    .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--ink-soft);text-decoration:none;font-size:13px;margin-bottom:32px;border-bottom:1px solid transparent;padding-bottom:2px}
+    .back-link:hover{color:var(--vermillion);border-bottom-color:var(--vermillion)}
+    .post-card{background:transparent;border:none;border-top:1px solid var(--ink);padding:32px 0 0;box-shadow:none}
+    .post-meta{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+    .category-tag{font-size:12px;font-weight:700;padding:2px 0;border-radius:0;background:none;color:var(--vermillion);letter-spacing:.08em;border-bottom:1px solid currentColor}
+    .category-tag.行事{color:#6b5a1f}
+    .category-tag.部活{color:#3d6b4a}
+    .category-tag.募集{color:#a25f1f}
+    .category-tag.その他{color:#5a4a6b}
+    .post-date{font-size:13px;color:#8c8470;font-family:'Shippori Mincho',serif}
+    h2{font-size:clamp(22px,4vw,30px);font-weight:700;line-height:1.5;margin-bottom:14px;letter-spacing:.02em}
+    .post-author{font-size:13px;color:#8c8470;margin-bottom:36px;padding-bottom:28px;border-bottom:1px solid var(--line)}
+    .post-body{font-size:16px;line-height:2;color:var(--ink);white-space:pre-wrap;word-break:break-word;margin-bottom:36px}
     /* 添付ファイル */
-    .attachments{border-top:1px solid #eee;padding-top:28px}
-    .attachments h3{font-size:15px;font-weight:700;color:#333;margin-bottom:16px}
+    .attachments{border-top:1px solid var(--line);padding-top:30px}
+    .attachments h3{font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:18px;letter-spacing:.05em}
     /* 画像グリッド */
-    .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:16px}
-    .image-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid #e5e7eb;transition:opacity .2s}
-    .image-grid img:hover{opacity:.85}
+    .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:2px;margin-bottom:18px}
+    .image-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:0;cursor:pointer;border:1px solid var(--paper);transition:opacity .2s}
+    .image-grid img:hover{opacity:.8}
     /* ファイルリスト */
-    .file-list{display:flex;flex-direction:column;gap:8px}
-    .file-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#f7f8fa;border-radius:8px;border:1px solid #e5e7eb;text-decoration:none;color:#1a1a2e;transition:background .2s}
-    .file-item:hover{background:#e8f0fe}
-    .file-icon{font-size:20px;flex-shrink:0}
+    .file-list{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}
+    .file-item{display:flex;align-items:center;gap:14px;padding:14px 4px;background:transparent;border-radius:0;border:none;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);transition:padding-left .15s}
+    .file-item:hover{padding-left:10px;color:var(--vermillion)}
+    .file-icon{font-size:18px;flex-shrink:0}
     .file-info{flex:1;min-width:0}
-    .file-name{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .file-action{font-size:12px;color:#1a73e8;flex-shrink:0;font-weight:600}
+    .file-name{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .file-action{font-size:12px;color:var(--gold);flex-shrink:0;font-weight:600}
     /* ライトボックス */
-    #lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:999;align-items:center;justify-content:center;padding:20px}
+    #lightbox{display:none;position:fixed;inset:0;background:rgba(20,18,14,.94);z-index:999;align-items:center;justify-content:center;padding:20px}
     #lightbox.open{display:flex}
-    #lightbox img{max-width:100%;max-height:90vh;border-radius:8px;object-fit:contain}
+    #lightbox img{max-width:100%;max-height:90vh;border-radius:0;object-fit:contain}
     .lb-close{position:absolute;top:16px;right:20px;color:#fff;font-size:36px;cursor:pointer;line-height:1;user-select:none}
-    .lb-nav{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:36px;cursor:pointer;user-select:none;padding:12px;background:rgba(0,0,0,.3);border-radius:50%}
+    .lb-nav{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:30px;cursor:pointer;user-select:none;padding:12px;background:transparent;border-radius:0;border:1px solid rgba(255,255,255,.3)}
     #lbPrev{left:16px}
     #lbNext{right:16px}
     /* ログイン画面 */
-    #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
-    .login-card{background:#fff;border-radius:20px;padding:48px 40px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.1);max-width:400px;width:100%}
-    .login-card h2{font-size:24px;margin-bottom:8px}
-    .login-card p{color:#666;font-size:14px;margin-bottom:32px}
-    .btn-google{background:#fff;color:#444;border:1.5px solid #ddd;display:flex;align-items:center;gap:10px;font-size:15px;padding:12px 24px;border-radius:8px;cursor:pointer;width:100%;justify-content:center;font-weight:600;transition:all .2s}
-    .btn-google:hover{background:#f5f5f5}
+    #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--ink)}
+    .login-card{background:var(--paper);border-radius:0;padding:56px 44px;text-align:center;box-shadow:none;max-width:380px;width:100%;border-top:3px solid var(--vermillion)}
+    .login-card h2{font-size:23px;margin-bottom:10px;letter-spacing:.05em}
+    .login-card p{color:var(--ink-soft);font-size:13px;margin-bottom:36px;line-height:1.8}
+    .btn-google{background:var(--paper);color:var(--ink);border:1px solid var(--ink);display:flex;align-items:center;gap:10px;font-size:14px;padding:13px 24px;border-radius:0;cursor:pointer;width:100%;justify-content:center;font-weight:500;transition:all .15s;font-family:inherit}
+    .btn-google:hover{background:var(--ink);color:var(--paper)}
     #mainContent{display:none}
-    .loading{text-align:center;padding:80px;color:#aaa}
-    .error-msg{text-align:center;padding:80px;color:#d32f2f}
+    .loading{text-align:center;padding:80px;color:#a89f87;font-family:'Shippori Mincho',serif}
+    .error-msg{text-align:center;padding:80px;color:var(--vermillion);font-family:'Shippori Mincho',serif}
   </style>
 </head>
 <body>
@@ -78,7 +91,7 @@
 
 <div id="mainContent">
   <header>
-    <h1><a href="index.html" style="color:#fff;text-decoration:none">灘校生徒会</a></h1>
+    <h1><a href="index.html" style="color:#f5f2ea;text-decoration:none">灘校生徒会</a></h1>
     <div class="header-right">
       <span class="user-name" id="userName"></span>
       <button class="btn-outline" onclick="logout()">ログアウト</button>
@@ -129,8 +142,9 @@
 
   db.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
-      const email = session.user.email;
-      if (ALLOWED_DOMAIN && email.split('@')[1] !== ALLOWED_DOMAIN) { await db.auth.signOut(); return; }
+      const email = (session.user.email || '').trim();
+      const emailLower = email.toLowerCase();
+      if (ALLOWED_DOMAIN && emailLower.split('@')[1] !== ALLOWED_DOMAIN.toLowerCase()) { await db.auth.signOut(); return; }
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('mainContent').style.display = 'block';
       document.getElementById('userName').textContent = email;
