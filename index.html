@@ -140,12 +140,13 @@
         return;
       }
 
-      // membersテーブルに登録（初回のみinsert）
-      const { data: existing } = await db.from('members').select('id').eq('id', session.user.id).single();
-      if (!existing) {
-        await db.from('members').insert({ id: session.user.id, email, role: 'general' });
-      }
-      const { data: member } = await db.from('members').select('*').eq('id', session.user.id).single();
+      // membersテーブルに登録（初回のみinsert。onConflictで重複・競合を無視）
+      const { error: upsertError } = await db.from('members')
+        .upsert({ id: session.user.id, email, role: 'general' }, { onConflict: 'id', ignoreDuplicates: true });
+      if (upsertError) console.error('members登録エラー:', upsertError.message);
+
+      const { data: member, error: memberError } = await db.from('members').select('*').eq('id', session.user.id).single();
+      if (memberError) console.error('members取得エラー:', memberError.message);
       currentMember = member;
 
       document.getElementById('loginScreen').style.display = 'none';

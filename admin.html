@@ -226,7 +226,8 @@
   const SUPABASE_URL = 'https://uvqidlzkiuyvqxqttuae.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cWlkbHpraXV5dnF4cXR0dWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0Nzk0MTEsImV4cCI6MjA5ODA1NTQxMX0.VrpNjeEpsfOGJKsSz8uSGxrqiuChT9QjEzgjUnAv1s8';
   const ADMIN_EMAIL = 'j170470@stg.nada.ac.jp';
-  const ALLOWED_DOMAIN = 'stg.nada.ac.jp';
+  // ※テスト中はドメイン制限なし。本番に戻す場合は null → 'stg.nada.ac.jp' に変更（index.html/post.htmlと必ず揃えること）
+  const ALLOWED_DOMAIN = null;
   const STORAGE_BUCKET = 'post-files';
 
   const { createClient } = supabase;
@@ -244,7 +245,7 @@
   db.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
       const email = session.user.email;
-      if (email.split('@')[1] !== ALLOWED_DOMAIN) {
+      if (ALLOWED_DOMAIN && email.split('@')[1] !== ALLOWED_DOMAIN) {
         await db.auth.signOut();
         showError(`@${ALLOWED_DOMAIN} のアカウントでログインしてください。`);
         return;
@@ -278,7 +279,9 @@
   }
 
   async function loginWithGoogle() {
-    await db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.href, queryParams: { hd: ALLOWED_DOMAIN } } });
+    const opts = { redirectTo: location.href };
+    if (ALLOWED_DOMAIN) opts.queryParams = { hd: ALLOWED_DOMAIN };
+    await db.auth.signInWithOAuth({ provider: 'google', options: opts });
   }
 
   async function logout() {
