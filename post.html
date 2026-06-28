@@ -160,7 +160,7 @@
 
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession: true, storageKey: 'seitokai-session' }
+    auth: { persistSession: true, storageKey: 'seitokai-session', storage: window.localStorage, autoRefreshToken: true, detectSessionInUrl: true }
   });
 
   let lbImages = [];

@@ -385,7 +385,7 @@
 
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession: true, storageKey: 'seitokai-session' }
+    auth: { persistSession: true, storageKey: 'seitokai-session', storage: window.localStorage, autoRefreshToken: true, detectSessionInUrl: true }
   });
 
   // Google認証からのリダイレクト時にエラーが返ってきた場合（同意拒否・設定不備など）に

@@ -701,7 +701,7 @@
 
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession: true, storageKey: 'seitokai-session' }
+    auth: { persistSession: true, storageKey: 'seitokai-session', storage: window.localStorage, autoRefreshToken: true, detectSessionInUrl: true }
   });
 
   // Google認証からのリダイレクト時にエラーが返ってきた場合に画面を明示的に表示する
@@ -1512,18 +1512,20 @@
     const isEdit = !!id;
     if (hasMentions && savedPost && !isScheduledFuture) {
       if (!isEdit) {
-        // 新規投稿はそのまま通知（サイト内通知＋LINE）
-        await notifyMentionedMembers(mentioned_emails, mentioned_roles, savedPost, false);
-        notifyLine(savedPost.id, false, false);
-        await markMentionsSent(savedPost.id);
+        // 新規投稿はそのまま通知（サイト内通知＋LINE）。
+        // 送信前に必ずロックを取得し、取得できた場合のみ送る（取得できなければCron側が既に処理済み＝二重送信防止）
+        const claimed = await claimMentionsSent(savedPost.id);
+        if (claimed) {
+          await notifyMentionedMembers(mentioned_emails, mentioned_roles, savedPost, false);
+          notifyLine(savedPost.id, false, false);
+        }
       } else {
         // 既存投稿の編集では毎回自動でLINEが飛ぶと煩わしいため、送るかどうかを確認し、
-        // 送る場合は新規お知らせと区別できるよう「訂正」として通知する
+        // 送る場合は新規お知らせと区別できるよう「訂正」として通知する（明示的な確認操作のためロック不要）
         const wantsNotify = confirm('編集内容をメンションした生徒にサイト内通知・LINEで「訂正」として送信しますか？');
         if (wantsNotify) {
           await notifyMentionedMembers(mentioned_emails, mentioned_roles, savedPost, true);
           notifyLine(savedPost.id, false, true);
-          await markMentionsSent(savedPost.id);
         }
       }
     }
@@ -1534,10 +1536,16 @@
     loadPosts();
   }
 
-  // 予約投稿の自動通知（Workers Cron）が二重送信しないよう、通知済みを記録する
-  async function markMentionsSent(postId) {
-    const { error } = await db.from('posts').update({ mentions_sent_at: new Date().toISOString() }).eq('id', postId);
-    if (error) console.error('mentions_sent_at更新エラー:', error.message);
+  // mentions_sent_atがNULLの場合のみ現在時刻に更新する「条件付き更新」。
+  // 実際に更新できた（=ロックを取得できた）場合のみtrueを返す。
+  // Cloudflare Workers Cronの自動送信とこの画面からの送信が同じ投稿に対してほぼ同時に走っても、
+  // 先にロックを取得できた側だけが送信するため、二重送信が起きない
+  async function claimMentionsSent(postId) {
+    const { data, error } = await db.from('posts')
+      .update({ mentions_sent_at: new Date().toISOString() })
+      .eq('id', postId).is('mentions_sent_at', null).select('id');
+    if (error) { console.error('mentions_sent_at更新エラー:', error.message); return false; }
+    return Array.isArray(data) && data.length > 0;
   }
 
   // ── LINE通知（失敗してもサイト機能には影響させない。メンション先が無い投稿は何も送信しない） ──
@@ -1566,9 +1574,12 @@
     if (!post) return;
     const hasMentions = (post.mentioned_emails || []).length > 0 || (post.mentioned_roles || []).length > 0;
     if (!hasMentions) { showToast('メンションが設定されていないため、通知対象がありません'); return; }
+    // まずロックの取得を試みる。取得できなければ（Workers Cronや別のクリックで）既に送信済みなので、
+    // 意図的な再送かどうかを確認してから送る（二重クリックでの事故送信を防ぎつつ、明示的な再送は許可する）
+    const claimed = await claimMentionsSent(postId);
+    if (!claimed && !confirm('この投稿のメンション通知は既に送信済みです。もう一度送信しますか？')) return;
     await notifyMentionedMembers(post.mentioned_emails, post.mentioned_roles, post, false);
     await notifyLine(postId, true, false);
-    await markMentionsSent(postId);
   }
 
   // ── メンション通知（個人指定＋ロール指定の両方をまとめて通知。重複は除く） ──

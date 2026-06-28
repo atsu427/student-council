@@ -20,7 +20,7 @@ async function isAdmin(env, userId) {
 }
 
 async function getPost(env, postId) {
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}&select=id,title,body,tags,is_special,published,mentioned_emails,mentioned_roles,file_paths`, {
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}&select=id,title,body,tags,is_special,published,mentioned_emails,mentioned_roles,file_paths,author,event_date,event_end_date`, {
     headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
   });
   if (!res.ok) { console.error('posts取得失敗:', res.status, await res.text()); return null; }
@@ -55,6 +55,11 @@ async function getLineUserIdsByRoles(env, roles) {
 
 function isImagePath(path) { return /\.(jpe?g|png|gif|webp)$/i.test(path); }
 
+function formatJaDateShort(d) {
+  const [, m, day] = d.split('-').map(Number);
+  return `${m}月${day}日`;
+}
+
 // LINEは1リクエストあたり最大5メッセージまでなので、テキスト1件+画像は最大4件までにする
 function buildPostMessages(post, env, isCorrection) {
   // [表示文字](URL) 記法は表示文字だけ残すとURLが消えてLINE側でリンクとして認識されなくなるため、
@@ -64,7 +69,12 @@ function buildPostMessages(post, env, isCorrection) {
   const specialPrefix = post.is_special ? '【重要】' : '';
   const correctionPrefix = isCorrection ? '【訂正】' : '';
   const tagsLine = (post.tags && post.tags.length > 0) ? `\n\n${post.tags.map(t => `#${t}`).join(' ')}` : '';
-  const text = `${correctionPrefix}${specialPrefix}${post.title}\n\n${excerpt}${tagsLine}`;
+  const authorLine = post.author ? `\n投稿者：${post.author}` : '';
+  const isRecruitment = (post.tags || []).includes('募集') && post.event_date;
+  const periodLine = isRecruitment
+    ? `\n募集期間：${formatJaDateShort(post.event_date)}${post.event_end_date && post.event_end_date !== post.event_date ? '〜' + formatJaDateShort(post.event_end_date) : ''}`
+    : '';
+  const text = `${correctionPrefix}${specialPrefix}${post.title}${authorLine}${periodLine}\n\n${excerpt}${tagsLine}`;
   const messages = [{ type: 'text', text }];
 
   const imagePaths = (post.file_paths || []).filter(isImagePath).slice(0, 4);

@@ -52,12 +52,18 @@ async function linePush(env, to, messages) {
   if (!res.ok) console.error('LINE push失敗:', res.status, await res.text());
 }
 
-async function markReminderSent(env, reminderId) {
-  await fetch(`${env.SUPABASE_URL}/rest/v1/reminders?id=eq.${reminderId}`, {
+// sent=false の場合のみtrueにする「条件付き更新」。これが本当に更新できたかどうかでロックの取得に成功したかを判定する。
+// 1分おきの実行が重なったり、何らかの理由で同じリマインダーが2回処理されそうになっても、
+// 実際にsentをfalse→trueに変えられたインスタンスだけが送信を行うため、二重送信が起きない
+async function claimReminder(env, reminderId) {
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/reminders?id=eq.${reminderId}&sent=eq.false`, {
     method: 'PATCH',
-    headers: { ...sbHeaders(env), 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    headers: { ...sbHeaders(env), 'Content-Type': 'application/json', Prefer: 'return=representation' },
     body: JSON.stringify({ sent: true })
   });
+  if (!res.ok) { console.error('reminderのロック取得失敗:', res.status, await res.text()); return false; }
+  const rows = await res.json();
+  return Array.isArray(rows) && rows.length > 0;
 }
 
 async function processReminders(env) {
@@ -65,18 +71,20 @@ async function processReminders(env) {
   const now = new Date();
   for (const reminder of pending) {
     const event = await getEvent(env, reminder.event_id);
-    if (!event) { await markReminderSent(env, reminder.id); continue; } // 行事が削除済みなら送らずに片付ける
+    if (!event) { await claimReminder(env, reminder.id); continue; } // 行事が削除済みなら送らずに片付ける
     const remindTime = (reminder.remind_time || '08:00:00').slice(0, 5);
     const baseDate = reminder.base_date === 'end' ? (event.end_date || event.start_date) : event.start_date;
     const dueAt = computeRemindAtUtc(baseDate, reminder.days_before, remindTime);
     if (dueAt > now) continue;
+
+    // 送信前に必ずロックを取得し、取得できた場合のみ送信する（取得できなければ別の実行が既に処理済み）
+    if (!(await claimReminder(env, reminder.id))) continue;
 
     const text = `【リマインダー】${event.title}\n\n${reminder.message || ''}`.trim();
     const members = (await getLineUserIdsByRoles(env, reminder.target_roles)).filter(m => m.line_user_id);
     for (const m of members) {
       await linePush(env, m.line_user_id, [{ type: 'text', text }]);
     }
-    await markReminderSent(env, reminder.id);
   }
 }
 
@@ -85,7 +93,7 @@ async function processReminders(env) {
 async function getDueScheduledPosts(env) {
   const nowIso = new Date().toISOString();
   const res = await fetch(
-    `${env.SUPABASE_URL}/rest/v1/posts?published=eq.true&publish_at=lte.${encodeURIComponent(nowIso)}&mentions_sent_at=is.null&select=id,title,body,tags,is_special,mentioned_emails,mentioned_roles,file_paths`,
+    `${env.SUPABASE_URL}/rest/v1/posts?published=eq.true&publish_at=lte.${encodeURIComponent(nowIso)}&mentions_sent_at=is.null&select=id,title,body,tags,is_special,mentioned_emails,mentioned_roles,file_paths,author,event_date,event_end_date`,
     { headers: sbHeaders(env) }
   );
   if (!res.ok) { console.error('posts取得失敗:', res.status, await res.text()); return []; }
@@ -103,13 +111,23 @@ async function getMembersByEmails(env, emails) {
 
 function isImagePath(path) { return /\.(jpe?g|png|gif|webp)$/i.test(path); }
 
+function formatJaDateShort(d) {
+  const [, m, day] = d.split('-').map(Number);
+  return `${m}月${day}日`;
+}
+
 // LINEは1リクエストあたり最大5メッセージまでなので、テキスト1件+画像は最大4件までにする
 function buildPostMessages(post, env) {
   const body = (post.body || '').replace(/\[([^\[\]]+)\]\((https?:\/\/[^\s()]+)\)/g, '$1 $2');
   const excerpt = body.length > 1500 ? body.slice(0, 1500) + '…' : body;
   const specialPrefix = post.is_special ? '【重要】' : '';
   const tagsLine = (post.tags && post.tags.length > 0) ? `\n\n${post.tags.map(t => `#${t}`).join(' ')}` : '';
-  const text = `${specialPrefix}${post.title}\n\n${excerpt}${tagsLine}`;
+  const authorLine = post.author ? `\n投稿者：${post.author}` : '';
+  const isRecruitment = (post.tags || []).includes('募集') && post.event_date;
+  const periodLine = isRecruitment
+    ? `\n募集期間：${formatJaDateShort(post.event_date)}${post.event_end_date && post.event_end_date !== post.event_date ? '〜' + formatJaDateShort(post.event_end_date) : ''}`
+    : '';
+  const text = `${specialPrefix}${post.title}${authorLine}${periodLine}\n\n${excerpt}${tagsLine}`;
   const messages = [{ type: 'text', text }];
   const imagePaths = (post.file_paths || []).filter(isImagePath).slice(0, 4);
   for (const path of imagePaths) {
@@ -130,17 +148,26 @@ async function insertNotifications(env, memberIds, post) {
   if (!res.ok) console.error('notifications追加失敗:', res.status, await res.text());
 }
 
-async function markPostMentionsSent(env, postId) {
-  await fetch(`${env.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}`, {
+// mentions_sent_atがNULLの場合のみ更新する「条件付き更新」。これが本当に更新できたかどうかでロックの取得に成功したかを判定する。
+// admin.html側の即時送信・「通知を送る」ボタンと、このWorkerの自動送信が同じ投稿に対して同時に走っても、
+// 実際にmentions_sent_atをNULL→現在時刻に変えられた側だけが送信を行うため、二重送信が起きない
+async function claimPostMentions(env, postId) {
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}&mentions_sent_at=is.null`, {
     method: 'PATCH',
-    headers: { ...sbHeaders(env), 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    headers: { ...sbHeaders(env), 'Content-Type': 'application/json', Prefer: 'return=representation' },
     body: JSON.stringify({ mentions_sent_at: new Date().toISOString() })
   });
+  if (!res.ok) { console.error('postのロック取得失敗:', res.status, await res.text()); return false; }
+  const rows = await res.json();
+  return Array.isArray(rows) && rows.length > 0;
 }
 
 async function processScheduledPostMentions(env) {
   const duePosts = await getDueScheduledPosts(env);
   for (const post of duePosts) {
+    // 送信前に必ずロックを取得し、取得できた場合のみ送信する（取得できなければ別の経路で既に送信済み）
+    if (!(await claimPostMentions(env, post.id))) continue;
+
     const hasRoles = post.mentioned_roles && post.mentioned_roles.length > 0;
     const [byEmail, byRole] = await Promise.all([
       getMembersByEmails(env, post.mentioned_emails),
@@ -158,7 +185,6 @@ async function processScheduledPostMentions(env) {
         await linePush(env, m.line_user_id, messages);
       }
     }
-    await markPostMentionsSent(env, post.id);
   }
 }
 
