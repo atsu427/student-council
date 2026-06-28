@@ -20,7 +20,7 @@ async function isAdmin(env, userId) {
 }
 
 async function getPost(env, postId) {
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}&select=id,title,body,category,is_special,published,mentioned_emails,mentioned_roles,file_paths`, {
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}&select=id,title,body,tags,is_special,published,mentioned_emails,mentioned_roles,file_paths`, {
     headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
   });
   if (!res.ok) { console.error('posts取得失敗:', res.status, await res.text()); return null; }
@@ -40,9 +40,15 @@ async function getLineUserIdsByEmails(env, emails) {
 
 async function getLineUserIdsByRoles(env, roles) {
   if (!roles || roles.length === 0) return [];
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/members?roles=ov.{${roles.join(',')}}&select=id,email,line_user_id`, {
+  // 「全体」ロールはメンバーのroles配列に実際に入っているわけではない特別な「全員」扱いの値なので、overlapsでは引っかからない
+  const isAll = roles.includes('全体');
+  const url = isAll
+    ? `${env.SUPABASE_URL}/rest/v1/members?select=id,email,line_user_id`
+    : `${env.SUPABASE_URL}/rest/v1/members?roles=ov.{${roles.join(',')}}&select=id,email,line_user_id`;
+  const res = await fetch(url, {
     headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
   });
+  if (!res.ok) { console.error('members(ロール)取得失敗:', res.status, await res.text()); return []; }
   const rows = await res.json();
   return (Array.isArray(rows) ? rows : []).filter(r => r.line_user_id);
 }
@@ -51,10 +57,14 @@ function isImagePath(path) { return /\.(jpe?g|png|gif|webp)$/i.test(path); }
 
 // LINEは1リクエストあたり最大5メッセージまでなので、テキスト1件+画像は最大4件までにする
 function buildPostMessages(post, env, isCorrection) {
-  const excerpt = (post.body || '').replace(/\[([^\[\]]+)\]\(https?:\/\/[^\s()]+\)/g, '$1').slice(0, 100);
+  // [表示文字](URL) 記法は表示文字だけ残すとURLが消えてLINE側でリンクとして認識されなくなるため、
+  // URLをテキストとして残す（LINEは本文中の生のURLを自動でリンク化する）
+  const body = (post.body || '').replace(/\[([^\[\]]+)\]\((https?:\/\/[^\s()]+)\)/g, '$1 $2');
+  const excerpt = body.length > 1500 ? body.slice(0, 1500) + '…' : body;
   const specialPrefix = post.is_special ? '【重要】' : '';
   const correctionPrefix = isCorrection ? '【訂正】' : '';
-  const text = `【生徒会からのお知らせ】${correctionPrefix}\n${specialPrefix}[${post.category || 'お知らせ'}] ${post.title}\n\n${excerpt}${(post.body || '').length > 100 ? '…' : ''}`;
+  const tagsLine = (post.tags && post.tags.length > 0) ? `\n\n${post.tags.map(t => `#${t}`).join(' ')}` : '';
+  const text = `${correctionPrefix}${specialPrefix}${post.title}\n\n${excerpt}${tagsLine}`;
   const messages = [{ type: 'text', text }];
 
   const imagePaths = (post.file_paths || []).filter(isImagePath).slice(0, 4);

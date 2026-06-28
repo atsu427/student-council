@@ -52,7 +52,7 @@
     .hero h2{font-size:clamp(27px,4vw,35px);font-weight:700;letter-spacing:.05em;margin-bottom:11px;line-height:1.3}
     .hero p{font-size:13px;color:#b9b09a;letter-spacing:.03em;line-height:1.7}
     .post-search-bar{max-width:760px;margin:0 auto;padding:18px 28px 0}
-    .post-search-bar input{width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-md);font-size:14px;font-family:inherit;outline:none;background:var(--paper-deep);color:var(--ink);transition:border-color .2s,background-color .2s}
+    .post-search-bar input{width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-md);font-size:16px;font-family:inherit;outline:none;background:var(--paper-deep);color:var(--ink);transition:border-color .2s,background-color .2s}
     .post-search-bar input:focus{border-color:var(--vermillion);background:var(--paper)}
     .filter-bar{display:flex;gap:4px;flex-wrap:wrap;max-width:760px;margin:0 auto;padding:10px 28px;border-bottom:1px solid var(--line)}
     .filter-btn{padding:10px 16px;border:none;border-radius:var(--radius-sm);border-bottom:2px solid transparent;background:transparent;color:var(--ink-soft);font-size:13px;cursor:pointer;transition:color .15s,border-color .15s,background-color .15s;font-family:inherit;letter-spacing:.02em}
@@ -116,7 +116,7 @@
     /* 意見箱・DM */
     .side-section{max-width:760px;margin:24px auto 0;padding:32px 28px;border-top:1px solid var(--line)}
     .side-section h3{font-size:15px;font-weight:700;margin-bottom:16px;letter-spacing:.03em}
-    .side-section textarea{width:100%;min-height:90px;resize:vertical;line-height:1.8;border:1px solid var(--line);border-radius:var(--radius-md);padding:12px 14px;font-size:14px;font-family:inherit;outline:none;background:var(--paper-deep);color:var(--ink);transition:border-color .2s,background-color .2s}
+    .side-section textarea{width:100%;min-height:90px;resize:vertical;line-height:1.8;border:1px solid var(--line);border-radius:var(--radius-md);padding:12px 14px;font-size:16px;font-family:inherit;outline:none;background:var(--paper-deep);color:var(--ink);transition:border-color .2s,background-color .2s}
     .side-section textarea:focus{border-color:var(--vermillion);background:var(--paper)}
     .side-actions{display:flex;justify-content:flex-end;margin-top:12px}
     .dm-thread{display:flex;flex-direction:column;gap:10px;max-height:380px;overflow-y:auto;padding:4px 2px;margin-bottom:14px}
@@ -127,7 +127,7 @@
     .dm-empty{text-align:center;color:var(--ink-faint);font-size:13px;padding:24px 0}
     /* 時間割 */
     .side-section label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:7px;letter-spacing:.03em}
-    .side-section select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;outline:none;background:var(--paper-deep);color:var(--ink);transition:border-color .15s}
+    .side-section select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:16px;font-family:inherit;outline:none;background:var(--paper-deep);color:var(--ink);transition:border-color .15s}
     .side-section select:focus{border-color:var(--vermillion)}
     .tt-table{width:100%;border-collapse:collapse;font-size:13px}
     .tt-table th{padding:9px 8px;text-align:left;font-size:11px;font-weight:700;border-bottom:2px solid var(--ink);color:var(--ink-soft);letter-spacing:.02em}
@@ -190,6 +190,20 @@
     .tt-remarks h4{font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:10px;letter-spacing:.03em}
     .tt-remarks ul{list-style:none;display:flex;flex-direction:column;gap:8px}
     .tt-remarks li{font-size:13px;line-height:1.7;padding-left:14px;border-left:2px solid var(--vermillion);color:var(--ink-soft)}
+
+    /* カレンダー */
+    .cal-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:14px;font-size:15px;font-weight:700}
+    .cal-nav button{min-width:44px;min-height:44px;padding:0;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--paper-deep);color:var(--ink-soft);font-size:16px;cursor:pointer;font-family:inherit;transition:background-color .15s}
+    .cal-nav button:hover{background:var(--paper)}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+    .cal-cell{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1;border-radius:var(--radius-sm);font-size:12px;color:var(--ink-soft)}
+    .cal-cell.cal-head{font-weight:700;color:var(--ink-faint);font-size:11px;aspect-ratio:auto;padding:4px 0}
+    .cal-cell.cal-empty{visibility:hidden}
+    .cal-cell.cal-today{background:var(--vermillion-tint)}
+    .cal-cell.cal-today .cal-day-no{color:var(--vermillion);font-weight:700}
+    .cal-dot{position:absolute;bottom:4px;width:5px;height:5px;border-radius:50%;background:var(--vermillion)}
+    .cal-event-item{font-size:13px;line-height:1.7;padding:8px 0;border-bottom:1px solid var(--line)}
+    .cal-event-item:last-child{border-bottom:none}
     @media (max-width:600px){
       .side-section{padding:24px 18px}
       .posts-grid{padding:14px 18px 88px}
@@ -231,6 +245,7 @@
       <nav class="main-nav" id="mainNav">
         <button class="nav-link active" data-tab="posts" onclick="switchSection('posts')">お知らせ</button>
         <button class="nav-link" data-tab="timetable" onclick="switchSection('timetable')">時間割</button>
+        <button class="nav-link" data-tab="events" onclick="switchSection('events')">カレンダー</button>
         <button class="nav-link" data-tab="suggestions" onclick="switchSection('suggestions')">意見箱</button>
         <button class="nav-link" data-tab="line" onclick="switchSection('line')">LINE連携</button>
       </nav>
@@ -264,7 +279,7 @@
     </div>
 
     <div class="post-search-bar">
-      <input type="text" id="postSearchInput" placeholder="お知らせを検索" oninput="renderFilteredPosts()">
+      <input type="text" id="postSearchInput" placeholder="お知らせを検索（タグ名でも検索できます）" oninput="renderFilteredPosts()">
     </div>
 
     <div class="filter-bar" id="filterBar">
@@ -285,6 +300,20 @@
         <select id="ttStudentGrade"></select>
       </div>
       <div id="ttStudentArea"><div class="dm-empty">学年を選択してください</div></div>
+    </div>
+  </div>
+
+  <!-- カレンダー -->
+  <div class="page-section" id="tab-events">
+    <div class="side-section" style="margin-top:0;border-top:none">
+      <h3>行事予定</h3>
+      <div class="cal-nav">
+        <button class="btn-sm" onclick="calMoveMonth(-1)">＜</button>
+        <span id="calMonthLabel"></span>
+        <button class="btn-sm" onclick="calMoveMonth(1)">＞</button>
+      </div>
+      <div id="calGrid" class="cal-grid"></div>
+      <div id="calEventsList" style="margin-top:20px"></div>
     </div>
   </div>
 
@@ -370,6 +399,12 @@
 
   db.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
+      // ログイン直後はSupabaseの認証トークンが付いた長いURL（#access_token=...）になっているため、
+      // アドレスバーに残らないよう即座に綺麗なURLへ置き換える
+      if (location.hash.includes('access_token')) {
+        history.replaceState(null, '', location.pathname);
+      }
+
       // 大文字小文字・前後の空白の違いで誤って弾かれないように正規化して比較
       const email = (session.user.email || '').trim();
       const emailLower = email.toLowerCase();
@@ -395,6 +430,7 @@
       loadCategoryFilters();
       initStudentTimetable();
       loadSpecialMessages();
+      loadEvents();
 
       syncMember(session.user.id, email, session.user.user_metadata?.full_name || session.user.user_metadata?.name || '');
       loadNotifications(session.user.id);
@@ -603,16 +639,16 @@
     });
   }
 
-  function filterPosts(cat) {
-    currentCategoryFilter = cat;
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.cat === cat));
+  function filterPosts(tag) {
+    currentCategoryFilter = tag;
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.cat === tag));
     renderFilteredPosts();
   }
 
   function renderFilteredPosts() {
     const keyword = (document.getElementById('postSearchInput').value || '').trim().toLowerCase();
-    let posts = currentCategoryFilter ? allPosts.filter(p => p.category === currentCategoryFilter) : allPosts;
-    if (keyword) posts = posts.filter(p => (p.title || '').toLowerCase().includes(keyword) || (p.body || '').toLowerCase().includes(keyword));
+    let posts = currentCategoryFilter ? allPosts.filter(p => (p.tags || []).includes(currentCategoryFilter)) : allPosts;
+    if (keyword) posts = posts.filter(p => (p.title || '').toLowerCase().includes(keyword) || (p.body || '').toLowerCase().includes(keyword) || (p.tags || []).some(t => t.toLowerCase().includes(keyword)));
     renderPosts(posts);
   }
 
@@ -623,6 +659,7 @@
       const date = new Date(post.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
       const rolesHtml = (post.target_roles && post.target_roles.length > 0)
         ? post.target_roles.map(r => `<span class="role-tag">${escapeHtml(r)}</span>`).join('') : '';
+      const tagsHtml = (post.tags || []).map(t => `<span class="category-tag ${escapeHtml(t)}">${escapeHtml(t)}</span>`).join('');
       const filesNote = (post.file_paths && post.file_paths.length > 0) ? `<div class="post-has-files">添付 ${post.file_paths.length}件</div>` : '';
       const myRolesForMention = currentMember?.roles || [];
       const isMentioned = (currentUserEmail && (post.mentioned_emails || []).some(e => (e || '').toLowerCase() === currentUserEmail))
@@ -630,7 +667,7 @@
       const mentionHtml = isMentioned ? '<span class="mention-tag">あなたへのメンション</span>' : '';
       return `<a class="post-card" href="post.html?id=${post.id}">
         <div class="post-meta">
-          <span class="category-tag ${escapeHtml(post.category)}">${escapeHtml(post.category)}</span>
+          ${tagsHtml}
           <span class="post-date">${date}</span>
           ${mentionHtml}
           ${rolesHtml}
@@ -818,13 +855,16 @@
     });
     cardsHtml += '</div>';
 
-    // 2) 備考：カット・移動を、元の時限・科目名とともに一覧表示
+    // 2) 備考：カット・移動・自由記述を、元の時限・科目名とともに一覧表示
     const remarkLines = overrides.slice()
-      .filter(o => o.type === 'cancelled' || o.type === 'moved')
-      .sort((a, b) => a.class_no - b.class_no || (a.type === 'moved' ? a.from_period : a.period) - (b.type === 'moved' ? b.from_period : b.period))
+      .filter(o => o.type === 'cancelled' || o.type === 'moved' || o.type === 'note')
+      .sort((a, b) => a.class_no - b.class_no || (a.period ?? a.from_period ?? 0) - (b.period ?? b.from_period ?? 0))
       .map(o => {
         if (o.type === 'moved') {
           return `${o.class_no}組 ${o.from_period}限：${o.subject || '（未設定）'} が${o.period}限に移動しました${o.note ? `（${o.note}）` : ''}`;
+        }
+        if (o.type === 'note') {
+          return `${o.class_no}組：${o.note || ''}`;
         }
         const origSubject = subjectByClass[o.class_no][o.period] || '（未設定）';
         return `${o.class_no}組 ${o.period}限：${origSubject} がカットされました${o.note ? `（${o.note}）` : ''}`;
@@ -836,6 +876,64 @@
       : `<div class="tt-remarks"><h4>備考</h4><p style="font-size:13px;color:var(--ink-faint)">${dateLabel}の変更はありません</p></div>`;
 
     area.innerHTML = weekNavHtml + cardsHtml + remarks;
+  }
+
+  // ── カレンダー（行事予定） ──
+  let calEventsCache = [];
+  let calCurrentMonth = new Date();
+
+  async function loadEvents() {
+    const { data, error } = await db.from('events').select('*').order('start_date');
+    if (error) { console.error('行事予定取得エラー:', error.message); return; }
+    calEventsCache = data || [];
+    calCurrentMonth = new Date();
+    renderCalendar();
+  }
+
+  function calMoveMonth(delta) {
+    calCurrentMonth = new Date(calCurrentMonth.getFullYear(), calCurrentMonth.getMonth() + delta, 1);
+    renderCalendar();
+  }
+
+  function calEventsOnDate(dateStr) {
+    return calEventsCache.filter(ev => dateStr >= ev.start_date && dateStr <= (ev.end_date || ev.start_date));
+  }
+
+  function calFormatJaDate(d) {
+    return new Date(d + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
+  }
+
+  function renderCalendar() {
+    const y = calCurrentMonth.getFullYear(), m = calCurrentMonth.getMonth();
+    document.getElementById('calMonthLabel').textContent = `${y}年${m + 1}月`;
+    const firstDay = new Date(y, m, 1);
+    const startWeekday = firstDay.getDay();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const todayStr = new Date().toLocaleDateString('en-CA');
+
+    let cellsHtml = ['日', '月', '火', '水', '木', '金', '土'].map(w => `<div class="cal-cell cal-head">${w}</div>`).join('');
+    for (let i = 0; i < startWeekday; i++) cellsHtml += '<div class="cal-cell cal-empty"></div>';
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const hasEvent = calEventsOnDate(dateStr).length > 0;
+      const isToday = dateStr === todayStr;
+      cellsHtml += `<div class="cal-cell${isToday ? ' cal-today' : ''}">
+        <span class="cal-day-no">${d}</span>${hasEvent ? '<span class="cal-dot"></span>' : ''}
+      </div>`;
+    }
+    document.getElementById('calGrid').innerHTML = cellsHtml;
+
+    const monthStart = `${y}-${String(m + 1).padStart(2, '0')}-01`;
+    const monthEnd = `${y}-${String(m + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
+    const monthEvents = calEventsCache.filter(ev => (ev.end_date || ev.start_date) >= monthStart && ev.start_date <= monthEnd);
+    const listEl = document.getElementById('calEventsList');
+    if (monthEvents.length === 0) { listEl.innerHTML = '<p style="font-size:13px;color:var(--ink-faint)">この月の行事予定はありません</p>'; return; }
+    listEl.innerHTML = '<h4 style="font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px">この月の予定</h4>' + monthEvents.map(ev => {
+      const label = ev.end_date && ev.end_date !== ev.start_date
+        ? `${calFormatJaDate(ev.start_date)} 〜 ${calFormatJaDate(ev.end_date)}`
+        : calFormatJaDate(ev.start_date);
+      return `<div class="cal-event-item"><strong>${escapeHtml(label)}</strong>　${escapeHtml(ev.title)}${ev.description ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">${escapeHtml(ev.description)}</div>` : ''}</div>`;
+    }).join('');
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }

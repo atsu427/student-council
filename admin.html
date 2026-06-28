@@ -84,8 +84,8 @@
     .post-form{background:var(--paper);border-radius:var(--radius-lg);padding:28px 28px 32px;box-shadow:var(--shadow-sm);margin-bottom:44px;border:1px solid var(--line)}
     .form-row{margin-bottom:22px}
     label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:7px;letter-spacing:.03em}
-    input[type="text"],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:15px;font-family:inherit;outline:none;background:var(--paper-deep);color:var(--ink);transition:border-color .2s,background-color .2s,box-shadow .2s}
-    input[type="text"]:focus,select:focus,textarea:focus{border-color:var(--vermillion);background:var(--paper);box-shadow:0 0 0 3px var(--vermillion-tint)}
+    input[type="text"],input[type="date"],input[type="datetime-local"],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:16px;font-family:inherit;outline:none;background:var(--paper-deep);color:var(--ink);transition:border-color .2s,background-color .2s,box-shadow .2s}
+    input[type="text"]:focus,input[type="date"]:focus,input[type="datetime-local"]:focus,select:focus,textarea:focus{border-color:var(--vermillion);background:var(--paper);box-shadow:0 0 0 3px var(--vermillion-tint)}
     textarea{min-height:160px;resize:vertical;line-height:1.8;padding:12px 14px}
     /* ロール選択チェックボックス */
     .role-checkboxes{display:flex;flex-wrap:wrap;gap:10px 16px;padding:14px 16px;background:var(--paper-deep);border-radius:var(--radius-md);border:1px solid var(--line)}
@@ -135,7 +135,7 @@
     .members-table td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--line)}
     .members-table tr:last-child td{border-bottom:none}
     .members-table tr:hover td{background:var(--paper-deep)}
-    .role-select{padding:6px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13px;background:var(--paper);cursor:pointer}
+    .role-select{padding:6px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:16px;background:var(--paper);cursor:pointer}
     .member-card-grid{display:flex;flex-direction:column;gap:10px}
     .member-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px 16px;box-shadow:var(--shadow-sm)}
     .member-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
@@ -173,7 +173,7 @@
     .dm-bubble.student{align-self:flex-start;background:var(--paper-deep);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-md) var(--radius-md) var(--radius-md) var(--radius-sm)}
     .dm-bubble-date{font-size:10px;opacity:.65;margin-top:4px}
     .dm-panel-input{display:flex;gap:8px}
-    .dm-panel-input textarea{flex:1;min-height:48px;resize:vertical;border:1px solid var(--line);border-radius:var(--radius-md);padding:10px 12px;font-size:13px;font-family:inherit;outline:none;background:var(--paper-deep)}
+    .dm-panel-input textarea{flex:1;min-height:48px;resize:vertical;border:1px solid var(--line);border-radius:var(--radius-md);padding:10px 12px;font-size:16px;font-family:inherit;outline:none;background:var(--paper-deep)}
     .dm-panel-input textarea:focus{border-color:var(--vermillion);background:var(--paper)}
     footer{text-align:center;padding:32px 28px;font-size:11px;color:var(--ink-faint);border-top:1px solid var(--line);letter-spacing:.05em}
     footer .footer-links{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:10px}
@@ -197,6 +197,10 @@
       .dm-member-list{width:100%;max-height:160px;border-right:none;border-bottom:1px solid var(--line)}
       .dm-panel-thread{max-height:300px}
       .form-row[style*="display:flex"]{flex-direction:column}
+      .tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:24px;padding-bottom:6px}
+      .tab{flex-shrink:0}
+      .btn-sm{padding:9px 14px;font-size:13px}
+      .post-item-actions{gap:8px}
     }
   </style>
 </head>
@@ -242,8 +246,9 @@
       <div class="tab active" onclick="switchTab('posts')">投稿管理</div>
       <div class="tab" onclick="switchTab('members')">生徒管理</div>
       <div class="tab" onclick="switchTab('roles')">ロール管理</div>
-      <div class="tab" onclick="switchTab('categories')">カテゴリ管理</div>
+      <div class="tab" onclick="switchTab('categories')">タグ管理</div>
       <div class="tab" onclick="switchTab('timetable')">時間割管理</div>
+      <div class="tab" onclick="switchTab('events')">カレンダー管理</div>
       <div class="tab" onclick="switchTab('suggestions')">意見箱</div>
       <div class="tab" onclick="switchTab('profile')">プロフィール</div>
     </div>
@@ -258,8 +263,10 @@
           <input type="text" id="inputTitle" placeholder="お知らせのタイトル">
         </div>
         <div class="form-row">
-          <label>カテゴリ</label>
-          <select id="inputCategory"></select>
+          <label>タグ（複数選択可）</label>
+          <div class="role-checkboxes" id="tagCheckboxes">
+            <span style="font-size:13px;color:#aaa">読み込み中...</span>
+          </div>
         </div>
         <div class="form-row">
           <label>本文</label>
@@ -350,7 +357,7 @@
 
     <!-- カテゴリ管理タブ -->
     <div class="tab-content" id="tab-categories">
-      <div class="section-title">カテゴリ一覧</div>
+      <div class="section-title">タグ一覧</div>
       <div id="categoriesArea"><div class="loading">読み込み中...</div></div>
     </div>
 
@@ -380,16 +387,6 @@
             <label>学年</label>
             <select id="ovGrade"></select>
           </div>
-          <div style="flex:1;min-width:100px">
-            <label>クラス</label>
-            <select id="ovClass"></select>
-          </div>
-          <div style="flex:1;min-width:100px">
-            <label id="ovPeriodLabel">時限</label>
-            <select id="ovPeriod"></select>
-          </div>
-        </div>
-        <div class="form-row" style="display:flex;gap:16px;flex-wrap:wrap">
           <div style="flex:1;min-width:160px">
             <label>変更タイプ</label>
             <select id="ovType" onchange="onOverrideTypeChange()">
@@ -397,19 +394,50 @@
               <option value="self_study">自習</option>
               <option value="cancelled">カット</option>
               <option value="moved">移動（交換ではなく一方通行）</option>
+              <option value="note">備考のみ（自由記述）</option>
             </select>
           </div>
-          <div style="flex:1;min-width:160px" id="ovSubjectRow">
-            <label>新科目名</label>
-            <input type="text" id="ovSubject" placeholder="例：自習（数学）">
+        </div>
+
+        <!-- 科目変更・自習・カット・備考のみ：教科名＋対象クラス（複数選択）で指定 -->
+        <div id="ovClassTargetSection">
+          <div class="form-row" style="display:flex;gap:16px;flex-wrap:wrap" id="ovTargetSubjectRow">
+            <div style="flex:1;min-width:160px">
+              <label>対象の教科名（標準時間割の名前と一致させてください）</label>
+              <input type="text" id="ovTargetSubject" list="ovSubjectOptions" placeholder="例：数学">
+              <datalist id="ovSubjectOptions"></datalist>
+            </div>
+            <div style="flex:1;min-width:160px" id="ovNewSubjectRow">
+              <label>新科目名</label>
+              <input type="text" id="ovNewSubject" placeholder="例：自習（数学）">
+            </div>
           </div>
-          <div style="flex:1;min-width:160px;display:none" id="ovMoveFromRow">
-            <label>移動元の時限</label>
-            <select id="ovMoveFromPeriod"></select>
+          <div class="form-row">
+            <label>対象クラス（複数選択可）</label>
+            <div class="role-checkboxes" id="ovClassChecks"></div>
           </div>
         </div>
+
+        <!-- 移動：移動元/移動先の時限を1クラスずつ指定 -->
+        <div id="ovMovedSection" style="display:none">
+          <div class="form-row" style="display:flex;gap:16px;flex-wrap:wrap">
+            <div style="flex:1;min-width:100px">
+              <label>クラス</label>
+              <select id="ovClass"></select>
+            </div>
+            <div style="flex:1;min-width:100px">
+              <label>移動先の時限</label>
+              <select id="ovPeriod"></select>
+            </div>
+            <div style="flex:1;min-width:100px">
+              <label>移動元の時限</label>
+              <select id="ovMoveFromPeriod"></select>
+            </div>
+          </div>
+        </div>
+
         <div class="form-row">
-          <label>備考（カット・移動の場合は下の備考欄にも表示されます）</label>
+          <label id="ovNoteLabel">備考（任意）</label>
           <input type="text" id="ovNote" placeholder="任意">
         </div>
         <div class="form-actions">
@@ -434,6 +462,40 @@
         アーカイブ（過去の変更） <span id="ttArchiveToggleLabel" style="font-size:12px;color:var(--ink-faint);font-weight:400">（タップで表示）</span>
       </div>
       <div id="ttOverridesArchiveArea" style="display:none"><div class="loading">読み込み中...</div></div>
+    </div>
+
+    <!-- カレンダー管理タブ -->
+    <div class="tab-content" id="tab-events">
+      <div class="section-title">行事予定の登録</div>
+      <div class="post-form">
+        <input type="hidden" id="eventEditId">
+        <div class="form-row">
+          <label>行事名</label>
+          <input type="text" id="eventTitle" placeholder="例：文化祭">
+        </div>
+        <div class="form-row" style="display:flex;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:140px">
+            <label>開始日</label>
+            <input type="date" id="eventStartDate">
+          </div>
+          <div style="flex:1;min-width:140px">
+            <label>終了日（任意・複数日の行事のみ）</label>
+            <input type="date" id="eventEndDate">
+          </div>
+        </div>
+        <div class="form-row">
+          <label>詳細（任意）</label>
+          <textarea id="eventDescription" placeholder="内容を入力" style="min-height:80px"></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn" id="eventCancelBtn" style="display:none" onclick="resetEventForm()">キャンセル</button>
+          <div style="flex:1"></div>
+          <button class="btn btn-primary" onclick="saveEvent()">登録する</button>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:40px">登録済みの行事予定</div>
+      <div id="eventsArea"><div class="loading">読み込み中...</div></div>
     </div>
 
     <!-- 意見箱タブ -->
@@ -526,6 +588,12 @@
   // ── 認証 ──
   db.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
+      // ログイン直後はSupabaseの認証トークンが付いた長いURL（#access_token=...）になっているため、
+      // アドレスバーに残らないよう即座に綺麗なURLへ置き換える
+      if (location.hash.includes('access_token')) {
+        history.replaceState(null, '', location.pathname);
+      }
+
       // 大文字小文字・前後の空白の違いで誤って弾かれないように正規化して比較
       const email = (session.user.email || '').trim();
       const emailLower = email.toLowerCase();
@@ -603,13 +671,14 @@
 
   // ── タブ切り替え ──
   function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['posts','members','roles','categories','timetable','suggestions','profile'][i] === name));
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['posts','members','roles','categories','timetable','events','suggestions','profile'][i] === name));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
     if (name === 'members') loadMembers();
     if (name === 'roles') renderRolesTab();
     if (name === 'categories') renderCategoriesTab();
     if (name === 'timetable') initTimetableTab();
+    if (name === 'events') loadEvents();
     if (name === 'suggestions') { loadSuggestions(); loadDmMemberList(); }
     if (name === 'profile') renderProfileTab();
   }
@@ -717,19 +786,26 @@
     showToast('削除しました');
   }
 
-  // ── カテゴリ ──
+  // ── タグ（旧カテゴリ。テーブル名はcategoriesのまま、タグ候補の管理として使う） ──
   async function loadCategories() {
     const { data, error } = await db.from('categories').select('*').order('sort_order');
-    if (error) { console.error('カテゴリ取得エラー:', error.message); categoriesCache = []; }
+    if (error) { console.error('タグ取得エラー:', error.message); categoriesCache = []; }
     else categoriesCache = data || [];
-    renderCategoryOptions();
+    renderTagCheckboxes([]);
   }
 
-  function renderCategoryOptions() {
-    const sel = document.getElementById('inputCategory');
-    const prev = sel.value;
-    sel.innerHTML = categoriesCache.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
-    if (categoriesCache.some(c => c.name === prev)) sel.value = prev;
+  function renderTagCheckboxes(selectedTags) {
+    const el = document.getElementById('tagCheckboxes');
+    if (categoriesCache.length === 0) { el.innerHTML = '<span style="font-size:13px;color:#aaa">タグがありません（タグ管理から追加）</span>'; return; }
+    el.innerHTML = categoriesCache.map(c => `
+      <label class="role-checkbox-item">
+        <input type="checkbox" name="postTag" value="${escapeHtml(c.name)}" ${selectedTags.includes(c.name) ? 'checked' : ''}>
+        ${escapeHtml(c.name)}
+      </label>`).join('');
+  }
+
+  function getSelectedTags() {
+    return Array.from(document.querySelectorAll('input[name="postTag"]:checked')).map(el => el.value);
   }
 
   function renderCategoriesTab() {
@@ -742,7 +818,7 @@
         </div>`).join('')}
       </div>
       <div class="add-role-row">
-        <input type="text" id="newCategoryName" placeholder="新しいカテゴリ名" style="max-width:220px">
+        <input type="text" id="newCategoryName" placeholder="新しいタグ名" style="max-width:220px">
         <button class="btn btn-primary" onclick="addCategory()">追加</button>
       </div>`;
     el.querySelectorAll('.role-chip-del').forEach(btn => {
@@ -991,7 +1067,7 @@
     const list = document.getElementById('postsList');
     const keyword = (document.getElementById('postSearchInput')?.value || '').trim().toLowerCase();
     const filtered = keyword
-      ? postsListCache.filter(p => (p.title || '').toLowerCase().includes(keyword) || (p.body || '').toLowerCase().includes(keyword))
+      ? postsListCache.filter(p => (p.title || '').toLowerCase().includes(keyword) || (p.body || '').toLowerCase().includes(keyword) || (p.tags || []).some(t => t.toLowerCase().includes(keyword)))
       : postsListCache;
 
     if (filtered.length === 0) { list.innerHTML = `<div class="empty">${keyword ? '検索条件に一致する投稿がありません' : '投稿はまだありません'}</div>`; return; }
@@ -999,6 +1075,7 @@
       const date = new Date(post.created_at).toLocaleDateString('ja-JP');
       const rolesHtml = (post.target_roles && post.target_roles.length > 0)
         ? post.target_roles.map(r => `<span class="role-tag-sm">${escapeHtml(r)}</span>`).join('') : '<span style="font-size:11px;color:#aaa">全員</span>';
+      const tagsHtml = (post.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
       const filesNote = (post.file_paths && post.file_paths.length > 0) ? `添付${post.file_paths.length}件` : '';
       const isScheduled = post.publish_at && new Date(post.publish_at) > new Date();
       const scheduledNote = isScheduled ? `<span class="tag" style="background:var(--gold-tint);color:var(--gold)">${new Date(post.publish_at).toLocaleString('ja-JP', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}に公開予定</span>` : '';
@@ -1006,7 +1083,7 @@
         <div class="post-item-info">
           <div class="post-item-title">${escapeHtml(post.title)}</div>
           <div class="post-item-meta">
-            <span class="tag">${escapeHtml(post.category)}</span>
+            ${tagsHtml}
             <span class="status-badge ${post.published ? 'status-published' : 'status-draft'}">${post.published ? '公開中' : '下書き'}</span>
             ${post.is_special ? '<span class="tag" style="background:var(--vermillion);color:var(--paper)">特別メッセージ</span>' : ''}
             ${scheduledNote}
@@ -1028,7 +1105,7 @@
   async function savePost() {
     const id = document.getElementById('editId').value;
     const title = document.getElementById('inputTitle').value.trim();
-    const category = document.getElementById('inputCategory').value;
+    const tags = getSelectedTags();
     const body = document.getElementById('inputBody').value.trim();
     const published = document.getElementById('inputPublished').checked;
     const is_special = document.getElementById('inputSpecial').checked;
@@ -1052,7 +1129,7 @@
     document.getElementById('uploadProgress').style.display = 'none';
 
     const authorName = (currentMember?.display_name || '').trim() || currentUser.email;
-    const payload = { title, category, body, published, is_special, publish_at, target_roles, mentioned_emails, mentioned_roles, file_paths: filePaths, author: authorName };
+    const payload = { title, tags, body, published, is_special, publish_at, target_roles, mentioned_emails, mentioned_roles, file_paths: filePaths, author: authorName };
 
     const { data: savedPost, error } = id
       ? await db.from('posts').update(payload).eq('id', id).select('id, title').single()
@@ -1124,7 +1201,9 @@
   async function notifyMentionedMembers(emails, roles, post, isCorrection) {
     const queries = [];
     if (emails.length > 0) queries.push(db.from('members').select('id, email').in('email', emails));
-    if (roles.length > 0) queries.push(db.from('members').select('id, email').overlaps('roles', roles));
+    // 「全体」ロールはメンバーのroles配列に実際に入っているわけではない特別な「全員」扱いの値なので、overlapsでは引っかからない
+    if (roles.includes('全体')) queries.push(db.from('members').select('id, email'));
+    else if (roles.length > 0) queries.push(db.from('members').select('id, email').overlaps('roles', roles));
     const results = await Promise.all(queries);
     const errored = results.find(r => r.error);
     if (errored) { console.error('メンション対象メンバー取得エラー:', errored.error.message); showToast('通知の送信に失敗しました: ' + errored.error.message); return; }
@@ -1151,8 +1230,7 @@
     if (!data) return;
     document.getElementById('editId').value = id;
     document.getElementById('inputTitle').value = data.title;
-    renderCategoryOptions();
-    document.getElementById('inputCategory').value = data.category;
+    renderTagCheckboxes(data.tags || []);
     document.getElementById('inputBody').value = data.body;
     document.getElementById('inputPublished').checked = data.published;
     document.getElementById('inputSpecial').checked = !!data.is_special;
@@ -1189,9 +1267,7 @@
   function resetForm() {
     document.getElementById('editId').value = '';
     document.getElementById('inputTitle').value = '';
-    renderCategoryOptions();
-    const defaultCat = categoriesCache.find(c => c.name === 'お知らせ');
-    document.getElementById('inputCategory').value = defaultCat ? defaultCat.name : (categoriesCache[0]?.name || '');
+    renderTagCheckboxes([]);
     document.getElementById('inputBody').value = '';
     document.getElementById('inputPublished').checked = true;
     document.getElementById('inputSpecial').checked = false;
@@ -1341,7 +1417,7 @@
   const CLASS_NUMS = [1,2,3,4];
   const WEEKDAYS = ['月','火','水','木','金','土']; // weekday=1が月
   const PERIODS = [1,2,3,4,5,6,7];
-  const OVERRIDE_TYPE_LABEL = { subject_change: '科目変更', self_study: '自習', cancelled: 'カット', moved: '移動' };
+  const OVERRIDE_TYPE_LABEL = { subject_change: '科目変更', self_study: '自習', cancelled: 'カット', moved: '移動', note: '備考のみ' };
   let ttInitialized = false;
   let ttSlotsCache = {}; // key: `${weekday}-${period}` -> subject
 
@@ -1353,6 +1429,8 @@
       const classOptions = CLASS_NUMS.map(c => `<option value="${c}">${c}組</option>`).join('');
       document.getElementById('ttClassSelect').innerHTML = classOptions;
       document.getElementById('ovClass').innerHTML = classOptions;
+      document.getElementById('ovClassChecks').innerHTML = CLASS_NUMS.map(c => `
+        <label class="role-checkbox-item"><input type="checkbox" name="ovClassCheck" value="${c}"> ${c}組</label>`).join('');
       const periodOptions = PERIODS.map(p => `<option value="${p}">${p}限</option>`).join('');
       document.getElementById('ovPeriod').innerHTML = periodOptions;
       document.getElementById('ovMoveFromPeriod').innerHTML = periodOptions;
@@ -1360,7 +1438,9 @@
 
       document.getElementById('ttGradeSelect').addEventListener('change', loadTimetableGrid);
       document.getElementById('ttClassSelect').addEventListener('change', loadTimetableGrid);
+      document.getElementById('ovGrade').addEventListener('change', loadOvSubjectOptions);
       onOverrideTypeChange();
+      loadOvSubjectOptions();
       ttInitialized = true;
     }
     loadTimetableGrid();
@@ -1369,9 +1449,26 @@
 
   function onOverrideTypeChange() {
     const type = document.getElementById('ovType').value;
-    document.getElementById('ovSubjectRow').style.display = (type === 'subject_change') ? '' : 'none';
-    document.getElementById('ovMoveFromRow').style.display = (type === 'moved') ? '' : 'none';
-    document.getElementById('ovPeriodLabel').textContent = (type === 'moved') ? '移動先の時限' : '時限';
+    const isMoved = type === 'moved';
+    const isNote = type === 'note';
+    document.getElementById('ovMovedSection').style.display = isMoved ? '' : 'none';
+    document.getElementById('ovClassTargetSection').style.display = isMoved ? 'none' : '';
+    document.getElementById('ovTargetSubjectRow').style.display = isNote ? 'none' : '';
+    document.getElementById('ovNewSubjectRow').style.display = (type === 'subject_change') ? '' : 'none';
+    document.getElementById('ovNoteLabel').textContent = isNote ? '備考の内容' : '備考（任意）';
+  }
+
+  function getSelectedOvClasses() {
+    return Array.from(document.querySelectorAll('input[name="ovClassCheck"]:checked')).map(el => Number(el.value));
+  }
+
+  // 対象の教科名を入力しやすくするための候補一覧（標準時間割に登録済みの教科名から作る）
+  async function loadOvSubjectOptions() {
+    const grade = document.getElementById('ovGrade').value;
+    const { data, error } = await db.from('timetable_slots').select('subject').eq('grade', grade);
+    if (error) { console.error('教科候補取得エラー:', error.message); return; }
+    const subjects = Array.from(new Set((data || []).map(s => s.subject).filter(Boolean))).sort();
+    document.getElementById('ovSubjectOptions').innerHTML = subjects.map(s => `<option value="${escapeHtml(s)}"></option>`).join('');
   }
 
   // weekdayは1=月〜6=土。日曜(0)は時間割が無いのでnullを返す
@@ -1401,7 +1498,7 @@
       html += `<tr><td>${p}限</td>`;
       for (let w = 1; w <= WEEKDAYS.length; w++) {
         const val = ttSlotsCache[`${w}-${p}`] || '';
-        html += `<td><input type="text" data-weekday="${w}" data-period="${p}" value="${escapeHtml(val)}" style="border:none;border-bottom:1px solid var(--line);width:100%;padding:4px 2px;font-size:13px;background:transparent;font-family:inherit;outline:none"></td>`;
+        html += `<td><input type="text" data-weekday="${w}" data-period="${p}" value="${escapeHtml(val)}" style="border:none;border-bottom:1px solid var(--line);width:100%;min-width:64px;padding:4px 2px;font-size:16px;background:transparent;font-family:inherit;outline:none"></td>`;
       }
       html += '</tr>';
     });
@@ -1423,34 +1520,69 @@
   async function addOverride() {
     const date = document.getElementById('ovDate').value.trim();
     const grade = document.getElementById('ovGrade').value;
-    const classNo = Number(document.getElementById('ovClass').value);
-    const period = Number(document.getElementById('ovPeriod').value);
     const type = document.getElementById('ovType').value;
-    const subject = document.getElementById('ovSubject').value.trim();
     const note = document.getElementById('ovNote').value.trim();
-
     if (!date) { showToast('日付を入力してください'); return; }
-    if (type === 'subject_change' && !subject) { showToast('新科目名を入力してください'); return; }
-
-    const payload = { date, grade, class_no: classNo, period, type, note: note || null };
-    if (type === 'subject_change') payload.subject = subject;
+    const weekday = weekdayFromDateStr(date);
 
     if (type === 'moved') {
+      const classNo = Number(document.getElementById('ovClass').value);
+      const period = Number(document.getElementById('ovPeriod').value);
       const fromPeriod = Number(document.getElementById('ovMoveFromPeriod').value);
       if (fromPeriod === period) { showToast('移動元と移動先が同じ時限です'); return; }
-      const weekday = weekdayFromDateStr(date);
       if (!weekday) { showToast('日曜日は時間割がありません'); return; }
       const { data: slot, error: slotError } = await db.from('timetable_slots')
         .select('subject').eq('grade', grade).eq('class_no', classNo).eq('weekday', weekday).eq('period', fromPeriod).maybeSingle();
       if (slotError) { console.error('標準時間割取得エラー:', slotError.message); showToast('登録失敗: ' + slotError.message); return; }
-      payload.from_period = fromPeriod;
-      payload.subject = slot?.subject || '（未設定）';
+      const payload = { date, grade, class_no: classNo, period, type, from_period: fromPeriod, subject: slot?.subject || '（未設定）', note: note || null };
+      const { error } = await db.from('timetable_overrides').upsert(payload, { onConflict: 'date,grade,class_no,period' });
+      if (error) { console.error('時間割変更登録エラー:', error.message); showToast('登録失敗: ' + error.message); return; }
+      showToast('時間割変更を登録しました');
+      document.getElementById('ovNote').value = '';
+      loadOverridesList();
+      return;
     }
 
-    const { error } = await db.from('timetable_overrides').insert(payload);
+    if (type === 'note') {
+      const classes = getSelectedOvClasses();
+      if (classes.length === 0) { showToast('対象クラスを選択してください'); return; }
+      if (!note) { showToast('備考の内容を入力してください'); return; }
+      const rows = classes.map(c => ({ date, grade, class_no: c, type: 'note', note, period: null, from_period: null, subject: null }));
+      const { error } = await db.from('timetable_overrides').insert(rows);
+      if (error) { console.error('時間割変更登録エラー:', error.message); showToast('登録失敗: ' + error.message); return; }
+      showToast(`${rows.length}件の備考を登録しました`);
+      document.getElementById('ovNote').value = '';
+      loadOverridesList();
+      return;
+    }
+
+    // 科目変更・自習・カット：教科名＋対象クラス（複数）から該当する時限を割り出して登録する
+    const targetSubject = document.getElementById('ovTargetSubject').value.trim();
+    const newSubject = document.getElementById('ovNewSubject').value.trim();
+    const classes = getSelectedOvClasses();
+    if (!targetSubject) { showToast('対象の教科名を入力してください'); return; }
+    if (classes.length === 0) { showToast('対象クラスを選択してください'); return; }
+    if (type === 'subject_change' && !newSubject) { showToast('新科目名を入力してください'); return; }
+    if (!weekday) { showToast('日曜日は時間割がありません'); return; }
+
+    const { data: slots, error: slotsError } = await db.from('timetable_slots')
+      .select('*').eq('grade', grade).eq('weekday', weekday).eq('subject', targetSubject).in('class_no', classes);
+    if (slotsError) { console.error('標準時間割検索エラー:', slotsError.message); showToast('検索失敗: ' + slotsError.message); return; }
+    if (!slots || slots.length === 0) { showToast('指定した教科の時間割が見つかりませんでした（教科名の表記が標準時間割と一致しているか確認してください）'); return; }
+
+    const foundClasses = new Set(slots.map(s => s.class_no));
+    const missing = classes.filter(c => !foundClasses.has(c));
+    const rows = slots.map(s => ({
+      date, grade, class_no: s.class_no, period: s.period, type,
+      subject: type === 'subject_change' ? newSubject : null,
+      from_period: null,
+      note: note || null
+    }));
+    const { error } = await db.from('timetable_overrides').upsert(rows, { onConflict: 'date,grade,class_no,period' });
     if (error) { console.error('時間割変更登録エラー:', error.message); showToast('登録失敗: ' + error.message); return; }
-    showToast('時間割変更を登録しました');
-    document.getElementById('ovSubject').value = '';
+    showToast(`${rows.length}件登録しました${missing.length > 0 ? `（${missing.map(c => c + '組').join('・')}には本日その教科がありませんでした）` : ''}`);
+    document.getElementById('ovTargetSubject').value = '';
+    document.getElementById('ovNewSubject').value = '';
     document.getElementById('ovNote').value = '';
     loadOverridesList();
   }
@@ -1459,14 +1591,15 @@
     let detail = '';
     if (o.type === 'subject_change') detail = `→ ${escapeHtml(o.subject || '')}`;
     if (o.type === 'moved') detail = `${o.from_period}限 → ${o.period}限（${escapeHtml(o.subject || '')}）`;
-    const periodLabel = o.type === 'moved' ? '' : ` ${o.period}限`;
+    if (o.type === 'note') detail = escapeHtml(o.note || '');
+    const periodLabel = (o.type === 'moved' || o.type === 'note') ? '' : ` ${o.period}限`;
     return `<div class="post-item">
       <div class="post-item-info">
         <div class="post-item-title">${escapeHtml(o.date)} ${escapeHtml(o.grade)}${o.class_no}組${periodLabel}</div>
         <div class="post-item-meta">
           <span class="tag">${escapeHtml(OVERRIDE_TYPE_LABEL[o.type] || o.type)}</span>
           <span>${detail}</span>
-          ${o.note ? `<span>${escapeHtml(o.note)}</span>` : ''}
+          ${(o.note && o.type !== 'note') ? `<span>${escapeHtml(o.note)}</span>` : ''}
         </div>
       </div>
       <div class="post-item-actions">
@@ -1610,10 +1743,99 @@
     });
     if (rows.length === 0) { showToast('並び替えがありません'); return; }
 
-    const { error } = await db.from('timetable_overrides').insert(rows);
+    const { error } = await db.from('timetable_overrides').upsert(rows, { onConflict: 'date,grade,class_no,period' });
     if (error) { console.error('移動の保存エラー:', error.message); showToast('保存失敗: ' + error.message); return; }
     showToast(`${rows.length}件の移動を登録しました`);
     loadOverridesList();
+  }
+
+  // ── カレンダー（行事予定） ──
+  let eventsCache = [];
+
+  async function loadEvents() {
+    const el = document.getElementById('eventsArea');
+    el.innerHTML = '<div class="loading">読み込み中...</div>';
+    const { data, error } = await db.from('events').select('*').order('start_date');
+    if (error) { console.error('行事予定取得エラー:', error.message); el.innerHTML = '<div class="empty">読み込みエラー: ' + escapeHtml(error.message) + '</div>'; return; }
+    eventsCache = data || [];
+    renderEventsList();
+  }
+
+  function renderEventsList() {
+    const el = document.getElementById('eventsArea');
+    if (eventsCache.length === 0) { el.innerHTML = '<div class="empty">行事予定はまだありません</div>'; return; }
+    const today = new Date().toLocaleDateString('en-CA');
+    el.innerHTML = eventsCache.map(ev => {
+      const isPast = (ev.end_date || ev.start_date) < today;
+      const dateLabel = ev.end_date && ev.end_date !== ev.start_date
+        ? `${formatJaDate(ev.start_date)} 〜 ${formatJaDate(ev.end_date)}`
+        : formatJaDate(ev.start_date);
+      return `<div class="post-item"${isPast ? ' style="opacity:.55"' : ''}>
+        <div class="post-item-info">
+          <div class="post-item-title">${escapeHtml(ev.title)}</div>
+          <div class="post-item-meta">
+            <span class="tag">${escapeHtml(dateLabel)}</span>
+            ${ev.description ? `<span>${escapeHtml(ev.description)}</span>` : ''}
+          </div>
+        </div>
+        <div class="post-item-actions">
+          <button class="btn-sm btn-edit" onclick="editEvent(${ev.id})">編集</button>
+          <button class="btn-sm btn-del" onclick="deleteEvent(${ev.id})">削除</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function formatJaDate(d) {
+    return new Date(d + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
+  }
+
+  async function saveEvent() {
+    const id = document.getElementById('eventEditId').value;
+    const title = document.getElementById('eventTitle').value.trim();
+    const start_date = document.getElementById('eventStartDate').value;
+    const end_date = document.getElementById('eventEndDate').value || null;
+    const description = document.getElementById('eventDescription').value.trim() || null;
+    if (!title || !start_date) { showToast('行事名と開始日を入力してください'); return; }
+    if (end_date && end_date < start_date) { showToast('終了日は開始日以降にしてください'); return; }
+
+    const payload = { title, start_date, end_date, description };
+    const { error } = id
+      ? await db.from('events').update(payload).eq('id', id)
+      : await db.from('events').insert(payload);
+    if (error) { console.error('行事予定保存エラー:', error.message); showToast('保存失敗: ' + error.message); return; }
+    showToast(id ? '更新しました' : '登録しました');
+    resetEventForm();
+    loadEvents();
+  }
+
+  function editEvent(id) {
+    const ev = eventsCache.find(e => e.id === id);
+    if (!ev) return;
+    document.getElementById('eventEditId').value = ev.id;
+    document.getElementById('eventTitle').value = ev.title;
+    document.getElementById('eventStartDate').value = ev.start_date;
+    document.getElementById('eventEndDate').value = ev.end_date || '';
+    document.getElementById('eventDescription').value = ev.description || '';
+    document.getElementById('eventCancelBtn').style.display = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function deleteEvent(id) {
+    if (!confirm('この行事予定を削除しますか？')) return;
+    const { error } = await db.from('events').delete().eq('id', id);
+    if (error) { console.error('行事予定削除エラー:', error.message); showToast('削除失敗: ' + error.message); return; }
+    showToast('削除しました');
+    loadEvents();
+  }
+
+  function resetEventForm() {
+    document.getElementById('eventEditId').value = '';
+    document.getElementById('eventTitle').value = '';
+    document.getElementById('eventStartDate').value = '';
+    document.getElementById('eventEndDate').value = '';
+    document.getElementById('eventDescription').value = '';
+    document.getElementById('eventCancelBtn').style.display = 'none';
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
