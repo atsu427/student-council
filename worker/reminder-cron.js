@@ -66,6 +66,18 @@ async function claimReminder(env, reminderId) {
   return Array.isArray(rows) && rows.length > 0;
 }
 
+// 同じLINEアカウントが複数のmembers行に紐づいている場合（同一人物が別メールで2アカウント登録し、
+// 両方に同じLINE連携コードでリンクしてしまった等）、member.idでの重複排除では検知できず、
+// 同じLINEアカウントに二重送信されてしまう。送信直前に必ずline_user_id基準で重複排除する
+function dedupeByLineUserId(members) {
+  const seen = new Set();
+  return members.filter(m => {
+    if (seen.has(m.line_user_id)) return false;
+    seen.add(m.line_user_id);
+    return true;
+  });
+}
+
 async function processReminders(env) {
   const pending = await getPendingReminders(env);
   const now = new Date();
@@ -81,7 +93,7 @@ async function processReminders(env) {
     if (!(await claimReminder(env, reminder.id))) continue;
 
     const text = `【リマインダー】${event.title}\n\n${reminder.message || ''}`.trim();
-    const members = (await getLineUserIdsByRoles(env, reminder.target_roles)).filter(m => m.line_user_id);
+    const members = dedupeByLineUserId((await getLineUserIdsByRoles(env, reminder.target_roles)).filter(m => m.line_user_id));
     for (const m of members) {
       await linePush(env, m.line_user_id, [{ type: 'text', text }]);
     }
@@ -181,7 +193,8 @@ async function processScheduledPostMentions(env) {
 
     if (env.LINE_CHANNEL_ACCESS_TOKEN) {
       const messages = buildPostMessages(post, env);
-      for (const m of members.filter(m => m.line_user_id)) {
+      // サイト内通知(insertNotifications)はmember単位で全員に残すが、LINE pushはline_user_id単位で重複排除してから送る
+      for (const m of dedupeByLineUserId(members.filter(m => m.line_user_id))) {
         await linePush(env, m.line_user_id, messages);
       }
     }

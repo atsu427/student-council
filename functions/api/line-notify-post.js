@@ -119,8 +119,11 @@ export async function onRequestPost(context) {
       getLineUserIdsByEmails(env, post.mentioned_emails),
       getLineUserIdsByRoles(env, post.mentioned_roles)
     ]);
+    // 同じLINEアカウントが複数のmembers行に紐づいている場合（同一人物が別メールで2アカウント登録し、
+    // 両方に同じLINE連携コードでリンクしてしまった等）、member.idでの重複排除では検知できないため、
+    // 送信直前に必ずline_user_id基準で重複排除する
     const mentionedMap = new Map();
-    [...byEmail, ...byRole].forEach(m => mentionedMap.set(m.id, m));
+    [...byEmail, ...byRole].forEach(m => mentionedMap.set(m.line_user_id, m));
     const mentioned = Array.from(mentionedMap.values());
     if (mentioned.length === 0) {
       return new Response(JSON.stringify({ skipped: 'メンションが設定されていないためLINE通知は送信されません' }), { status: 200 });
