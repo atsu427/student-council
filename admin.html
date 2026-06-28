@@ -752,7 +752,17 @@
         await db.from('members').upsert({ id: currentUser.id, email, roles: initialRoles }, { onConflict: 'id' });
         ({ data: member } = await db.from('members').select('*').eq('id', currentUser.id).single());
       } else if (memberError) {
-        console.error('members取得エラー:', memberError.message);
+        // 再ロード直後はトークンの自動更新と競合して一時的な通信エラーになることがあるため、
+        // すぐに「管理者ロールが無い」と判断せず少し待って1回だけ再試行する
+        console.error('members取得エラー（再試行します）:', memberError.message);
+        await new Promise(r => setTimeout(r, 800));
+        const retry = await db.from('members').select('*').eq('id', currentUser.id).single();
+        member = retry.data;
+        memberError = retry.error;
+        if (memberError) {
+          showError('通信エラーが発生しました。電波状況をご確認のうえ、再読み込みしてください。（' + memberError.message + '）');
+          return;
+        }
       }
 
       // 既定の管理者メールには必ず「管理者」ロールが含まれるようにする（ブートストラップ）
