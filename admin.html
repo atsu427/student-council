@@ -189,6 +189,32 @@
     .tt-move-card-actions{display:flex;justify-content:center;gap:6px;margin-top:8px}
     .tt-move-card-actions button{font-size:11px;padding:3px 8px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--paper-deep);color:var(--ink-soft);cursor:pointer;font-family:inherit}
     .tt-move-card-actions button:disabled{opacity:.35;cursor:default}
+    /* 生徒側の見え方プレビュー */
+    #previewModal{display:none;position:fixed;inset:0;background:rgba(29,32,36,.6);z-index:1001;align-items:center;justify-content:center;padding:20px}
+    #previewModal.open{display:flex}
+    .preview-modal-card{background:var(--paper);border-radius:var(--radius-lg);max-width:640px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);padding:24px 28px 32px}
+    .preview-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:10px}
+    .preview-modal-head h3{font-size:13px;font-weight:700;color:var(--ink-faint);letter-spacing:.04em}
+    .preview-post-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+    .preview-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--vermillion-tint);color:var(--vermillion)}
+    .preview-date{font-size:12px;color:var(--ink-faint)}
+    .preview-title{font-size:20px;font-weight:700;margin-bottom:10px;line-height:1.4}
+    .preview-author{font-size:12px;color:var(--ink-faint);margin-bottom:18px}
+    .preview-body{font-size:15px;line-height:2;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+    .preview-note{font-size:12px;color:var(--ink-soft);margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
+    .tt-class-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    @media (max-width:540px){ .tt-class-grid{grid-template-columns:repeat(2,1fr)} }
+    .tt-class-card{background:var(--paper-deep);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px}
+    .tt-class-card h4{font-size:13px;font-weight:700;margin-bottom:10px;letter-spacing:.03em;color:var(--ink-soft)}
+    .tt-class-card ol{list-style:none;display:flex;flex-direction:column;gap:7px}
+    .tt-class-card li{display:flex;gap:8px;font-size:13px;line-height:1.6;align-items:baseline}
+    .tt-period-no{flex-shrink:0;color:var(--ink-faint);font-size:11px;font-weight:700;min-width:2.2em}
+    .tt-period-subject.tt-changed{color:var(--vermillion);font-weight:700}
+    .tt-class-card .tt-empty-note{font-size:12px;color:var(--ink-faint)}
+    .tt-remarks{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+    .tt-remarks h4{font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:10px;letter-spacing:.03em}
+    .tt-remarks ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+    .tt-remarks li{font-size:13px;line-height:1.7;padding-left:14px;border-left:2px solid var(--vermillion);color:var(--ink-soft)}
     @media (max-width:700px){
       .admin-container{padding:28px 16px 80px}
       .post-item{flex-wrap:wrap}
@@ -245,8 +271,6 @@
     <div class="tabs">
       <div class="tab active" onclick="switchTab('posts')">投稿管理</div>
       <div class="tab" onclick="switchTab('members')">生徒管理</div>
-      <div class="tab" onclick="switchTab('roles')">ロール管理</div>
-      <div class="tab" onclick="switchTab('categories')">タグ管理</div>
       <div class="tab" onclick="switchTab('timetable')">時間割管理</div>
       <div class="tab" onclick="switchTab('events')">カレンダー管理</div>
       <div class="tab" onclick="switchTab('suggestions')">意見箱</div>
@@ -267,6 +291,10 @@
           <div class="role-checkboxes" id="tagCheckboxes">
             <span style="font-size:13px;color:#aaa">読み込み中...</span>
           </div>
+          <div style="margin-top:10px;font-size:12px;font-weight:700;color:var(--ink-soft);cursor:pointer" onclick="toggleCollapsible('categoriesArea','tagMgmtToggleLabel')">
+            タグ管理 <span id="tagMgmtToggleLabel" style="font-size:11px;color:var(--ink-faint);font-weight:400">（タップで表示）</span>
+          </div>
+          <div id="categoriesArea" style="display:none;margin-top:8px"><div class="loading">読み込み中...</div></div>
         </div>
         <div class="form-row">
           <label>本文</label>
@@ -319,6 +347,7 @@
             <input type="checkbox" id="inputPublished" checked> 公開する（チェックを外すと下書き）
           </label>
           <div style="flex:1"></div>
+          <button class="btn" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line)" type="button" onclick="previewPost()">プレビュー</button>
           <button class="btn" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line)" onclick="resetForm()">キャンセル</button>
           <button class="btn btn-primary" onclick="savePost()">保存する</button>
         </div>
@@ -340,6 +369,11 @@
       </div>
       <div id="membersArea"><div class="loading">読み込み中...</div></div>
 
+      <div class="section-title" style="margin-top:48px;cursor:pointer" onclick="toggleCollapsible('rolesArea','roleMgmtToggleLabel')">
+        ロール管理 <span id="roleMgmtToggleLabel" style="font-size:12px;color:var(--ink-faint);font-weight:400">（タップで表示）</span>
+      </div>
+      <div id="rolesArea" style="display:none"><div class="loading">読み込み中...</div></div>
+
       <div class="section-title" style="margin-top:48px;color:var(--vermillion)">危険な操作</div>
       <div class="post-form" style="border-color:var(--vermillion-tint-strong)">
         <p style="font-size:13px;color:var(--ink-soft);line-height:1.8;margin-bottom:16px">
@@ -349,17 +383,6 @@
       </div>
     </div>
 
-    <!-- ロール管理タブ -->
-    <div class="tab-content" id="tab-roles">
-      <div class="section-title">ロール一覧</div>
-      <div id="rolesArea"><div class="loading">読み込み中...</div></div>
-    </div>
-
-    <!-- カテゴリ管理タブ -->
-    <div class="tab-content" id="tab-categories">
-      <div class="section-title">タグ一覧</div>
-      <div id="categoriesArea"><div class="loading">読み込み中...</div></div>
-    </div>
 
     <!-- 時間割管理タブ -->
     <div class="tab-content" id="tab-timetable">
@@ -397,6 +420,9 @@
               <option value="note">備考のみ（自由記述）</option>
             </select>
           </div>
+        </div>
+        <div class="form-row">
+          <button class="btn" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line)" type="button" onclick="previewTimetable()">この日・学年の時間割を生徒側でプレビュー</button>
         </div>
 
         <!-- 科目変更・自習・カット・備考のみ：教科名＋対象クラス（複数選択）で指定 -->
@@ -487,9 +513,22 @@
           <label>詳細（任意）</label>
           <textarea id="eventDescription" placeholder="内容を入力" style="min-height:80px"></textarea>
         </div>
+        <div class="form-row">
+          <label>タグ（複数選択可）</label>
+          <div class="role-checkboxes" id="eventTagCheckboxes">
+            <span style="font-size:13px;color:#aaa">読み込み中...</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>表示対象ロール（未選択＝全員に表示）</label>
+          <div class="role-checkboxes" id="eventRoleCheckboxes">
+            <span style="font-size:13px;color:#aaa">読み込み中...</span>
+          </div>
+        </div>
         <div class="form-actions">
           <button class="btn" id="eventCancelBtn" style="display:none" onclick="resetEventForm()">キャンセル</button>
           <div style="flex:1"></div>
+          <button class="btn" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line)" type="button" onclick="previewEvents()">カレンダーを生徒側でプレビュー</button>
           <button class="btn btn-primary" onclick="saveEvent()">登録する</button>
         </div>
       </div>
@@ -548,6 +587,17 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- 生徒側の見え方プレビュー -->
+<div id="previewModal" onclick="if (event.target === this) closePreview()">
+  <div class="preview-modal-card">
+    <div class="preview-modal-head">
+      <h3>生徒側でのプレビュー</h3>
+      <button class="btn-sm" onclick="closePreview()">閉じる ×</button>
+    </div>
+    <div id="previewModalBody"></div>
+  </div>
+</div>
 
 <script>
   const SUPABASE_URL = 'https://uvqidlzkiuyvqxqttuae.supabase.co';
@@ -635,6 +685,13 @@
       document.getElementById('adminScreen').style.display = 'block';
       document.getElementById('userName').textContent = currentMember.display_name || email;
       await Promise.all([loadRoles(), loadCategories(), loadMentionMembers()]);
+      renderRoleCheckboxes([]);
+      renderMentionRoleCheckboxes([]);
+      renderTagCheckboxes([]);
+      renderEventTagCheckboxes([]);
+      renderEventRoleCheckboxes([]);
+      renderRolesTab();
+      renderCategoriesTab();
       loadPosts();
     } else {
       currentUser = null;
@@ -671,16 +728,22 @@
 
   // ── タブ切り替え ──
   function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['posts','members','roles','categories','timetable','events','suggestions','profile'][i] === name));
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['posts','members','timetable','events','suggestions','profile'][i] === name));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
-    if (name === 'members') loadMembers();
-    if (name === 'roles') renderRolesTab();
-    if (name === 'categories') renderCategoriesTab();
+    if (name === 'members') { loadMembers(); renderRolesTab(); }
     if (name === 'timetable') initTimetableTab();
     if (name === 'events') loadEvents();
     if (name === 'suggestions') { loadSuggestions(); loadDmMemberList(); }
     if (name === 'profile') renderProfileTab();
+  }
+
+  // ロール管理・タグ管理など、タップで開閉する補足セクションの共通処理
+  function toggleCollapsible(areaId, labelId) {
+    const area = document.getElementById(areaId);
+    const isHidden = area.style.display === 'none';
+    area.style.display = isHidden ? '' : 'none';
+    document.getElementById(labelId).textContent = isHidden ? '（タップで閉じる）' : '（タップで表示）';
   }
 
   // ── ロール ──
@@ -694,8 +757,6 @@
       else names = [ADMIN_ROLE, ...names];
     }
     allRoles = names;
-    renderRoleCheckboxes([]);
-    renderMentionRoleCheckboxes([]);
   }
 
   function renderRoleCheckboxes(selectedRoles) {
@@ -772,7 +833,13 @@
     if (!name) return;
     const { error } = await db.from('roles').insert({ name });
     if (error) { showToast('追加失敗: ' + error.message); return; }
+    const selectedTarget = getSelectedRoles();
+    const selectedMention = getSelectedMentionRoles();
+    const selectedEventRole = getSelectedEventRoles();
     await loadRoles();
+    renderRoleCheckboxes(selectedTarget);
+    renderMentionRoleCheckboxes(selectedMention);
+    renderEventRoleCheckboxes(selectedEventRole);
     renderRolesTab();
     showToast('ロールを追加しました');
   }
@@ -781,7 +848,13 @@
     if (!confirm(`ロール「${name}」を削除しますか？`)) return;
     const { error } = await db.from('roles').delete().eq('name', name);
     if (error) { showToast('削除失敗'); return; }
+    const selectedTarget = getSelectedRoles().filter(r => r !== name);
+    const selectedMention = getSelectedMentionRoles().filter(r => r !== name);
+    const selectedEventRole = getSelectedEventRoles().filter(r => r !== name);
     await loadRoles();
+    renderRoleCheckboxes(selectedTarget);
+    renderMentionRoleCheckboxes(selectedMention);
+    renderEventRoleCheckboxes(selectedEventRole);
     renderRolesTab();
     showToast('削除しました');
   }
@@ -791,7 +864,6 @@
     const { data, error } = await db.from('categories').select('*').order('sort_order');
     if (error) { console.error('タグ取得エラー:', error.message); categoriesCache = []; }
     else categoriesCache = data || [];
-    renderTagCheckboxes([]);
   }
 
   function renderTagCheckboxes(selectedTags) {
@@ -832,16 +904,24 @@
     const nextSort = categoriesCache.length > 0 ? Math.max(...categoriesCache.map(c => c.sort_order || 0)) + 1 : 1;
     const { error } = await db.from('categories').insert({ name, sort_order: nextSort });
     if (error) { showToast('追加失敗: ' + error.message); return; }
+    const selected = getSelectedTags();
+    const selectedEventTag = getSelectedEventTags();
     await loadCategories();
+    renderTagCheckboxes(selected);
+    renderEventTagCheckboxes(selectedEventTag);
     renderCategoriesTab();
-    showToast('カテゴリを追加しました');
+    showToast('タグを追加しました');
   }
 
   async function deleteCategory(id, name) {
-    if (!confirm(`カテゴリ「${name}」を削除しますか？`)) return;
+    if (!confirm(`タグ「${name}」を削除しますか？`)) return;
     const { error } = await db.from('categories').delete().eq('id', id);
     if (error) { showToast('削除失敗: ' + error.message); return; }
+    const selected = getSelectedTags().filter(t => t !== name);
+    const selectedEventTag = getSelectedEventTags().filter(t => t !== name);
     await loadCategories();
+    renderTagCheckboxes(selected);
+    renderEventTagCheckboxes(selectedEventTag);
     renderCategoriesTab();
     showToast('削除しました');
   }
@@ -1099,6 +1179,32 @@
         </div>
       </div>`;
     }).join('');
+  }
+
+  // ── プレビュー ──
+  function previewPost() {
+    const title = document.getElementById('inputTitle').value.trim() || '（タイトル未入力）';
+    const tags = getSelectedTags();
+    const body = document.getElementById('inputBody').value.trim();
+    const isSpecial = document.getElementById('inputSpecial').checked;
+    const authorName = (currentMember?.display_name || '').trim() || currentUser?.email || '';
+    const date = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    const remainingExisting = existingFilePaths.filter(p => !removedFilePaths.includes(p)).map(p => p.split('/').pop());
+    const newFileNames = selectedFiles.map(f => f.name);
+    const fileNames = [...remainingExisting, ...newFileNames];
+
+    const tagsHtml = tags.map(t => `<span class="preview-tag">${escapeHtml(t)}</span>`).join('');
+    const specialHtml = isSpecial ? '<span class="preview-tag" style="background:var(--vermillion);color:var(--paper)">特別メッセージ</span>' : '';
+    const filesHtml = fileNames.length > 0 ? `<div class="preview-note">添付ファイル: ${fileNames.map(n => escapeHtml(n)).join('、')}</div>` : '';
+
+    openPreview(`
+      <div class="preview-post-meta">${specialHtml}${tagsHtml}<span class="preview-date">${date}</span></div>
+      <div class="preview-title">${escapeHtml(title)}</div>
+      <div class="preview-author">投稿者：${escapeHtml(authorName)}</div>
+      <div class="preview-body">${renderPreviewBodyHtml(body)}</div>
+      ${filesHtml}
+    `);
   }
 
   // ── 保存 ──
@@ -1477,6 +1583,74 @@
     return jsDay === 0 ? null : jsDay;
   }
 
+  // ── 時間割変更プレビュー（生徒側の見え方をそのまま再現） ──
+  async function previewTimetable() {
+    const date = document.getElementById('ovDate').value;
+    const grade = document.getElementById('ovGrade').value;
+    if (!date) { showToast('日付を入力してください'); return; }
+    const weekday = weekdayFromDateStr(date);
+    if (!weekday) { openPreview('<p style="font-size:13px;color:var(--ink-faint)">この日（日曜）は時間割がありません</p>'); return; }
+
+    const [{ data: slots, error: slotsError }, { data: overrides, error: overridesError }] = await Promise.all([
+      db.from('timetable_slots').select('*').eq('grade', grade).eq('weekday', weekday),
+      db.from('timetable_overrides').select('*').eq('grade', grade).eq('date', date)
+    ]);
+    if (slotsError || overridesError) { showToast('プレビューの取得に失敗しました'); return; }
+    openPreview(renderTimetablePreviewHtml(slots || [], overrides || [], grade, date));
+  }
+
+  function renderTimetablePreviewHtml(slots, overrides, grade, dateStr) {
+    const subjectByClass = {};
+    CLASS_NUMS.forEach(c => { subjectByClass[c] = {}; PERIODS.forEach(p => { subjectByClass[c][p] = ''; }); });
+    slots.forEach(s => { if (subjectByClass[s.class_no]) subjectByClass[s.class_no][s.period] = s.subject || ''; });
+
+    const overrideByClass = {};
+    const movedFromByClass = {};
+    CLASS_NUMS.forEach(c => { overrideByClass[c] = {}; movedFromByClass[c] = new Set(); });
+    overrides.forEach(o => {
+      if (!overrideByClass[o.class_no]) return;
+      overrideByClass[o.class_no][o.period] = o;
+      if (o.type === 'moved') movedFromByClass[o.class_no].add(o.from_period);
+    });
+
+    const dateLabel = new Date(dateStr + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' });
+    let cardsHtml = `<div class="preview-title" style="font-size:16px">${escapeHtml(grade)}の時間割（${dateLabel}）</div><div class="tt-class-grid" style="margin-top:14px">`;
+    CLASS_NUMS.forEach(c => {
+      const rows = [];
+      PERIODS.forEach(p => {
+        const o = overrideByClass[c][p];
+        if (o && o.type === 'cancelled') return;
+        if (!o && movedFromByClass[c].has(p)) return;
+        let subject = subjectByClass[c][p] || '';
+        let changed = false;
+        if (o && o.type === 'subject_change') { subject = o.subject || ''; changed = true; }
+        else if (o && o.type === 'self_study') { subject = '自習'; changed = true; }
+        else if (o && o.type === 'moved') { subject = o.subject || ''; changed = true; }
+        rows.push({ subject: subject || '（未設定）', changed });
+      });
+      const itemsHtml = rows.length > 0
+        ? rows.map((r, i) => `<li><span class="tt-period-no">${i + 1}限</span><span class="tt-period-subject${r.changed ? ' tt-changed' : ''}">${escapeHtml(r.subject)}</span></li>`).join('')
+        : '<li class="tt-empty-note">この日の授業はありません</li>';
+      cardsHtml += `<div class="tt-class-card"><h4>${c}組</h4><ol>${itemsHtml}</ol></div>`;
+    });
+    cardsHtml += '</div>';
+
+    const remarkLines = overrides.slice()
+      .filter(o => o.type === 'cancelled' || o.type === 'moved' || o.type === 'note')
+      .sort((a, b) => a.class_no - b.class_no || (a.period ?? a.from_period ?? 0) - (b.period ?? b.from_period ?? 0))
+      .map(o => {
+        if (o.type === 'moved') return `${o.class_no}組 ${o.from_period}限：${o.subject || '（未設定）'} が${o.period}限に移動しました${o.note ? `（${o.note}）` : ''}`;
+        if (o.type === 'note') return `${o.class_no}組：${o.note || ''}`;
+        const origSubject = subjectByClass[o.class_no][o.period] || '（未設定）';
+        return `${o.class_no}組 ${o.period}限：${origSubject} がカットされました${o.note ? `（${o.note}）` : ''}`;
+      });
+    const remarksHtml = remarkLines.length > 0
+      ? `<div class="tt-remarks"><h4>備考</h4><ul>${remarkLines.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`
+      : `<div class="tt-remarks"><h4>備考</h4><p style="font-size:13px;color:var(--ink-faint)">この日の変更はありません</p></div>`;
+
+    return cardsHtml + remarksHtml;
+  }
+
   async function loadTimetableGrid() {
     const grade = document.getElementById('ttGradeSelect').value;
     const classNo = Number(document.getElementById('ttClassSelect').value);
@@ -1761,6 +1935,34 @@
     renderEventsList();
   }
 
+  function renderEventTagCheckboxes(selectedTags) {
+    const el = document.getElementById('eventTagCheckboxes');
+    if (categoriesCache.length === 0) { el.innerHTML = '<span style="font-size:13px;color:#aaa">タグがありません（投稿管理のタグ管理から追加）</span>'; return; }
+    el.innerHTML = categoriesCache.map(c => `
+      <label class="role-checkbox-item">
+        <input type="checkbox" name="eventTag" value="${escapeHtml(c.name)}" ${selectedTags.includes(c.name) ? 'checked' : ''}>
+        ${escapeHtml(c.name)}
+      </label>`).join('');
+  }
+
+  function getSelectedEventTags() {
+    return Array.from(document.querySelectorAll('input[name="eventTag"]:checked')).map(el => el.value);
+  }
+
+  function renderEventRoleCheckboxes(selectedRoles) {
+    const el = document.getElementById('eventRoleCheckboxes');
+    if (allRoles.length === 0) { el.innerHTML = '<span style="font-size:13px;color:#aaa">ロールがありません（生徒管理のロール管理から追加）</span>'; return; }
+    el.innerHTML = allRoles.map(r => `
+      <label class="role-checkbox-item">
+        <input type="checkbox" name="eventRole" value="${escapeHtml(r)}" ${selectedRoles.includes(r) ? 'checked' : ''}>
+        ${escapeHtml(r)}
+      </label>`).join('');
+  }
+
+  function getSelectedEventRoles() {
+    return Array.from(document.querySelectorAll('input[name="eventRole"]:checked')).map(el => el.value);
+  }
+
   function renderEventsList() {
     const el = document.getElementById('eventsArea');
     if (eventsCache.length === 0) { el.innerHTML = '<div class="empty">行事予定はまだありません</div>'; return; }
@@ -1770,11 +1972,16 @@
       const dateLabel = ev.end_date && ev.end_date !== ev.start_date
         ? `${formatJaDate(ev.start_date)} 〜 ${formatJaDate(ev.end_date)}`
         : formatJaDate(ev.start_date);
+      const tagsHtml = (ev.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+      const rolesHtml = (ev.target_roles && ev.target_roles.length > 0)
+        ? ev.target_roles.map(r => `<span class="role-tag-sm">${escapeHtml(r)}</span>`).join('') : '<span style="font-size:11px;color:#aaa">全員</span>';
       return `<div class="post-item"${isPast ? ' style="opacity:.55"' : ''}>
         <div class="post-item-info">
           <div class="post-item-title">${escapeHtml(ev.title)}</div>
           <div class="post-item-meta">
             <span class="tag">${escapeHtml(dateLabel)}</span>
+            ${tagsHtml}
+            ${rolesHtml}
             ${ev.description ? `<span>${escapeHtml(ev.description)}</span>` : ''}
           </div>
         </div>
@@ -1796,10 +2003,12 @@
     const start_date = document.getElementById('eventStartDate').value;
     const end_date = document.getElementById('eventEndDate').value || null;
     const description = document.getElementById('eventDescription').value.trim() || null;
+    const tags = getSelectedEventTags();
+    const target_roles = getSelectedEventRoles();
     if (!title || !start_date) { showToast('行事名と開始日を入力してください'); return; }
     if (end_date && end_date < start_date) { showToast('終了日は開始日以降にしてください'); return; }
 
-    const payload = { title, start_date, end_date, description };
+    const payload = { title, start_date, end_date, description, tags, target_roles };
     const { error } = id
       ? await db.from('events').update(payload).eq('id', id)
       : await db.from('events').insert(payload);
@@ -1817,6 +2026,8 @@
     document.getElementById('eventStartDate').value = ev.start_date;
     document.getElementById('eventEndDate').value = ev.end_date || '';
     document.getElementById('eventDescription').value = ev.description || '';
+    renderEventTagCheckboxes(ev.tags || []);
+    renderEventRoleCheckboxes(ev.target_roles || []);
     document.getElementById('eventCancelBtn').style.display = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -1835,10 +2046,55 @@
     document.getElementById('eventStartDate').value = '';
     document.getElementById('eventEndDate').value = '';
     document.getElementById('eventDescription').value = '';
+    renderEventTagCheckboxes([]);
+    renderEventRoleCheckboxes([]);
     document.getElementById('eventCancelBtn').style.display = 'none';
   }
 
+  // ── カレンダープレビュー（生徒側の月表示をそのまま再現。ロール非公開のものには印を付ける） ──
+  function previewEvents() {
+    if (eventsCache.length === 0) { openPreview('<p style="font-size:13px;color:var(--ink-faint)">行事予定がまだありません</p>'); return; }
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const monthStart = `${y}-${String(m + 1).padStart(2, '0')}-01`;
+    const monthEnd = `${y}-${String(m + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
+    const monthEvents = eventsCache.filter(ev => (ev.end_date || ev.start_date) >= monthStart && ev.start_date <= monthEnd);
+    const monthLabel = `${y}年${m + 1}月`;
+
+    let html = `<div class="preview-title" style="font-size:16px">行事予定カレンダー（${monthLabel}）</div>`;
+    if (monthEvents.length === 0) {
+      html += '<p style="font-size:13px;color:var(--ink-faint);margin-top:10px">この月の行事予定はありません</p>';
+    } else {
+      html += '<div style="margin-top:14px">' + monthEvents.map(ev => {
+        const label = ev.end_date && ev.end_date !== ev.start_date
+          ? `${formatJaDate(ev.start_date)} 〜 ${formatJaDate(ev.end_date)}`
+          : formatJaDate(ev.start_date);
+        const tagsHtml = (ev.tags || []).map(t => `<span class="preview-tag">${escapeHtml(t)}</span>`).join('');
+        const roleNote = (ev.target_roles && ev.target_roles.length > 0)
+          ? `<span class="preview-tag" style="background:var(--gold-tint);color:var(--gold)">対象: ${ev.target_roles.map(r => escapeHtml(r)).join('・')}</span>` : '';
+        return `<div class="cal-event-item"><strong>${escapeHtml(label)}</strong>　${escapeHtml(ev.title)} ${tagsHtml}${roleNote}${ev.description ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">${escapeHtml(ev.description)}</div>` : ''}</div>`;
+      }).join('') + '</div>';
+    }
+    html += '<p class="preview-note">表示対象ロールを指定した予定は、そのロールを持つ生徒にのみ表示されます（上では参考として全件表示しています）。</p>';
+    openPreview(html);
+  }
+
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+  // ── 生徒側の見え方プレビュー（共通モーダル） ──
+  function openPreview(html) {
+    document.getElementById('previewModalBody').innerHTML = html;
+    document.getElementById('previewModal').classList.add('open');
+  }
+
+  function closePreview() {
+    document.getElementById('previewModal').classList.remove('open');
+  }
+
+  function renderPreviewBodyHtml(body) {
+    return escapeHtml(body).replace(/\[([^\[\]]+)\]\((https?:\/\/[^\s()]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  }
 
   function toDatetimeLocalValue(iso) {
     if (!iso) return '';

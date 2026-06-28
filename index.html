@@ -462,7 +462,7 @@
       if (member?.display_name) document.getElementById('userName').textContent = member.display_name;
 
       renderLineLinkSection(member);
-      if (roleChanged) { loadPosts(); loadSpecialMessages(); } // ロールが判明したら対象お知らせを再読込
+      if (roleChanged) { loadPosts(); loadSpecialMessages(); loadEvents(); } // ロールが判明したら対象お知らせ・行事予定を再読込
     } catch (e) {
       console.error('members同期エラー:', e);
     }
@@ -885,7 +885,11 @@
   async function loadEvents() {
     const { data, error } = await db.from('events').select('*').order('start_date');
     if (error) { console.error('行事予定取得エラー:', error.message); return; }
-    calEventsCache = data || [];
+    const myRoles = currentMember?.roles || ['general'];
+    calEventsCache = (data || []).filter(ev => {
+      // target_rolesが空配列 or 自分のロールのいずれかを含む行事予定のみ表示
+      return !ev.target_roles || ev.target_roles.length === 0 || ev.target_roles.some(r => myRoles.includes(r)) || ev.target_roles.includes('全体');
+    });
     calCurrentMonth = new Date();
     renderCalendar();
   }
@@ -932,7 +936,8 @@
       const label = ev.end_date && ev.end_date !== ev.start_date
         ? `${calFormatJaDate(ev.start_date)} 〜 ${calFormatJaDate(ev.end_date)}`
         : calFormatJaDate(ev.start_date);
-      return `<div class="cal-event-item"><strong>${escapeHtml(label)}</strong>　${escapeHtml(ev.title)}${ev.description ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">${escapeHtml(ev.description)}</div>` : ''}</div>`;
+      const tagsHtml = (ev.tags || []).map(t => `<span class="category-tag ${escapeHtml(t)}">${escapeHtml(t)}</span>`).join('');
+      return `<div class="cal-event-item"><strong>${escapeHtml(label)}</strong>　${escapeHtml(ev.title)} ${tagsHtml}${ev.description ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">${escapeHtml(ev.description)}</div>` : ''}</div>`;
     }).join('');
   }
 
