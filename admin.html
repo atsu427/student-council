@@ -35,9 +35,26 @@
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Noto Sans JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,'Helvetica Neue',Arial,sans-serif;background:var(--paper-deep);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
     h2,.login-card h2,.error-card h2{font-family:inherit}
-    header{background:var(--ink);color:var(--paper);padding:12px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 20px;min-height:64px;border-bottom:3px solid var(--vermillion);box-shadow:var(--shadow-md)}
+    header{position:relative;background:var(--ink);color:var(--paper);padding:12px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 20px;min-height:64px;border-bottom:3px solid var(--vermillion);box-shadow:var(--shadow-md)}
     header h1{font-size:18px;font-weight:700;font-family:inherit;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .header-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap;flex-shrink:0}
+    .hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:32px;height:32px;background:transparent;border:none;cursor:pointer;padding:0;flex-shrink:0}
+    .hamburger span{display:block;width:20px;height:2px;background:var(--paper);border-radius:1px;transition:transform .2s var(--ease),opacity .2s}
+    .hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+    .hamburger.open span:nth-child(2){opacity:0}
+    .hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .admin-mobile-menu{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:2px;background:var(--ink);padding:10px;box-shadow:var(--shadow-lg);z-index:99;border-bottom:1px solid rgba(255,255,255,.12);max-height:calc(100vh - 64px);overflow-y:auto}
+    .admin-mobile-menu.open{display:flex}
+    .tab-link-mobile{background:transparent;border:none;color:#c4c9d2;font-size:14px;text-align:left;padding:13px 16px;border-radius:var(--radius-sm);cursor:pointer;font-family:inherit;text-decoration:none;display:block;white-space:nowrap}
+    .tab-link-mobile:hover{background:rgba(255,255,255,.1);color:var(--paper)}
+    .tab-link-mobile.active{background:rgba(255,255,255,.14);color:var(--paper);font-weight:700}
+    .nav-divider{display:none}
+    @media (max-width:760px){
+      .tabs{display:none}
+      .header-right #viewSiteBtn,.header-right #logoutBtnDesktop{display:none}
+      .hamburger{display:flex}
+      .nav-divider{display:block;height:1px;background:rgba(255,255,255,.14);margin:6px 4px}
+    }
     @media (max-width:480px){
       header{padding:10px 18px}
       header h1{font-size:15px}
@@ -263,20 +280,33 @@
     <h1>灘校生徒会 管理画面</h1>
     <div class="header-right">
       <span class="user-name" id="userName"></span>
-      <a href="index.html" class="btn btn-view">お知らせを見る</a>
-      <button class="btn btn-outline" onclick="logout()">ログアウト</button>
+      <a href="index.html" class="btn btn-view" id="viewSiteBtn">お知らせを見る</a>
+      <button class="btn btn-outline" id="logoutBtnDesktop" onclick="logout()">ログアウト</button>
+      <button class="hamburger" id="adminHamburgerBtn" onclick="toggleAdminMobileMenu()" aria-label="メニュー"><span></span><span></span><span></span></button>
     </div>
+    <nav class="admin-mobile-menu" id="adminMobileMenu">
+      <button class="tab-link-mobile active" data-tab="posts" onclick="switchTab('posts')">投稿管理</button>
+      <button class="tab-link-mobile" data-tab="members" onclick="switchTab('members')">生徒管理</button>
+      <button class="tab-link-mobile" data-tab="timetable" onclick="switchTab('timetable')">時間割管理</button>
+      <button class="tab-link-mobile" data-tab="events" onclick="switchTab('events')">カレンダー管理</button>
+      <button class="tab-link-mobile" data-tab="reminders" onclick="switchTab('reminders')">リマインダー管理</button>
+      <button class="tab-link-mobile" data-tab="suggestions" onclick="switchTab('suggestions')">意見箱</button>
+      <button class="tab-link-mobile" data-tab="profile" onclick="switchTab('profile')">プロフィール</button>
+      <div class="nav-divider"></div>
+      <a href="index.html" class="tab-link-mobile">お知らせを見る</a>
+      <button class="tab-link-mobile" onclick="logout()">ログアウト</button>
+    </nav>
   </header>
 
   <div class="admin-container">
     <div class="tabs">
-      <div class="tab active" onclick="switchTab('posts')">投稿管理</div>
-      <div class="tab" onclick="switchTab('members')">生徒管理</div>
-      <div class="tab" onclick="switchTab('timetable')">時間割管理</div>
-      <div class="tab" onclick="switchTab('events')">カレンダー管理</div>
-      <div class="tab" onclick="switchTab('reminders')">リマインダー管理</div>
-      <div class="tab" onclick="switchTab('suggestions')">意見箱</div>
-      <div class="tab" onclick="switchTab('profile')">プロフィール</div>
+      <div class="tab active" data-tab="posts" onclick="switchTab('posts')">投稿管理</div>
+      <div class="tab" data-tab="members" onclick="switchTab('members')">生徒管理</div>
+      <div class="tab" data-tab="timetable" onclick="switchTab('timetable')">時間割管理</div>
+      <div class="tab" data-tab="events" onclick="switchTab('events')">カレンダー管理</div>
+      <div class="tab" data-tab="reminders" onclick="switchTab('reminders')">リマインダー管理</div>
+      <div class="tab" data-tab="suggestions" onclick="switchTab('suggestions')">意見箱</div>
+      <div class="tab" data-tab="profile" onclick="switchTab('profile')">プロフィール</div>
     </div>
 
     <!-- 投稿管理タブ -->
@@ -831,11 +861,18 @@
     location.href = location.origin + location.pathname;
   }
 
+  function toggleAdminMobileMenu() {
+    document.getElementById('adminMobileMenu').classList.toggle('open');
+    document.getElementById('adminHamburgerBtn').classList.toggle('open');
+  }
+
   // ── タブ切り替え ──
   function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['posts','members','timetable','events','reminders','suggestions','profile'][i] === name));
+    document.querySelectorAll('.tab, .tab-link-mobile').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('adminMobileMenu').classList.remove('open');
+    document.getElementById('adminHamburgerBtn').classList.remove('open');
     if (name === 'members') { loadMembers(); renderRolesTab(); }
     if (name === 'timetable') initTimetableTab();
     if (name === 'events') loadEvents();
