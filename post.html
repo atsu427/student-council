@@ -52,6 +52,7 @@
     .category-tag.募集{color:#8a4d18;background:#fbece0}
     .category-tag.その他{color:#4a3d5c;background:#ece8f1}
     .post-date{font-size:13px;color:var(--ink-faint);font-family:inherit}
+    .post-recruitment-period{font-size:14px;font-weight:700;color:var(--vermillion);margin-bottom:16px}
     h2{font-size:clamp(23px,4vw,31px);font-weight:700;line-height:1.5;margin-bottom:16px;letter-spacing:.01em}
     .post-author{font-size:13px;color:var(--ink-faint);margin-bottom:36px;padding-bottom:28px;border-bottom:1px solid var(--line)}
     .post-body{font-size:16px;line-height:2;color:var(--ink);white-space:pre-wrap;word-break:break-word;margin-bottom:36px}
@@ -230,7 +231,12 @@
     }
 
     document.title = data.title + ' | 灘校生徒会';
-    const date = new Date(data.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+    const date = new Date(data.publish_at || data.created_at).toLocaleString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const isRecruitment = (data.tags || []).includes('募集') && data.event_date;
+    const formatShortDate = d => new Date(d + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
+    const recruitmentHtml = isRecruitment
+      ? `<div class="post-recruitment-period">募集期間：${formatShortDate(data.event_date)}${data.event_end_date && data.event_end_date !== data.event_date ? ' 〜 ' + formatShortDate(data.event_end_date) : ''}</div>`
+      : '';
 
     // ファイル分類
     let filesHtml = '';
@@ -285,6 +291,7 @@
           <span class="post-date">${date}</span>
         </div>
         <h2>${escapeHtml(data.title)}</h2>
+        ${recruitmentHtml}
         <div class="post-author">投稿者：${escapeHtml(data.author)}</div>
         <div class="post-body">${renderBodyHtml(data.body)}</div>
         ${filesHtml}

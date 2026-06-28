@@ -349,12 +349,18 @@
         </div>
         <div class="form-row">
           <label class="publish-toggle" style="display:inline-flex">
-            <input type="checkbox" id="inputEventSync" onchange="toggleEventSyncFields()"> カレンダーにも連動して表示する（対象日にこの投稿の予定を追加）
+            <input type="checkbox" id="inputEventSync" onchange="toggleEventSyncFields()"> カレンダーにも連動して表示する（指定した期間の予定をカレンダーに追加。募集系の投稿は募集期間として使えます）
           </label>
           <div id="eventSyncFields" style="display:none;margin-top:14px">
-            <div style="margin-bottom:14px">
-              <label>対象日</label>
-              <input type="date" id="inputEventDate">
+            <div class="form-row" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px">
+              <div style="flex:1;min-width:140px">
+                <label>開始日（募集系の投稿は募集開始日）</label>
+                <input type="date" id="inputEventDate">
+              </div>
+              <div style="flex:1;min-width:140px">
+                <label>終了日（任意・募集系の投稿は募集期限日）</label>
+                <input type="date" id="inputEventEndDate">
+              </div>
             </div>
             <div style="margin-bottom:14px">
               <label>カレンダータグ（複数選択可）</label>
@@ -525,9 +531,17 @@
             <label>開始日</label>
             <input type="date" id="eventStartDate">
           </div>
+          <div style="flex:1;min-width:120px">
+            <label>開始時刻（任意・終日の行事は空欄）</label>
+            <input type="time" id="eventStartTime">
+          </div>
           <div style="flex:1;min-width:140px">
             <label>終了日（任意・複数日の行事のみ）</label>
             <input type="date" id="eventEndDate">
+          </div>
+          <div style="flex:1;min-width:120px">
+            <label>終了時刻（任意）</label>
+            <input type="time" id="eventEndTime">
           </div>
         </div>
         <div class="form-row">
@@ -1393,11 +1407,13 @@
     const mentioned_roles = getSelectedMentionRoles();
     const eventSyncOn = document.getElementById('inputEventSync').checked;
     const eventDate = document.getElementById('inputEventDate').value;
+    const eventEndDate = document.getElementById('inputEventEndDate').value || null;
     const eventTags = getSelectedPostEventTags();
     const eventRoles = getSelectedPostEventRoles();
 
     if (!title || !body) { showToast('タイトルと本文を入力してください'); return; }
-    if (eventSyncOn && !eventDate) { showToast('カレンダーに連動表示するには対象日を指定してください'); return; }
+    if (eventSyncOn && !eventDate) { showToast('カレンダーに連動表示するには開始日を指定してください'); return; }
+    if (eventSyncOn && eventEndDate && eventEndDate < eventDate) { showToast('終了日は開始日以降にしてください'); return; }
 
     // 投稿⇔カレンダー連携：チェックが付いていればevents行を作成/更新、外せば紐づくevents行を削除する
     let existingEventId = null;
@@ -1407,7 +1423,7 @@
     }
     let event_id = null;
     if (eventSyncOn) {
-      const eventPayload = { title, start_date: eventDate, end_date: eventDate, tags: eventTags, target_roles: eventRoles };
+      const eventPayload = { title, start_date: eventDate, end_date: eventEndDate || eventDate, tags: eventTags, target_roles: eventRoles };
       const { data: savedEvent, error: eventError } = existingEventId
         ? await db.from('events').update(eventPayload).eq('id', existingEventId).select('id').single()
         : await db.from('events').insert(eventPayload).select('id').single();
@@ -1428,7 +1444,7 @@
     document.getElementById('uploadProgress').style.display = 'none';
 
     const authorName = (currentMember?.display_name || '').trim() || currentUser.email;
-    const payload = { title, tags, body, published, is_special, publish_at, expires_at, target_roles, mentioned_emails, mentioned_roles, file_paths: filePaths, author: authorName, event_id, event_date: eventSyncOn ? eventDate : null };
+    const payload = { title, tags, body, published, is_special, publish_at, expires_at, target_roles, mentioned_emails, mentioned_roles, file_paths: filePaths, author: authorName, event_id, event_date: eventSyncOn ? eventDate : null, event_end_date: eventSyncOn ? (eventEndDate || eventDate) : null };
 
     const { data: savedPost, error } = id
       ? await db.from('posts').update(payload).eq('id', id).select('id, title').single()
@@ -1448,6 +1464,7 @@
         // 新規投稿はそのまま通知（サイト内通知＋LINE）
         await notifyMentionedMembers(mentioned_emails, mentioned_roles, savedPost, false);
         notifyLine(savedPost.id, false, false);
+        await markMentionsSent(savedPost.id);
       } else {
         // 既存投稿の編集では毎回自動でLINEが飛ぶと煩わしいため、送るかどうかを確認し、
         // 送る場合は新規お知らせと区別できるよう「訂正」として通知する
@@ -1455,14 +1472,21 @@
         if (wantsNotify) {
           await notifyMentionedMembers(mentioned_emails, mentioned_roles, savedPost, true);
           notifyLine(savedPost.id, false, true);
+          await markMentionsSent(savedPost.id);
         }
       }
     }
-    // 公開時刻が未来に指定されている場合、メンション通知・LINE通知は送らない
-    // （その時刻になってから投稿一覧の「通知を送る」ボタンで手動送信する）
+    // 公開時刻が未来に指定されている場合はここでは送らない。Cloudflare Workers Cron（worker/）が
+    // 公開時刻を過ぎた未通知の予約投稿を検知して自動的に送信する（mentions_sent_atが未設定のものが対象）
 
     resetForm();
     loadPosts();
+  }
+
+  // 予約投稿の自動通知（Workers Cron）が二重送信しないよう、通知済みを記録する
+  async function markMentionsSent(postId) {
+    const { error } = await db.from('posts').update({ mentions_sent_at: new Date().toISOString() }).eq('id', postId);
+    if (error) console.error('mentions_sent_at更新エラー:', error.message);
   }
 
   // ── LINE通知（失敗してもサイト機能には影響させない。メンション先が無い投稿は何も送信しない） ──
@@ -1493,6 +1517,7 @@
     if (!hasMentions) { showToast('メンションが設定されていないため、通知対象がありません'); return; }
     await notifyMentionedMembers(post.mentioned_emails, post.mentioned_roles, post, false);
     await notifyLine(postId, true, false);
+    await markMentionsSent(postId);
   }
 
   // ── メンション通知（個人指定＋ロール指定の両方をまとめて通知。重複は除く） ──
@@ -1547,6 +1572,7 @@
 
     document.getElementById('inputEventSync').checked = !!data.event_id;
     document.getElementById('inputEventDate').value = data.event_date || '';
+    document.getElementById('inputEventEndDate').value = data.event_end_date || '';
     if (data.event_id) {
       const { data: linkedEvent } = await db.from('events').select('*').eq('id', data.event_id).single();
       renderPostEventTagCheckboxes(linkedEvent?.tags || []);
@@ -1588,6 +1614,7 @@
     document.getElementById('inputExpiresAt').value = '';
     document.getElementById('inputEventSync').checked = false;
     document.getElementById('inputEventDate').value = '';
+    document.getElementById('inputEventEndDate').value = '';
     toggleEventSyncFields();
     renderPostEventTagCheckboxes([]);
     renderPostEventRoleCheckboxes([]);
@@ -2148,9 +2175,9 @@
     const el = document.getElementById('eventsArea');
     if (eventsCache.length === 0) { el.innerHTML = '<div class="empty">行事予定はまだありません</div>'; return; }
     el.innerHTML = eventsCache.map(ev => {
-      const dateLabel = ev.end_date && ev.end_date !== ev.start_date
+      const dateLabel = (ev.end_date && ev.end_date !== ev.start_date
         ? `${formatJaDate(ev.start_date)} 〜 ${formatJaDate(ev.end_date)}`
-        : formatJaDate(ev.start_date);
+        : formatJaDate(ev.start_date)) + eventTimeLabel(ev);
       const tagsHtml = (ev.tags || []).map(t => tagChipHtml(t, eventTagColor(t))).join('');
       const rolesHtml = (ev.target_roles && ev.target_roles.length > 0)
         ? ev.target_roles.map(r => `<span class="role-tag-sm">${escapeHtml(r)}</span>`).join('') : '<span style="font-size:11px;color:#aaa">全員</span>';
@@ -2177,18 +2204,28 @@
     return new Date(d + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
   }
 
+  // 行事の時刻表示（終日の行事はNULLなので何も付けない）
+  function eventTimeLabel(ev) {
+    const start = (ev.start_time || '').slice(0, 5);
+    const end = (ev.end_time || '').slice(0, 5);
+    if (!start) return '';
+    return end ? ` ${start}〜${end}` : ` ${start}`;
+  }
+
   async function saveEvent() {
     const id = document.getElementById('eventEditId').value;
     const title = document.getElementById('eventTitle').value.trim();
     const start_date = document.getElementById('eventStartDate').value;
     const end_date = document.getElementById('eventEndDate').value || null;
+    const start_time = document.getElementById('eventStartTime').value || null;
+    const end_time = document.getElementById('eventEndTime').value || null;
     const description = document.getElementById('eventDescription').value.trim() || null;
     const tags = getSelectedEventTags();
     const target_roles = getSelectedEventRoles();
     if (!title || !start_date) { showToast('行事名と開始日を入力してください'); return; }
     if (end_date && end_date < start_date) { showToast('終了日は開始日以降にしてください'); return; }
 
-    const payload = { title, start_date, end_date, description, tags, target_roles };
+    const payload = { title, start_date, end_date, start_time, end_time, description, tags, target_roles };
     const { error } = id
       ? await db.from('events').update(payload).eq('id', id)
       : await db.from('events').insert(payload);
@@ -2205,6 +2242,8 @@
     document.getElementById('eventTitle').value = ev.title;
     document.getElementById('eventStartDate').value = ev.start_date;
     document.getElementById('eventEndDate').value = ev.end_date || '';
+    document.getElementById('eventStartTime').value = (ev.start_time || '').slice(0, 5);
+    document.getElementById('eventEndTime').value = (ev.end_time || '').slice(0, 5);
     document.getElementById('eventDescription').value = ev.description || '';
     renderEventTagCheckboxes(ev.tags || []);
     renderEventRoleCheckboxes(ev.target_roles || []);
@@ -2225,6 +2264,8 @@
     document.getElementById('eventTitle').value = '';
     document.getElementById('eventStartDate').value = '';
     document.getElementById('eventEndDate').value = '';
+    document.getElementById('eventStartTime').value = '';
+    document.getElementById('eventEndTime').value = '';
     document.getElementById('eventDescription').value = '';
     renderEventTagCheckboxes([]);
     renderEventRoleCheckboxes([]);
@@ -2262,9 +2303,9 @@
       html += '<p style="font-size:13px;color:var(--ink-faint);margin-top:10px">この月の行事予定はありません</p>';
     } else {
       html += '<div style="margin-top:14px">' + monthEvents.map(ev => {
-        const label = ev.end_date && ev.end_date !== ev.start_date
+        const label = (ev.end_date && ev.end_date !== ev.start_date
           ? `${formatJaDate(ev.start_date)} 〜 ${formatJaDate(ev.end_date)}`
-          : formatJaDate(ev.start_date);
+          : formatJaDate(ev.start_date)) + eventTimeLabel(ev);
         const tagsHtml = (ev.tags || []).map(t => tagChipHtml(t, eventTagColor(t), 'preview-tag')).join('');
         const roleNote = (ev.target_roles && ev.target_roles.length > 0)
           ? `<span class="preview-tag" style="background:var(--gold-tint);color:var(--gold)">対象: ${ev.target_roles.map(r => escapeHtml(r)).join('・')}</span>` : '';
@@ -2291,9 +2332,30 @@
   }
 
   async function loadReminders(eventId) {
-    const { data, error } = await db.from('reminders').select('*').eq('event_id', eventId).order('remind_at');
+    const { data, error } = await db.from('reminders').select('*').eq('event_id', eventId).order('days_before', { ascending: false });
     if (error) { console.error('リマインダー取得エラー:', error.message); reminderManagerCache = []; return; }
     reminderManagerCache = data || [];
+  }
+
+  // remind_timeはPostgresのtime型なので'HH:MM:SS'で返ってくる。表示・計算では'HH:MM'部分だけ使う
+  function formatReminderTime(t) { return (t || '08:00:00').slice(0, 5); }
+
+  // 行事の日付が変わってもリマインダーが追従するよう、絶対日時ではなく「行事の何日前の何時」で持つ。
+  // この関数はブラウザのローカルタイムゾーン（JST想定）で日時を組み立てる、表示専用のプレビュー計算
+  function computeReminderDate(startDateStr, daysBefore, remindTimeHHMM) {
+    const [y, mo, d] = startDateStr.split('-').map(Number);
+    const [hh, mm] = remindTimeHHMM.split(':').map(Number);
+    return new Date(y, mo - 1, d - daysBefore, hh, mm);
+  }
+
+  function updateNewReminderPreview() {
+    const ev = eventsCache.find(e => e.id === reminderManagerEventId);
+    const previewEl = document.getElementById('newReminderPreview');
+    if (!ev || !previewEl) return;
+    const daysBefore = Number(document.getElementById('newReminderDaysBefore').value || 0);
+    const remindTime = document.getElementById('newReminderTime').value || '08:00';
+    const dt = computeReminderDate(ev.start_date, daysBefore, remindTime);
+    previewEl.textContent = `送信予定: ${dt.toLocaleString('ja-JP', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
   }
 
   function renderReminderModal() {
@@ -2301,10 +2363,13 @@
     const el = document.getElementById('reminderModalBody');
     const listHtml = reminderManagerCache.length === 0
       ? '<p style="font-size:13px;color:var(--ink-faint)">リマインダーはまだありません</p>'
-      : reminderManagerCache.map(r => `
+      : reminderManagerCache.map(r => {
+        const time = formatReminderTime(r.remind_time);
+        const dateLabel = ev ? computeReminderDate(ev.start_date, r.days_before, time).toLocaleString('ja-JP', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+        return `
         <div class="post-item" style="margin-bottom:8px">
           <div class="post-item-info">
-            <div class="post-item-title" style="font-size:13px">${escapeHtml(new Date(r.remind_at).toLocaleString('ja-JP'))} ${r.sent ? '<span class="status-badge status-published">送信済み</span>' : ''}</div>
+            <div class="post-item-title" style="font-size:13px">${escapeHtml(dateLabel)}（行事の${r.days_before}日前 ${escapeHtml(time)}） ${r.sent ? '<span class="status-badge status-published">送信済み</span>' : ''}</div>
             <div class="post-item-meta">
               ${r.message ? `<span>${escapeHtml(r.message)}</span>` : '<span style="color:#aaa">本文未指定（行事名で送信）</span>'}
               ${(r.target_roles && r.target_roles.length > 0) ? r.target_roles.map(x => `<span class="role-tag-sm">${escapeHtml(x)}</span>`).join('') : '<span style="font-size:11px;color:#aaa">全員</span>'}
@@ -2313,15 +2378,23 @@
           <div class="post-item-actions">
             <button class="btn-sm btn-del" onclick="deleteReminder(${r.id})">削除</button>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
 
     el.innerHTML = `
-      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">行事予定「${escapeHtml(ev?.title || '')}」について、指定した日時にLINEで自動送信します。</p>
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">行事予定「${escapeHtml(ev?.title || '')}」（${ev ? escapeHtml(formatJaDate(ev.start_date)) : ''}）について、「何日前の何時」を指定してLINEで自動送信します。</p>
       <div style="margin-bottom:20px">${listHtml}</div>
-      <div class="form-row">
-        <label>送信日時</label>
-        <input type="datetime-local" id="newReminderAt">
+      <div class="form-row" style="display:flex;gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:120px">
+          <label>何日前</label>
+          <input type="number" id="newReminderDaysBefore" min="0" value="1" oninput="updateNewReminderPreview()">
+        </div>
+        <div style="flex:1;min-width:120px">
+          <label>時刻</label>
+          <input type="time" id="newReminderTime" value="08:00" oninput="updateNewReminderPreview()">
+        </div>
       </div>
+      <p id="newReminderPreview" style="font-size:12px;color:var(--ink-soft);margin:-4px 0 14px"></p>
       <div class="form-row">
         <label>メッセージ（任意・未指定なら行事名を送信）</label>
         <input type="text" id="newReminderMessage" placeholder="例：文化祭の準備は明日までです">
@@ -2337,15 +2410,16 @@
         <button class="btn btn-primary" type="button" onclick="addReminder()">追加する</button>
       </div>
     `;
+    updateNewReminderPreview();
   }
 
   async function addReminder() {
-    const remindAtInput = document.getElementById('newReminderAt').value;
-    if (!remindAtInput) { showToast('送信日時を入力してください'); return; }
+    const daysBefore = Number(document.getElementById('newReminderDaysBefore').value || 0);
+    const remindTime = document.getElementById('newReminderTime').value;
+    if (!remindTime) { showToast('時刻を入力してください'); return; }
     const message = document.getElementById('newReminderMessage').value.trim();
     const target_roles = Array.from(document.querySelectorAll('input[name="newReminderRole"]:checked')).map(el => el.value);
-    const remind_at = new Date(remindAtInput).toISOString();
-    const { error } = await db.from('reminders').insert({ event_id: reminderManagerEventId, remind_at, message: message || null, target_roles });
+    const { error } = await db.from('reminders').insert({ event_id: reminderManagerEventId, days_before: daysBefore, remind_time: remindTime, message: message || null, target_roles });
     if (error) { showToast('追加失敗: ' + error.message); return; }
     await loadReminders(reminderManagerEventId);
     renderReminderModal();
