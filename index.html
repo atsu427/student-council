@@ -943,7 +943,11 @@
   }
 
   function calEventsOnDate(dateStr) {
-    return calEventsCache.filter(ev => dateStr >= ev.start_date && dateStr <= (ev.end_date || ev.start_date));
+    return calEventsCache.filter(ev => {
+      // display_mode='endpoints'（募集タグの投稿と連動した行事など）は、期間の全日ではなく開始日・終了日のみに表示する
+      if (ev.display_mode === 'endpoints') return dateStr === ev.start_date || dateStr === (ev.end_date || ev.start_date);
+      return dateStr >= ev.start_date && dateStr <= (ev.end_date || ev.start_date);
+    });
   }
 
   function calFormatJaDate(d) {
@@ -983,9 +987,12 @@
       const dayEvents = calEventsOnDate(dateStr);
       const isToday = dateStr === todayStr;
       const isSelected = dateStr === calSelectedDate;
-      const chipsHtml = dayEvents.slice(0, CAL_MAX_CHIPS).map(ev =>
-        `<div class="cal-event-chip" style="background:${escapeHtml(calEventColor(ev))}">${escapeHtml(ev.title)}</div>`
-      ).join('');
+      const chipsHtml = dayEvents.slice(0, CAL_MAX_CHIPS).map(ev => {
+        const endpointPrefix = ev.display_mode === 'endpoints'
+          ? (dateStr === ev.start_date ? '開始：' : '終了：')
+          : '';
+        return `<div class="cal-event-chip" style="background:${escapeHtml(calEventColor(ev))}">${endpointPrefix}${escapeHtml(ev.title)}</div>`;
+      }).join('');
       const moreHtml = dayEvents.length > CAL_MAX_CHIPS ? `<div class="cal-event-more">+${dayEvents.length - CAL_MAX_CHIPS}件</div>` : '';
       cellsHtml += `<div class="cal-cell${isToday ? ' cal-today' : ''}${isSelected ? ' cal-selected' : ''}" onclick="calSelectDate('${dateStr}')">
         <span class="cal-day-no">${d}</span>${chipsHtml}${moreHtml}

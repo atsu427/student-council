@@ -1,6 +1,6 @@
 # リマインダー送信ワーカー（デプロイ手順）
 
-このディレクトリは、`reminders`テーブルと予約投稿を5分おきにチェックしてLINEに送信するCloudflare Workerです。
+このディレクトリは、`reminders`テーブルと予約投稿を1分おきにチェックしてLINEに送信するCloudflare Workerです。
 サイト本体（Cloudflare Pages、GitHub連携で自動デプロイ）とは別の仕組みなので、最初に1回だけ、ターミナルから手動でデプロイする必要があります。
 
 ## 手順
@@ -41,5 +41,5 @@ npx wrangler deploy
 ## 確認方法
 
 - デプロイ直後、表示されたURLをブラウザで開く → `ok` と表示されればその場で1回処理が実行される（リマインダー・予約投稿がまだ無ければ何も起きないだけで、これでエラーが出なければOK）
-- Cloudflareダッシュボード → Workers & Pages → `nada-sc-reminder-cron` → Triggers タブで `*/5 * * * *` のCron Triggerが登録されていることを確認
-- 以降は5分おきに自動実行されるので、再デプロイ等は基本的に不要（コード変更時のみ`npx wrangler deploy`を再実行）
+- Cloudflareダッシュボード → Workers & Pages → `nada-sc-reminder-cron` → Triggers タブで `*/1 * * * *` のCron Triggerが登録されていることを確認
+- 以降は1分おきに自動実行されるので、再デプロイ等は基本的に不要（コード変更時のみ`npx wrangler deploy`を再実行。シークレットは再設定不要）

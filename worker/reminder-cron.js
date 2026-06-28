@@ -1,4 +1,4 @@
-// Cloudflare Workers Cron Trigger（5分おき）: 2つの仕事をする
+// Cloudflare Workers Cron Trigger（1分おき）: 2つの仕事をする
 //   1. 期限が来たリマインダー（行事の何日前の何時、で指定）をLINEで送信する
 //   2. 予約投稿（publish_atが未来）が公開時刻を過ぎても、サイト経由のメンション通知が送られないままになっていたのを検知して自動送信する
 // 設定する環境変数(Secrets): LINE_CHANNEL_ACCESS_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
@@ -67,7 +67,8 @@ async function processReminders(env) {
     const event = await getEvent(env, reminder.event_id);
     if (!event) { await markReminderSent(env, reminder.id); continue; } // 行事が削除済みなら送らずに片付ける
     const remindTime = (reminder.remind_time || '08:00:00').slice(0, 5);
-    const dueAt = computeRemindAtUtc(event.start_date, reminder.days_before, remindTime);
+    const baseDate = reminder.base_date === 'end' ? (event.end_date || event.start_date) : event.start_date;
+    const dueAt = computeRemindAtUtc(baseDate, reminder.days_before, remindTime);
     if (dueAt > now) continue;
 
     const text = `【リマインダー】${event.title}\n\n${reminder.message || ''}`.trim();
