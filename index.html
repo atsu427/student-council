@@ -144,15 +144,21 @@
     .hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
     .hamburger.open span:nth-child(2){opacity:0}
     .hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .nav-divider{display:none}
+    @media (min-width:761px){
+      .nav-extra{display:none!important}
+    }
     @media (max-width:760px){
-      .main-nav{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;gap:2px;background:var(--ink);padding:10px;box-shadow:var(--shadow-lg);z-index:99;border-bottom:1px solid rgba(255,255,255,.12)}
+      .main-nav{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;gap:2px;background:var(--ink);padding:10px;box-shadow:var(--shadow-lg);z-index:99;border-bottom:1px solid rgba(255,255,255,.12);max-height:calc(100vh - 64px);overflow-y:auto}
       .main-nav.open{display:flex}
       .nav-link{text-align:left;padding:13px 16px}
+      .nav-divider{display:block;height:1px;background:rgba(255,255,255,.14);margin:6px 4px}
       .hamburger{display:flex}
       header{padding:0 16px}
       header h1{font-size:16px}
-      .header-right{gap:8px}
-      .user-name{display:none}
+      .header-right{gap:6px}
+      .user-name,#adminLink,#logoutBtn{display:none}
+      .notif-panel{position:fixed;top:64px;left:10px;right:10px;width:auto;max-width:none;max-height:calc(100vh - 84px)}
     }
     .page-section{display:none}
     .page-section.active{display:block}
@@ -259,6 +265,9 @@
         <button class="nav-link" data-tab="events" onclick="switchSection('events')">カレンダー</button>
         <button class="nav-link" data-tab="suggestions" onclick="switchSection('suggestions')">意見箱</button>
         <button class="nav-link" data-tab="line" onclick="switchSection('line')">LINE連携</button>
+        <div class="nav-divider"></div>
+        <a id="adminLinkMobile" href="admin.html" class="nav-link nav-extra" style="display:none">管理画面</a>
+        <button class="nav-link nav-extra" onclick="logout()">ログアウト</button>
       </nav>
     </div>
     <div class="header-right">
@@ -274,7 +283,7 @@
       </div>
       <a id="adminLink" href="admin.html" class="btn-admin" style="display:none">管理画面</a>
       <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()" aria-label="メニュー"><span></span><span></span><span></span></button>
-      <button class="btn btn-outline" onclick="logout()">ログアウト</button>
+      <button class="btn btn-outline" id="logoutBtn" onclick="logout()">ログアウト</button>
     </div>
   </header>
 
@@ -436,7 +445,10 @@
       document.getElementById('userName').textContent = email;
       currentUserEmail = emailLower;
       currentUserId = session.user.id;
-      if (emailLower === ADMIN_EMAIL.toLowerCase()) document.getElementById('adminLink').style.display = 'inline-block';
+      if (emailLower === ADMIN_EMAIL.toLowerCase()) {
+        document.getElementById('adminLink').style.display = 'inline-block';
+        document.getElementById('adminLinkMobile').style.display = 'inline-block';
+      }
       loadPosts();
       loadCategoryFilters();
       initStudentTimetable();
@@ -468,7 +480,10 @@
       currentMember = member;
 
       // 「管理者」ロールを持つ人に管理画面リンクを表示
-      if ((member?.roles || []).includes('管理者')) document.getElementById('adminLink').style.display = 'inline-block';
+      if ((member?.roles || []).includes('管理者')) {
+        document.getElementById('adminLink').style.display = 'inline-block';
+        document.getElementById('adminLinkMobile').style.display = 'inline-block';
+      }
       // プロフィール表示名があればヘッダーに反映
       if (member?.display_name) document.getElementById('userName').textContent = member.display_name;
 
@@ -519,6 +534,8 @@
   }
 
   function toggleNotifPanel() {
+    document.getElementById('mainNav').classList.remove('open');
+    document.getElementById('hamburgerBtn').classList.remove('open');
     const panel = document.getElementById('notifPanel');
     const opening = !panel.classList.contains('show');
     panel.classList.toggle('show', opening);
@@ -566,6 +583,7 @@
   }
 
   function toggleMobileNav() {
+    document.getElementById('notifPanel').classList.remove('show');
     document.getElementById('mainNav').classList.toggle('open');
     document.getElementById('hamburgerBtn').classList.toggle('open');
   }
