@@ -786,22 +786,29 @@
     TT_CLASS_NUMS.forEach(c => { subjectByClass[c] = {}; TT_PERIODS.forEach(p => { subjectByClass[c][p] = ''; }); });
     slots.forEach(s => { if (subjectByClass[s.class_no]) subjectByClass[s.class_no][s.period] = s.subject || ''; });
 
-    // クラスごとの時限→本日の変更
+    // クラスごとの時限→本日の変更（移動先=period でも引けるようにする。移動元のみの時限は別途movedFromで管理）
     const overrideByClass = {};
-    TT_CLASS_NUMS.forEach(c => { overrideByClass[c] = {}; });
-    overrides.forEach(o => { if (overrideByClass[o.class_no]) overrideByClass[o.class_no][o.period] = o; });
+    const movedFromByClass = {}; // [class_no] -> Set(移動元の時限)。交換ではなく一方通行のため、移動元は何も移ってこなければ空きになる
+    TT_CLASS_NUMS.forEach(c => { overrideByClass[c] = {}; movedFromByClass[c] = new Set(); });
+    overrides.forEach(o => {
+      if (!overrideByClass[o.class_no]) return;
+      overrideByClass[o.class_no][o.period] = o;
+      if (o.type === 'moved') movedFromByClass[o.class_no].add(o.from_period);
+    });
 
-    // 1) クラスごとに、カットされた時限を除いた「変更後」の時間割を順番に並べる
+    // 1) クラスごとに、カット・移動元の時限を除いた「変更後」の時間割を順番に並べる
     let cardsHtml = '<div class="tt-class-grid">';
     TT_CLASS_NUMS.forEach(c => {
       const rows = [];
       TT_PERIODS.forEach(p => {
         const o = overrideByClass[c][p];
         if (o && o.type === 'cancelled') return; // カットされた時限は時間割から除外（下の備考にのみ表示）
+        if (!o && movedFromByClass[c].has(p)) return; // 移動元の時限で、何も移ってきていない場合は除外
         let subject = subjectByClass[c][p] || '';
         let changed = false;
         if (o && o.type === 'subject_change') { subject = o.subject || ''; changed = true; }
         else if (o && o.type === 'self_study') { subject = '自習'; changed = true; }
+        else if (o && o.type === 'moved') { subject = o.subject || ''; changed = true; }
         rows.push({ subject: subject || '（未設定）', changed });
       });
       const itemsHtml = rows.length > 0
@@ -811,19 +818,22 @@
     });
     cardsHtml += '</div>';
 
-    // 2) 備考：カットされた時限を、元の時限・科目名とともに一覧表示
+    // 2) 備考：カット・移動を、元の時限・科目名とともに一覧表示
     const remarkLines = overrides.slice()
-      .filter(o => o.type === 'cancelled')
-      .sort((a, b) => a.class_no - b.class_no || a.period - b.period)
+      .filter(o => o.type === 'cancelled' || o.type === 'moved')
+      .sort((a, b) => a.class_no - b.class_no || (a.type === 'moved' ? a.from_period : a.period) - (b.type === 'moved' ? b.from_period : b.period))
       .map(o => {
+        if (o.type === 'moved') {
+          return `${o.class_no}組 ${o.from_period}限：${o.subject || '（未設定）'} が${o.period}限に移動しました${o.note ? `（${o.note}）` : ''}`;
+        }
         const origSubject = subjectByClass[o.class_no][o.period] || '（未設定）';
         return `${o.class_no}組 ${o.period}限：${origSubject} がカットされました${o.note ? `（${o.note}）` : ''}`;
       });
 
     const dateLabel = dateStr ? new Date(dateStr + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' }) : '';
     const remarks = remarkLines.length > 0
-      ? `<div class="tt-remarks"><h4>備考（${dateLabel}のカット）</h4><ul>${remarkLines.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`
-      : `<div class="tt-remarks"><h4>備考</h4><p style="font-size:13px;color:var(--ink-faint)">${dateLabel}のカットはありません</p></div>`;
+      ? `<div class="tt-remarks"><h4>備考（${dateLabel}の変更）</h4><ul>${remarkLines.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`
+      : `<div class="tt-remarks"><h4>備考</h4><p style="font-size:13px;color:var(--ink-faint)">${dateLabel}の変更はありません</p></div>`;
 
     area.innerHTML = weekNavHtml + cardsHtml + remarks;
   }

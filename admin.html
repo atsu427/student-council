@@ -181,6 +181,14 @@
     footer .footer-links a:hover{color:var(--vermillion);text-decoration:underline}
     footer .footer-copyright{color:var(--ink-faint)}
     .members-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .tt-move-row{display:flex;gap:10px;flex-wrap:wrap}
+    .tt-move-card{flex:1;min-width:120px;padding:10px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--paper);cursor:grab;text-align:center;font-size:13px;user-select:none;transition:border-color .15s,background-color .15s}
+    .tt-move-card.dragging{opacity:.4}
+    .tt-move-card.drag-over{border-color:var(--vermillion);background:var(--vermillion-tint)}
+    .tt-move-period{font-size:11px;color:var(--ink-faint);font-weight:700;margin-bottom:4px}
+    .tt-move-card-actions{display:flex;justify-content:center;gap:6px;margin-top:8px}
+    .tt-move-card-actions button{font-size:11px;padding:3px 8px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--paper-deep);color:var(--ink-soft);cursor:pointer;font-family:inherit}
+    .tt-move-card-actions button:disabled{opacity:.35;cursor:default}
     @media (max-width:700px){
       .admin-container{padding:28px 16px 80px}
       .post-item{flex-wrap:wrap}
@@ -377,7 +385,7 @@
             <select id="ovClass"></select>
           </div>
           <div style="flex:1;min-width:100px">
-            <label>時限</label>
+            <label id="ovPeriodLabel">時限</label>
             <select id="ovPeriod"></select>
           </div>
         </div>
@@ -388,21 +396,35 @@
               <option value="subject_change">科目変更</option>
               <option value="self_study">自習</option>
               <option value="cancelled">カット</option>
+              <option value="moved">移動（交換ではなく一方通行）</option>
             </select>
           </div>
           <div style="flex:1;min-width:160px" id="ovSubjectRow">
             <label>新科目名</label>
             <input type="text" id="ovSubject" placeholder="例：自習（数学）">
           </div>
+          <div style="flex:1;min-width:160px;display:none" id="ovMoveFromRow">
+            <label>移動元の時限</label>
+            <select id="ovMoveFromPeriod"></select>
+          </div>
         </div>
         <div class="form-row">
-          <label>備考（カットの場合は下の備考欄に表示されます）</label>
+          <label>備考（カット・移動の場合は下の備考欄にも表示されます）</label>
           <input type="text" id="ovNote" placeholder="任意">
         </div>
         <div class="form-actions">
           <div style="flex:1"></div>
           <button class="btn btn-primary" onclick="addOverride()">登録する</button>
         </div>
+      </div>
+
+      <div class="section-title" style="margin-top:48px">科目の移動（ドラッグ＆ドロップで並び替え）</div>
+      <div class="post-form">
+        <p style="font-size:12px;color:var(--ink-soft);margin-bottom:14px;line-height:1.7">
+          上で指定した日付・学年・クラスの標準時間割をカードで表示します。カードをドラッグ（モバイルは「前へ」「次へ」ボタン）で並び替えて保存すると、まとめて「移動」として登録されます。交換ではなく一方通行の移動のため、移動先にもとあった科目は上書きされます。既存の変更とは独立して登録されるため、保存後は下の一覧で内容を確認してください。
+        </p>
+        <button class="btn btn-secondary" type="button" onclick="loadMoveTool()">この日の時間割を表示</button>
+        <div id="ttMoveArea" style="margin-top:16px"></div>
       </div>
 
       <div class="section-title">今後の変更（日付昇順）</div>
@@ -1319,7 +1341,7 @@
   const CLASS_NUMS = [1,2,3,4];
   const WEEKDAYS = ['月','火','水','木','金','土']; // weekday=1が月
   const PERIODS = [1,2,3,4,5,6,7];
-  const OVERRIDE_TYPE_LABEL = { subject_change: '科目変更', self_study: '自習', cancelled: 'カット' };
+  const OVERRIDE_TYPE_LABEL = { subject_change: '科目変更', self_study: '自習', cancelled: 'カット', moved: '移動' };
   let ttInitialized = false;
   let ttSlotsCache = {}; // key: `${weekday}-${period}` -> subject
 
@@ -1333,6 +1355,7 @@
       document.getElementById('ovClass').innerHTML = classOptions;
       const periodOptions = PERIODS.map(p => `<option value="${p}">${p}限</option>`).join('');
       document.getElementById('ovPeriod').innerHTML = periodOptions;
+      document.getElementById('ovMoveFromPeriod').innerHTML = periodOptions;
       document.getElementById('ovDate').value = new Date().toLocaleDateString('en-CA');
 
       document.getElementById('ttGradeSelect').addEventListener('change', loadTimetableGrid);
@@ -1347,6 +1370,14 @@
   function onOverrideTypeChange() {
     const type = document.getElementById('ovType').value;
     document.getElementById('ovSubjectRow').style.display = (type === 'subject_change') ? '' : 'none';
+    document.getElementById('ovMoveFromRow').style.display = (type === 'moved') ? '' : 'none';
+    document.getElementById('ovPeriodLabel').textContent = (type === 'moved') ? '移動先の時限' : '時限';
+  }
+
+  // weekdayは1=月〜6=土。日曜(0)は時間割が無いのでnullを返す
+  function weekdayFromDateStr(dateStr) {
+    const jsDay = new Date(dateStr + 'T00:00:00').getDay();
+    return jsDay === 0 ? null : jsDay;
   }
 
   async function loadTimetableGrid() {
@@ -1404,6 +1435,18 @@
     const payload = { date, grade, class_no: classNo, period, type, note: note || null };
     if (type === 'subject_change') payload.subject = subject;
 
+    if (type === 'moved') {
+      const fromPeriod = Number(document.getElementById('ovMoveFromPeriod').value);
+      if (fromPeriod === period) { showToast('移動元と移動先が同じ時限です'); return; }
+      const weekday = weekdayFromDateStr(date);
+      if (!weekday) { showToast('日曜日は時間割がありません'); return; }
+      const { data: slot, error: slotError } = await db.from('timetable_slots')
+        .select('subject').eq('grade', grade).eq('class_no', classNo).eq('weekday', weekday).eq('period', fromPeriod).maybeSingle();
+      if (slotError) { console.error('標準時間割取得エラー:', slotError.message); showToast('登録失敗: ' + slotError.message); return; }
+      payload.from_period = fromPeriod;
+      payload.subject = slot?.subject || '（未設定）';
+    }
+
     const { error } = await db.from('timetable_overrides').insert(payload);
     if (error) { console.error('時間割変更登録エラー:', error.message); showToast('登録失敗: ' + error.message); return; }
     showToast('時間割変更を登録しました');
@@ -1415,9 +1458,11 @@
   function renderOverrideItem(o) {
     let detail = '';
     if (o.type === 'subject_change') detail = `→ ${escapeHtml(o.subject || '')}`;
+    if (o.type === 'moved') detail = `${o.from_period}限 → ${o.period}限（${escapeHtml(o.subject || '')}）`;
+    const periodLabel = o.type === 'moved' ? '' : ` ${o.period}限`;
     return `<div class="post-item">
       <div class="post-item-info">
-        <div class="post-item-title">${escapeHtml(o.date)} ${escapeHtml(o.grade)}${o.class_no}組 ${o.period}限</div>
+        <div class="post-item-title">${escapeHtml(o.date)} ${escapeHtml(o.grade)}${o.class_no}組${periodLabel}</div>
         <div class="post-item-meta">
           <span class="tag">${escapeHtml(OVERRIDE_TYPE_LABEL[o.type] || o.type)}</span>
           <span>${detail}</span>
@@ -1479,6 +1524,96 @@
     showToast('削除しました');
     loadOverridesList();
     if (overrideArchiveOpen) loadOverrideArchive();
+  }
+
+  // ── 科目の移動（ドラッグ＆ドロップで複数の移動をまとめて登録） ──
+  // 上の「時間割変更の登録」フォームの日付・学年・クラスを共有して使う
+  let ttDragCards = []; // [{ period: 元の時限, subject }] を表示順に並べた配列
+
+  async function loadMoveTool() {
+    const date = document.getElementById('ovDate').value.trim();
+    const grade = document.getElementById('ovGrade').value;
+    const classNo = Number(document.getElementById('ovClass').value);
+    if (!date) { showToast('日付を入力してください'); return; }
+    const weekday = weekdayFromDateStr(date);
+    if (!weekday) { showToast('日曜日は時間割がありません'); return; }
+
+    const { data, error } = await db.from('timetable_slots').select('*').eq('grade', grade).eq('class_no', classNo).eq('weekday', weekday);
+    if (error) { console.error('標準時間割取得エラー:', error.message); showToast('読み込み失敗: ' + error.message); return; }
+    const subjectByPeriod = {};
+    (data || []).forEach(s => { subjectByPeriod[s.period] = s.subject || ''; });
+    ttDragCards = PERIODS.map(p => ({ period: p, subject: subjectByPeriod[p] || '（未設定）' }));
+    renderMoveTool();
+  }
+
+  function renderMoveTool() {
+    const area = document.getElementById('ttMoveArea');
+    if (ttDragCards.length === 0) { area.innerHTML = ''; return; }
+    area.innerHTML = '<div class="tt-move-row" id="ttMoveRow">' +
+      ttDragCards.map((c, i) => `
+        <div class="tt-move-card" draggable="true" data-index="${i}">
+          <div class="tt-move-period">${i + 1}限${c.period !== i + 1 ? `（元${c.period}限）` : ''}</div>
+          ${escapeHtml(c.subject)}
+          <div class="tt-move-card-actions">
+            <button type="button" data-move-dir="-1" data-move-index="${i}" ${i === 0 ? 'disabled' : ''}>← 前へ</button>
+            <button type="button" data-move-dir="1" data-move-index="${i}" ${i === ttDragCards.length - 1 ? 'disabled' : ''}>次へ →</button>
+          </div>
+        </div>`).join('') +
+      '</div><div class="form-actions" style="margin-top:14px"><div style="flex:1"></div><button class="btn btn-primary" type="button" onclick="saveMoveArrangement()">この並びで保存</button></div>';
+
+    area.querySelectorAll('[data-move-dir]').forEach(btn => {
+      btn.addEventListener('click', () => moveCardPosition(Number(btn.dataset.moveIndex), Number(btn.dataset.moveDir)));
+    });
+    bindMoveDragHandlers();
+  }
+
+  function moveCardPosition(i, dir) {
+    const j = i + dir;
+    if (j < 0 || j >= ttDragCards.length) return;
+    [ttDragCards[i], ttDragCards[j]] = [ttDragCards[j], ttDragCards[i]];
+    renderMoveTool();
+  }
+
+  // デスクトップ向けのHTML5ドラッグ＆ドロップ（モバイルのタッチでは動作しないため上の前へ/次へボタンで代替する）
+  function bindMoveDragHandlers() {
+    const row = document.getElementById('ttMoveRow');
+    if (!row) return;
+    let dragIndex = null;
+    row.querySelectorAll('.tt-move-card').forEach(card => {
+      card.addEventListener('dragstart', () => { dragIndex = Number(card.dataset.index); card.classList.add('dragging'); });
+      card.addEventListener('dragend', () => card.classList.remove('dragging'));
+      card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+      card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+      card.addEventListener('drop', e => {
+        e.preventDefault();
+        card.classList.remove('drag-over');
+        const dropIndex = Number(card.dataset.index);
+        if (dragIndex === null || dragIndex === dropIndex) return;
+        const [moved] = ttDragCards.splice(dragIndex, 1);
+        ttDragCards.splice(dropIndex, 0, moved);
+        renderMoveTool();
+      });
+    });
+  }
+
+  async function saveMoveArrangement() {
+    const date = document.getElementById('ovDate').value.trim();
+    const grade = document.getElementById('ovGrade').value;
+    const classNo = Number(document.getElementById('ovClass').value);
+
+    const rows = [];
+    ttDragCards.forEach((c, i) => {
+      const newPeriod = i + 1;
+      if (c.period !== newPeriod) {
+        rows.push({ date, grade, class_no: classNo, period: newPeriod, from_period: c.period, type: 'moved', subject: c.subject, note: null });
+      }
+    });
+    if (rows.length === 0) { showToast('並び替えがありません'); return; }
+
+    const { error } = await db.from('timetable_overrides').insert(rows);
+    if (error) { console.error('移動の保存エラー:', error.message); showToast('保存失敗: ' + error.message); return; }
+    showToast(`${rows.length}件の移動を登録しました`);
+    loadOverridesList();
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
