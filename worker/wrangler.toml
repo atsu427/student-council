@@ -1,0 +1,7 @@
+name = "nada-sc-reminder-cron"
+main = "reminder-cron.js"
+compatibility_date = "2024-11-01"
+
+[triggers]
+# 5分おきに期限が来たリマインダーをチェックする
+crons = ["*/5 * * * *"]

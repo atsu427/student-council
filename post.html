@@ -137,7 +137,7 @@
     <div class="footer-links">
       <a href="https://www.nada.ac.jp/" target="_blank" rel="noopener noreferrer">灘中学校・灘高等学校</a>
       <a href="https://fest.nada-sc.jp/" target="_blank" rel="noopener noreferrer">灘校文化祭</a>
-      <a href="index.html">灘校生徒会のHP</a>
+      <a href="https://www.nada-sc.jp/" target="_blank" rel="noopener noreferrer">灘校生徒会のHP</a>
     </div>
     <div class="footer-copyright">© 灘校生徒会</div>
   </footer>
@@ -211,6 +211,7 @@
 
     const { data, error } = await db.from('posts').select('*').eq('id', id).eq('published', true).single();
     if (error || !data) { showError('記事が見つかりません'); return; }
+    if (data.expires_at && new Date(data.expires_at) <= new Date()) { showError('この記事は表示期限が終了しました'); return; }
 
     // ロール制限チェック（members取得に失敗してもgeneral扱いで処理を継続する）
     if (data.target_roles && data.target_roles.length > 0) {

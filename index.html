@@ -195,13 +195,23 @@
     .cal-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:14px;font-size:15px;font-weight:700}
     .cal-nav button{min-width:44px;min-height:44px;padding:0;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--paper-deep);color:var(--ink-soft);font-size:16px;cursor:pointer;font-family:inherit;transition:background-color .15s}
     .cal-nav button:hover{background:var(--paper)}
-    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-    .cal-cell{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1;border-radius:var(--radius-sm);font-size:12px;color:var(--ink-soft)}
-    .cal-cell.cal-head{font-weight:700;color:var(--ink-faint);font-size:11px;aspect-ratio:auto;padding:4px 0}
-    .cal-cell.cal-empty{visibility:hidden}
-    .cal-cell.cal-today{background:var(--vermillion-tint)}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden}
+    .cal-cell{position:relative;display:flex;flex-direction:column;align-items:stretch;min-height:76px;background:var(--paper);padding:5px 4px 3px;font-size:11px;color:var(--ink-soft);cursor:pointer;transition:background-color .15s}
+    .cal-cell:hover{background:var(--paper-deep)}
+    .cal-cell.cal-head{font-weight:700;color:var(--ink-faint);font-size:11px;min-height:auto;padding:6px 0;align-items:center;cursor:default}
+    .cal-cell.cal-head:hover{background:var(--paper)}
+    .cal-cell.cal-empty{visibility:hidden;cursor:default}
     .cal-cell.cal-today .cal-day-no{color:var(--vermillion);font-weight:700}
-    .cal-dot{position:absolute;bottom:4px;width:5px;height:5px;border-radius:50%;background:var(--vermillion)}
+    .cal-cell.cal-selected{background:var(--vermillion-tint)}
+    .cal-day-no{font-size:11px;font-weight:600;margin-bottom:3px}
+    .cal-event-chip{font-size:10px;line-height:1.5;padding:1px 5px;border-radius:4px;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cal-event-more{font-size:10px;color:var(--ink-faint)}
+    @media (max-width:600px){
+      .cal-cell{min-height:54px;font-size:9px;padding:3px 2px 2px}
+      .cal-day-no{font-size:10px}
+      .cal-event-chip{font-size:0;padding:0;height:5px;border-radius:2px;margin-bottom:1px}
+    }
+    .cal-tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;color:#fff}
     .cal-event-item{font-size:13px;line-height:1.7;padding:8px 0;border-bottom:1px solid var(--line)}
     .cal-event-item:last-child{border-bottom:none}
     @media (max-width:600px){
@@ -313,7 +323,7 @@
         <button class="btn-sm" onclick="calMoveMonth(1)">＞</button>
       </div>
       <div id="calGrid" class="cal-grid"></div>
-      <div id="calEventsList" style="margin-top:20px"></div>
+      <div id="calDayDetail" style="margin-top:20px"></div>
     </div>
   </div>
 
@@ -358,7 +368,7 @@
     <div class="footer-links">
       <a href="https://www.nada.ac.jp/" target="_blank" rel="noopener noreferrer">灘中学校・灘高等学校</a>
       <a href="https://fest.nada-sc.jp/" target="_blank" rel="noopener noreferrer">灘校文化祭</a>
-      <a href="index.html">灘校生徒会のHP</a>
+      <a href="https://www.nada-sc.jp/" target="_blank" rel="noopener noreferrer">灘校生徒会のHP</a>
     </div>
     <div class="footer-copyright">© 灘校生徒会</div>
   </footer>
@@ -592,6 +602,7 @@
     const now = new Date();
     allPosts = (data || []).filter(p => {
       if (p.publish_at && new Date(p.publish_at) > now) return false; // 時間指定で公開時刻がまだ来ていない
+      if (p.expires_at && new Date(p.expires_at) <= now) return false; // 失効日時を過ぎている
       // target_rolesが空配列 or 自分のロールのいずれかを含む投稿のみ表示
       return !p.target_roles || p.target_roles.length === 0 || p.target_roles.some(r => myRoles.includes(r)) || p.target_roles.includes('全体');
     });
@@ -607,6 +618,7 @@
     const now = new Date();
     const visible = (data || []).filter(p => {
       if (p.publish_at && new Date(p.publish_at) > now) return false;
+      if (p.expires_at && new Date(p.expires_at) <= now) return false;
       return !p.target_roles || p.target_roles.length === 0 || p.target_roles.some(r => myRoles.includes(r)) || p.target_roles.includes('全体');
     });
     if (visible.length === 0) { banner.classList.remove('show'); banner.innerHTML = ''; return; }
@@ -881,8 +893,27 @@
   // ── カレンダー（行事予定） ──
   let calEventsCache = [];
   let calCurrentMonth = new Date();
+  let calSelectedDate = null;
+  let eventCategoriesCache = [];
+
+  async function loadEventCategories() {
+    const { data, error } = await db.from('event_categories').select('*').order('sort_order');
+    if (error) { console.error('カレンダータグ取得エラー:', error.message); eventCategoriesCache = []; }
+    else eventCategoriesCache = data || [];
+  }
+
+  function eventTagColor(name) {
+    const c = eventCategoriesCache.find(c => c.name === name);
+    return c ? c.color : 'var(--vermillion)';
+  }
+
+  function calEventColor(ev) {
+    const firstTag = (ev.tags || [])[0];
+    return firstTag ? eventTagColor(firstTag) : 'var(--vermillion)';
+  }
 
   async function loadEvents() {
+    await loadEventCategories();
     const { data, error } = await db.from('events').select('*').order('start_date');
     if (error) { console.error('行事予定取得エラー:', error.message); return; }
     const myRoles = currentMember?.roles || ['general'];
@@ -891,11 +922,18 @@
       return !ev.target_roles || ev.target_roles.length === 0 || ev.target_roles.some(r => myRoles.includes(r)) || ev.target_roles.includes('全体');
     });
     calCurrentMonth = new Date();
+    calSelectedDate = new Date().toLocaleDateString('en-CA');
     renderCalendar();
   }
 
   function calMoveMonth(delta) {
     calCurrentMonth = new Date(calCurrentMonth.getFullYear(), calCurrentMonth.getMonth() + delta, 1);
+    calSelectedDate = null;
+    renderCalendar();
+  }
+
+  function calSelectDate(dateStr) {
+    calSelectedDate = (calSelectedDate === dateStr) ? null : dateStr;
     renderCalendar();
   }
 
@@ -906,6 +944,16 @@
   function calFormatJaDate(d) {
     return new Date(d + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
   }
+
+  function calEventDetailHtml(ev) {
+    const label = ev.end_date && ev.end_date !== ev.start_date
+      ? `${calFormatJaDate(ev.start_date)} 〜 ${calFormatJaDate(ev.end_date)}`
+      : calFormatJaDate(ev.start_date);
+    const tagsHtml = (ev.tags || []).map(t => `<span class="cal-tag" style="background:${escapeHtml(eventTagColor(t))}">${escapeHtml(t)}</span>`).join('');
+    return `<div class="cal-event-item"><strong>${escapeHtml(label)}</strong>　${escapeHtml(ev.title)} ${tagsHtml}${ev.description ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">${escapeHtml(ev.description)}</div>` : ''}</div>`;
+  }
+
+  const CAL_MAX_CHIPS = 3;
 
   function renderCalendar() {
     const y = calCurrentMonth.getFullYear(), m = calCurrentMonth.getMonth();
@@ -919,26 +967,40 @@
     for (let i = 0; i < startWeekday; i++) cellsHtml += '<div class="cal-cell cal-empty"></div>';
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      const hasEvent = calEventsOnDate(dateStr).length > 0;
+      const dayEvents = calEventsOnDate(dateStr);
       const isToday = dateStr === todayStr;
-      cellsHtml += `<div class="cal-cell${isToday ? ' cal-today' : ''}">
-        <span class="cal-day-no">${d}</span>${hasEvent ? '<span class="cal-dot"></span>' : ''}
+      const isSelected = dateStr === calSelectedDate;
+      const chipsHtml = dayEvents.slice(0, CAL_MAX_CHIPS).map(ev =>
+        `<div class="cal-event-chip" style="background:${escapeHtml(calEventColor(ev))}">${escapeHtml(ev.title)}</div>`
+      ).join('');
+      const moreHtml = dayEvents.length > CAL_MAX_CHIPS ? `<div class="cal-event-more">+${dayEvents.length - CAL_MAX_CHIPS}件</div>` : '';
+      cellsHtml += `<div class="cal-cell${isToday ? ' cal-today' : ''}${isSelected ? ' cal-selected' : ''}" onclick="calSelectDate('${dateStr}')">
+        <span class="cal-day-no">${d}</span>${chipsHtml}${moreHtml}
       </div>`;
     }
     document.getElementById('calGrid').innerHTML = cellsHtml;
+    renderCalDayDetail();
+  }
 
+  function renderCalDayDetail() {
+    const el = document.getElementById('calDayDetail');
+    if (calSelectedDate) {
+      const dayEvents = calEventsOnDate(calSelectedDate);
+      const label = calFormatJaDate(calSelectedDate);
+      if (dayEvents.length === 0) {
+        el.innerHTML = `<h4 style="font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px">${escapeHtml(label)}の予定</h4><p style="font-size:13px;color:var(--ink-faint)">予定はありません</p>`;
+      } else {
+        el.innerHTML = `<h4 style="font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px">${escapeHtml(label)}の予定</h4>` + dayEvents.map(calEventDetailHtml).join('');
+      }
+      return;
+    }
+    const y = calCurrentMonth.getFullYear(), m = calCurrentMonth.getMonth();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
     const monthStart = `${y}-${String(m + 1).padStart(2, '0')}-01`;
     const monthEnd = `${y}-${String(m + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
     const monthEvents = calEventsCache.filter(ev => (ev.end_date || ev.start_date) >= monthStart && ev.start_date <= monthEnd);
-    const listEl = document.getElementById('calEventsList');
-    if (monthEvents.length === 0) { listEl.innerHTML = '<p style="font-size:13px;color:var(--ink-faint)">この月の行事予定はありません</p>'; return; }
-    listEl.innerHTML = '<h4 style="font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px">この月の予定</h4>' + monthEvents.map(ev => {
-      const label = ev.end_date && ev.end_date !== ev.start_date
-        ? `${calFormatJaDate(ev.start_date)} 〜 ${calFormatJaDate(ev.end_date)}`
-        : calFormatJaDate(ev.start_date);
-      const tagsHtml = (ev.tags || []).map(t => `<span class="category-tag ${escapeHtml(t)}">${escapeHtml(t)}</span>`).join('');
-      return `<div class="cal-event-item"><strong>${escapeHtml(label)}</strong>　${escapeHtml(ev.title)} ${tagsHtml}${ev.description ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">${escapeHtml(ev.description)}</div>` : ''}</div>`;
-    }).join('');
+    if (monthEvents.length === 0) { el.innerHTML = '<p style="font-size:13px;color:var(--ink-faint)">この月の行事予定はありません</p>'; return; }
+    el.innerHTML = '<h4 style="font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px">この月の予定</h4>' + monthEvents.map(calEventDetailHtml).join('');
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }

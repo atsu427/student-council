@@ -124,6 +124,8 @@
     .btn-edit:hover{background:var(--gold);color:var(--paper)}
     .btn-del{background:var(--vermillion-tint);color:var(--vermillion);border-color:transparent}
     .btn-del:hover{background:var(--vermillion);color:var(--paper)}
+    .btn-remind{background:var(--gold-tint);color:var(--gold);border-color:transparent}
+    .btn-remind:hover{background:var(--gold);color:var(--paper)}
     .status-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px}
     .status-published{background:var(--green-tint);color:var(--green);border:1px solid transparent}
     .status-draft{background:var(--paper-deep);color:var(--ink-faint);border:1px solid var(--line)}
@@ -192,6 +194,8 @@
     /* 生徒側の見え方プレビュー */
     #previewModal{display:none;position:fixed;inset:0;background:rgba(29,32,36,.6);z-index:1001;align-items:center;justify-content:center;padding:20px}
     #previewModal.open{display:flex}
+    #reminderModal{display:none;position:fixed;inset:0;background:rgba(29,32,36,.6);z-index:1001;align-items:center;justify-content:center;padding:20px}
+    #reminderModal.open{display:flex}
     .preview-modal-card{background:var(--paper);border-radius:var(--radius-lg);max-width:640px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);padding:24px 28px 32px}
     .preview-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:10px}
     .preview-modal-head h3{font-size:13px;font-weight:700;color:var(--ink-faint);letter-spacing:.04em}
@@ -202,6 +206,7 @@
     .preview-author{font-size:12px;color:var(--ink-faint);margin-bottom:18px}
     .preview-body{font-size:15px;line-height:2;color:var(--ink);white-space:pre-wrap;word-break:break-word}
     .preview-note{font-size:12px;color:var(--ink-soft);margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
+    .preview-modal-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
     .tt-class-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
     @media (max-width:540px){ .tt-class-grid{grid-template-columns:repeat(2,1fr)} }
     .tt-class-card{background:var(--paper-deep);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px}
@@ -291,10 +296,6 @@
           <div class="role-checkboxes" id="tagCheckboxes">
             <span style="font-size:13px;color:#aaa">読み込み中...</span>
           </div>
-          <div style="margin-top:10px;font-size:12px;font-weight:700;color:var(--ink-soft);cursor:pointer" onclick="toggleCollapsible('categoriesArea','tagMgmtToggleLabel')">
-            タグ管理 <span id="tagMgmtToggleLabel" style="font-size:11px;color:var(--ink-faint);font-weight:400">（タップで表示）</span>
-          </div>
-          <div id="categoriesArea" style="display:none;margin-top:8px"><div class="loading">読み込み中...</div></div>
         </div>
         <div class="form-row">
           <label>本文</label>
@@ -342,6 +343,33 @@
           <label>公開日時（指定すると、その時刻になるまで生徒には表示されません。未指定なら即時公開）</label>
           <input type="datetime-local" id="inputPublishAt">
         </div>
+        <div class="form-row">
+          <label>失効日時（指定すると、その時刻を過ぎると生徒側に表示されなくなります。未指定なら失効しません）</label>
+          <input type="datetime-local" id="inputExpiresAt">
+        </div>
+        <div class="form-row">
+          <label class="publish-toggle" style="display:inline-flex">
+            <input type="checkbox" id="inputEventSync" onchange="toggleEventSyncFields()"> カレンダーにも連動して表示する（対象日にこの投稿の予定を追加）
+          </label>
+          <div id="eventSyncFields" style="display:none;margin-top:14px">
+            <div style="margin-bottom:14px">
+              <label>対象日</label>
+              <input type="date" id="inputEventDate">
+            </div>
+            <div style="margin-bottom:14px">
+              <label>カレンダータグ（複数選択可）</label>
+              <div class="role-checkboxes" id="postEventTagCheckboxes">
+                <span style="font-size:13px;color:#aaa">読み込み中...</span>
+              </div>
+            </div>
+            <div>
+              <label>カレンダーでの表示対象ロール（未選択＝全員に表示）</label>
+              <div class="role-checkboxes" id="postEventRoleCheckboxes">
+                <span style="font-size:13px;color:#aaa">読み込み中...</span>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="form-actions">
           <label class="publish-toggle">
             <input type="checkbox" id="inputPublished" checked> 公開する（チェックを外すと下書き）
@@ -352,6 +380,11 @@
           <button class="btn btn-primary" onclick="savePost()">保存する</button>
         </div>
       </div>
+
+      <div class="section-title" style="cursor:pointer" onclick="toggleCollapsible('categoriesArea','tagMgmtToggleLabel')">
+        タグ管理 <span id="tagMgmtToggleLabel" style="font-size:12px;color:var(--ink-faint);font-weight:400">（タップで表示）</span>
+      </div>
+      <div id="categoriesArea" style="display:none"><div class="loading">読み込み中...</div></div>
 
       <div class="section-title">投稿一覧</div>
       <div class="form-row" style="max-width:360px">
@@ -444,41 +477,29 @@
           </div>
         </div>
 
-        <!-- 移動：移動元/移動先の時限を1クラスずつ指定 -->
+        <!-- 移動：対象クラスの標準時間割をカード表示し、ドラッグ＆ドロップで並び替えて登録する -->
         <div id="ovMovedSection" style="display:none">
           <div class="form-row" style="display:flex;gap:16px;flex-wrap:wrap">
             <div style="flex:1;min-width:100px">
-              <label>クラス</label>
+              <label>クラス（並び替える対象）</label>
               <select id="ovClass"></select>
             </div>
-            <div style="flex:1;min-width:100px">
-              <label>移動先の時限</label>
-              <select id="ovPeriod"></select>
-            </div>
-            <div style="flex:1;min-width:100px">
-              <label>移動元の時限</label>
-              <select id="ovMoveFromPeriod"></select>
-            </div>
           </div>
+          <p style="font-size:12px;color:var(--ink-soft);margin-bottom:14px;line-height:1.7">
+            上で指定した日付・学年・クラスの標準時間割をカードで表示します。カードをドラッグ（モバイルは「前へ」「次へ」ボタン）で並び替えて保存すると、まとめて「移動」として登録されます。交換ではなく一方通行の移動のため、移動先にもとあった科目は上書きされます。
+          </p>
+          <button class="btn btn-secondary" type="button" onclick="loadMoveTool()">この日の時間割を表示して並び替える</button>
+          <div id="ttMoveArea" style="margin-top:16px"></div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" id="ovNoteRow">
           <label id="ovNoteLabel">備考（任意）</label>
           <input type="text" id="ovNote" placeholder="任意">
         </div>
-        <div class="form-actions">
+        <div class="form-actions" id="ovSubmitRow">
           <div style="flex:1"></div>
           <button class="btn btn-primary" onclick="addOverride()">登録する</button>
         </div>
-      </div>
-
-      <div class="section-title" style="margin-top:48px">科目の移動（ドラッグ＆ドロップで並び替え）</div>
-      <div class="post-form">
-        <p style="font-size:12px;color:var(--ink-soft);margin-bottom:14px;line-height:1.7">
-          上で指定した日付・学年・クラスの標準時間割をカードで表示します。カードをドラッグ（モバイルは「前へ」「次へ」ボタン）で並び替えて保存すると、まとめて「移動」として登録されます。交換ではなく一方通行の移動のため、移動先にもとあった科目は上書きされます。既存の変更とは独立して登録されるため、保存後は下の一覧で内容を確認してください。
-        </p>
-        <button class="btn btn-secondary" type="button" onclick="loadMoveTool()">この日の時間割を表示</button>
-        <div id="ttMoveArea" style="margin-top:16px"></div>
       </div>
 
       <div class="section-title">今後の変更（日付昇順）</div>
@@ -533,6 +554,11 @@
         </div>
       </div>
 
+      <div class="section-title" style="cursor:pointer" onclick="toggleCollapsible('eventCategoriesArea','eventTagMgmtToggleLabel')">
+        カレンダータグ管理 <span id="eventTagMgmtToggleLabel" style="font-size:12px;color:var(--ink-faint);font-weight:400">（タップで表示）</span>
+      </div>
+      <div id="eventCategoriesArea" style="display:none"><div class="loading">読み込み中...</div></div>
+
       <div class="section-title" style="margin-top:40px">登録済みの行事予定</div>
       <div id="eventsArea"><div class="loading">読み込み中...</div></div>
     </div>
@@ -580,7 +606,7 @@
     <div class="footer-links">
       <a href="https://www.nada.ac.jp/" target="_blank" rel="noopener noreferrer">灘中学校・灘高等学校</a>
       <a href="https://fest.nada-sc.jp/" target="_blank" rel="noopener noreferrer">灘校文化祭</a>
-      <a href="index.html">灘校生徒会のHP</a>
+      <a href="https://www.nada-sc.jp/" target="_blank" rel="noopener noreferrer">灘校生徒会のHP</a>
     </div>
     <div class="footer-copyright">© 灘校生徒会</div>
   </footer>
@@ -596,6 +622,17 @@
       <button class="btn-sm" onclick="closePreview()">閉じる ×</button>
     </div>
     <div id="previewModalBody"></div>
+  </div>
+</div>
+
+<!-- リマインダー（LINE定期送信）管理 -->
+<div id="reminderModal" onclick="if (event.target === this) closeReminderModal()">
+  <div class="preview-modal-card">
+    <div class="preview-modal-head">
+      <h3>リマインダー（LINE定期送信）</h3>
+      <button class="btn-sm" onclick="closeReminderModal()">閉じる ×</button>
+    </div>
+    <div id="reminderModalBody"></div>
   </div>
 </div>
 
@@ -684,14 +721,17 @@
       document.getElementById('errorScreen').style.display = 'none';
       document.getElementById('adminScreen').style.display = 'block';
       document.getElementById('userName').textContent = currentMember.display_name || email;
-      await Promise.all([loadRoles(), loadCategories(), loadMentionMembers()]);
+      await Promise.all([loadRoles(), loadCategories(), loadEventCategories(), loadMentionMembers()]);
       renderRoleCheckboxes([]);
       renderMentionRoleCheckboxes([]);
       renderTagCheckboxes([]);
       renderEventTagCheckboxes([]);
       renderEventRoleCheckboxes([]);
+      renderPostEventTagCheckboxes([]);
+      renderPostEventRoleCheckboxes([]);
       renderRolesTab();
       renderCategoriesTab();
+      renderEventCategoriesTab();
       loadPosts();
     } else {
       currentUser = null;
@@ -836,10 +876,12 @@
     const selectedTarget = getSelectedRoles();
     const selectedMention = getSelectedMentionRoles();
     const selectedEventRole = getSelectedEventRoles();
+    const selectedPostEventRole = getSelectedPostEventRoles();
     await loadRoles();
     renderRoleCheckboxes(selectedTarget);
     renderMentionRoleCheckboxes(selectedMention);
     renderEventRoleCheckboxes(selectedEventRole);
+    renderPostEventRoleCheckboxes(selectedPostEventRole);
     renderRolesTab();
     showToast('ロールを追加しました');
   }
@@ -851,10 +893,12 @@
     const selectedTarget = getSelectedRoles().filter(r => r !== name);
     const selectedMention = getSelectedMentionRoles().filter(r => r !== name);
     const selectedEventRole = getSelectedEventRoles().filter(r => r !== name);
+    const selectedPostEventRole = getSelectedPostEventRoles().filter(r => r !== name);
     await loadRoles();
     renderRoleCheckboxes(selectedTarget);
     renderMentionRoleCheckboxes(selectedMention);
     renderEventRoleCheckboxes(selectedEventRole);
+    renderPostEventRoleCheckboxes(selectedPostEventRole);
     renderRolesTab();
     showToast('削除しました');
   }
@@ -905,10 +949,8 @@
     const { error } = await db.from('categories').insert({ name, sort_order: nextSort });
     if (error) { showToast('追加失敗: ' + error.message); return; }
     const selected = getSelectedTags();
-    const selectedEventTag = getSelectedEventTags();
     await loadCategories();
     renderTagCheckboxes(selected);
-    renderEventTagCheckboxes(selectedEventTag);
     renderCategoriesTab();
     showToast('タグを追加しました');
   }
@@ -918,11 +960,134 @@
     const { error } = await db.from('categories').delete().eq('id', id);
     if (error) { showToast('削除失敗: ' + error.message); return; }
     const selected = getSelectedTags().filter(t => t !== name);
-    const selectedEventTag = getSelectedEventTags().filter(t => t !== name);
     await loadCategories();
     renderTagCheckboxes(selected);
-    renderEventTagCheckboxes(selectedEventTag);
     renderCategoriesTab();
+    showToast('削除しました');
+  }
+
+  // ── カレンダー専用タグ（投稿のタグ=categoriesとは別カタログ。色を設定できる） ──
+  let eventCategoriesCache = [];
+
+  async function loadEventCategories() {
+    const { data, error } = await db.from('event_categories').select('*').order('sort_order');
+    if (error) { console.error('カレンダータグ取得エラー:', error.message); eventCategoriesCache = []; }
+    else eventCategoriesCache = data || [];
+  }
+
+  function eventTagColor(name) {
+    const c = eventCategoriesCache.find(c => c.name === name);
+    return c ? c.color : '#b4332a';
+  }
+
+  function renderEventTagCheckboxes(selectedTags) {
+    const el = document.getElementById('eventTagCheckboxes');
+    if (eventCategoriesCache.length === 0) { el.innerHTML = '<span style="font-size:13px;color:#aaa">タグがありません（下のカレンダータグ管理から追加）</span>'; return; }
+    el.innerHTML = eventCategoriesCache.map(c => `
+      <label class="role-checkbox-item">
+        <input type="checkbox" name="eventTag" value="${escapeHtml(c.name)}" ${selectedTags.includes(c.name) ? 'checked' : ''}>
+        <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${escapeHtml(c.color)};margin-right:3px"></span>${escapeHtml(c.name)}
+      </label>`).join('');
+  }
+
+  function getSelectedEventTags() {
+    return Array.from(document.querySelectorAll('input[name="eventTag"]:checked')).map(el => el.value);
+  }
+
+  // ── 投稿⇔カレンダー連携フォーム（postsからevents行を同期する用。タグ・ロールのカタログはカレンダーと共通） ──
+  function toggleEventSyncFields() {
+    document.getElementById('eventSyncFields').style.display = document.getElementById('inputEventSync').checked ? '' : 'none';
+  }
+
+  function renderPostEventTagCheckboxes(selectedTags) {
+    const el = document.getElementById('postEventTagCheckboxes');
+    if (eventCategoriesCache.length === 0) { el.innerHTML = '<span style="font-size:13px;color:#aaa">タグがありません（カレンダー管理のカレンダータグ管理から追加）</span>'; return; }
+    el.innerHTML = eventCategoriesCache.map(c => `
+      <label class="role-checkbox-item">
+        <input type="checkbox" name="postEventTag" value="${escapeHtml(c.name)}" ${selectedTags.includes(c.name) ? 'checked' : ''}>
+        <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${escapeHtml(c.color)};margin-right:3px"></span>${escapeHtml(c.name)}
+      </label>`).join('');
+  }
+
+  function getSelectedPostEventTags() {
+    return Array.from(document.querySelectorAll('input[name="postEventTag"]:checked')).map(el => el.value);
+  }
+
+  function renderPostEventRoleCheckboxes(selectedRoles) {
+    const el = document.getElementById('postEventRoleCheckboxes');
+    if (allRoles.length === 0) { el.innerHTML = '<span style="font-size:13px;color:#aaa">ロールがありません</span>'; return; }
+    el.innerHTML = allRoles.map(r => `
+      <label class="role-checkbox-item">
+        <input type="checkbox" name="postEventRole" value="${escapeHtml(r)}" ${selectedRoles.includes(r) ? 'checked' : ''}>
+        ${escapeHtml(r)}
+      </label>`).join('');
+  }
+
+  function getSelectedPostEventRoles() {
+    return Array.from(document.querySelectorAll('input[name="postEventRole"]:checked')).map(el => el.value);
+  }
+
+  function renderEventCategoriesTab() {
+    const el = document.getElementById('eventCategoriesArea');
+    el.innerHTML = `
+      <div class="roles-list" id="eventCategoriesList">${eventCategoriesCache.map(c => `
+        <div class="role-chip" style="border-color:${escapeHtml(c.color)}">
+          <input type="color" value="${escapeHtml(c.color)}" data-cat-id="${c.id}" class="event-cat-color-input" style="width:18px;height:18px;border:none;padding:0;vertical-align:middle;cursor:pointer">
+          ${escapeHtml(c.name)}
+          <button class="role-chip-del" data-cat-id="${c.id}" data-cat-name="${escapeHtml(c.name)}" title="削除">×</button>
+        </div>`).join('')}
+      </div>
+      <div class="add-role-row">
+        <input type="text" id="newEventCategoryName" placeholder="新しいタグ名" style="max-width:220px">
+        <input type="color" id="newEventCategoryColor" value="#b4332a" style="width:36px;height:36px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:2px;cursor:pointer">
+        <button class="btn btn-primary" onclick="addEventCategory()">追加</button>
+      </div>`;
+    el.querySelectorAll('.role-chip-del').forEach(btn => {
+      btn.addEventListener('click', () => deleteEventCategory(Number(btn.dataset.catId), btn.dataset.catName));
+    });
+    el.querySelectorAll('.event-cat-color-input').forEach(input => {
+      input.addEventListener('change', () => updateEventCategoryColor(Number(input.dataset.catId), input.value));
+    });
+  }
+
+  async function addEventCategory() {
+    const name = document.getElementById('newEventCategoryName').value.trim();
+    const color = document.getElementById('newEventCategoryColor').value;
+    if (!name) return;
+    const nextSort = eventCategoriesCache.length > 0 ? Math.max(...eventCategoriesCache.map(c => c.sort_order || 0)) + 1 : 1;
+    const { error } = await db.from('event_categories').insert({ name, color, sort_order: nextSort });
+    if (error) { showToast('追加失敗: ' + error.message); return; }
+    const selected = getSelectedEventTags();
+    const selectedPostEvent = getSelectedPostEventTags();
+    await loadEventCategories();
+    renderEventTagCheckboxes(selected);
+    renderPostEventTagCheckboxes(selectedPostEvent);
+    renderEventCategoriesTab();
+    showToast('カレンダータグを追加しました');
+  }
+
+  async function updateEventCategoryColor(id, color) {
+    const { error } = await db.from('event_categories').update({ color }).eq('id', id);
+    if (error) { showToast('色の更新に失敗: ' + error.message); return; }
+    const selected = getSelectedEventTags();
+    const selectedPostEvent = getSelectedPostEventTags();
+    await loadEventCategories();
+    renderEventTagCheckboxes(selected);
+    renderPostEventTagCheckboxes(selectedPostEvent);
+    renderEventCategoriesTab();
+    renderEventsList();
+  }
+
+  async function deleteEventCategory(id, name) {
+    if (!confirm(`カレンダータグ「${name}」を削除しますか？`)) return;
+    const { error } = await db.from('event_categories').delete().eq('id', id);
+    if (error) { showToast('削除失敗: ' + error.message); return; }
+    const selected = getSelectedEventTags().filter(t => t !== name);
+    const selectedPostEvent = getSelectedPostEventTags().filter(t => t !== name);
+    await loadEventCategories();
+    renderEventTagCheckboxes(selected);
+    renderPostEventTagCheckboxes(selectedPostEvent);
+    renderEventCategoriesTab();
     showToast('削除しました');
   }
 
@@ -1194,9 +1359,11 @@
     const newFileNames = selectedFiles.map(f => f.name);
     const fileNames = [...remainingExisting, ...newFileNames];
 
-    const tagsHtml = tags.map(t => `<span class="preview-tag">${escapeHtml(t)}</span>`).join('');
+    const tagsHtml = tags.map(t => tagChipHtml(t, null, 'preview-tag')).join('');
     const specialHtml = isSpecial ? '<span class="preview-tag" style="background:var(--vermillion);color:var(--paper)">特別メッセージ</span>' : '';
     const filesHtml = fileNames.length > 0 ? `<div class="preview-note">添付ファイル: ${fileNames.map(n => escapeHtml(n)).join('、')}</div>` : '';
+    const expiresAt = document.getElementById('inputExpiresAt').value;
+    const expiresHtml = expiresAt ? `<div class="preview-note">この投稿は ${escapeHtml(new Date(expiresAt).toLocaleString('ja-JP'))} に表示されなくなります</div>` : '';
 
     openPreview(`
       <div class="preview-post-meta">${specialHtml}${tagsHtml}<span class="preview-date">${date}</span></div>
@@ -1204,6 +1371,7 @@
       <div class="preview-author">投稿者：${escapeHtml(authorName)}</div>
       <div class="preview-body">${renderPreviewBodyHtml(body)}</div>
       ${filesHtml}
+      ${expiresHtml}
     `);
   }
 
@@ -1218,11 +1386,36 @@
     const publishAtInput = document.getElementById('inputPublishAt').value;
     const publish_at = publishAtInput ? new Date(publishAtInput).toISOString() : null;
     const isScheduledFuture = publish_at && new Date(publish_at) > new Date();
+    const expiresAtInput = document.getElementById('inputExpiresAt').value;
+    const expires_at = expiresAtInput ? new Date(expiresAtInput).toISOString() : null;
     const target_roles = getSelectedRoles();
     const mentioned_emails = getSelectedMentionEmails();
     const mentioned_roles = getSelectedMentionRoles();
+    const eventSyncOn = document.getElementById('inputEventSync').checked;
+    const eventDate = document.getElementById('inputEventDate').value;
+    const eventTags = getSelectedPostEventTags();
+    const eventRoles = getSelectedPostEventRoles();
 
     if (!title || !body) { showToast('タイトルと本文を入力してください'); return; }
+    if (eventSyncOn && !eventDate) { showToast('カレンダーに連動表示するには対象日を指定してください'); return; }
+
+    // 投稿⇔カレンダー連携：チェックが付いていればevents行を作成/更新、外せば紐づくevents行を削除する
+    let existingEventId = null;
+    if (id) {
+      const { data: existingPostRow } = await db.from('posts').select('event_id').eq('id', id).single();
+      existingEventId = existingPostRow?.event_id || null;
+    }
+    let event_id = null;
+    if (eventSyncOn) {
+      const eventPayload = { title, start_date: eventDate, end_date: eventDate, tags: eventTags, target_roles: eventRoles };
+      const { data: savedEvent, error: eventError } = existingEventId
+        ? await db.from('events').update(eventPayload).eq('id', existingEventId).select('id').single()
+        : await db.from('events').insert(eventPayload).select('id').single();
+      if (eventError) { showToast('カレンダー連携の保存に失敗: ' + eventError.message); return; }
+      event_id = savedEvent.id;
+    } else if (existingEventId) {
+      await db.from('events').delete().eq('id', existingEventId);
+    }
 
     if (selectedFiles.length > 0) document.getElementById('uploadProgress').style.display = 'block';
 
@@ -1235,7 +1428,7 @@
     document.getElementById('uploadProgress').style.display = 'none';
 
     const authorName = (currentMember?.display_name || '').trim() || currentUser.email;
-    const payload = { title, tags, body, published, is_special, publish_at, target_roles, mentioned_emails, mentioned_roles, file_paths: filePaths, author: authorName };
+    const payload = { title, tags, body, published, is_special, publish_at, expires_at, target_roles, mentioned_emails, mentioned_roles, file_paths: filePaths, author: authorName, event_id, event_date: eventSyncOn ? eventDate : null };
 
     const { data: savedPost, error } = id
       ? await db.from('posts').update(payload).eq('id', id).select('id, title').single()
@@ -1341,6 +1534,7 @@
     document.getElementById('inputPublished').checked = data.published;
     document.getElementById('inputSpecial').checked = !!data.is_special;
     document.getElementById('inputPublishAt').value = toDatetimeLocalValue(data.publish_at);
+    document.getElementById('inputExpiresAt').value = toDatetimeLocalValue(data.expires_at);
     document.getElementById('formTitle').textContent = '投稿を編集';
     renderRoleCheckboxes(data.target_roles || []);
     renderMentionCheckboxes(data.mentioned_emails || []);
@@ -1350,14 +1544,27 @@
     selectedFiles = [];
     renderFilePreview();
     renderExistingFiles(existingFilePaths);
+
+    document.getElementById('inputEventSync').checked = !!data.event_id;
+    document.getElementById('inputEventDate').value = data.event_date || '';
+    if (data.event_id) {
+      const { data: linkedEvent } = await db.from('events').select('*').eq('id', data.event_id).single();
+      renderPostEventTagCheckboxes(linkedEvent?.tags || []);
+      renderPostEventRoleCheckboxes(linkedEvent?.target_roles || []);
+    } else {
+      renderPostEventTagCheckboxes([]);
+      renderPostEventRoleCheckboxes([]);
+    }
+    toggleEventSyncFields();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // ── 削除 ──
   async function deletePost(id) {
     if (!confirm('この投稿を削除しますか？添付ファイルも削除されます。')) return;
-    const { data } = await db.from('posts').select('file_paths').eq('id', id).single();
+    const { data } = await db.from('posts').select('file_paths, event_id').eq('id', id).single();
     if (data?.file_paths?.length > 0) await db.storage.from(STORAGE_BUCKET).remove(data.file_paths);
+    if (data?.event_id) await db.from('events').delete().eq('id', data.event_id);
 
     // notifications.post_id がこの投稿を参照していると外部キー制約で削除に失敗するため、先に解除する
     // （メンション通知を受け取った投稿を削除しようとすると起きていた不具合への対処）
@@ -1378,6 +1585,12 @@
     document.getElementById('inputPublished').checked = true;
     document.getElementById('inputSpecial').checked = false;
     document.getElementById('inputPublishAt').value = '';
+    document.getElementById('inputExpiresAt').value = '';
+    document.getElementById('inputEventSync').checked = false;
+    document.getElementById('inputEventDate').value = '';
+    toggleEventSyncFields();
+    renderPostEventTagCheckboxes([]);
+    renderPostEventRoleCheckboxes([]);
     document.getElementById('formTitle').textContent = '新規投稿';
     renderRoleCheckboxes([]);
     renderMentionCheckboxes([]);
@@ -1537,9 +1750,6 @@
       document.getElementById('ovClass').innerHTML = classOptions;
       document.getElementById('ovClassChecks').innerHTML = CLASS_NUMS.map(c => `
         <label class="role-checkbox-item"><input type="checkbox" name="ovClassCheck" value="${c}"> ${c}組</label>`).join('');
-      const periodOptions = PERIODS.map(p => `<option value="${p}">${p}限</option>`).join('');
-      document.getElementById('ovPeriod').innerHTML = periodOptions;
-      document.getElementById('ovMoveFromPeriod').innerHTML = periodOptions;
       document.getElementById('ovDate').value = new Date().toLocaleDateString('en-CA');
 
       document.getElementById('ttGradeSelect').addEventListener('change', loadTimetableGrid);
@@ -1562,6 +1772,9 @@
     document.getElementById('ovTargetSubjectRow').style.display = isNote ? 'none' : '';
     document.getElementById('ovNewSubjectRow').style.display = (type === 'subject_change') ? '' : 'none';
     document.getElementById('ovNoteLabel').textContent = isNote ? '備考の内容' : '備考（任意）';
+    // 「移動」は上のドラッグ＆ドロップツール内の「この並びで保存」で登録するため、共通の備考・登録ボタンは隠す
+    document.getElementById('ovNoteRow').style.display = isMoved ? 'none' : '';
+    document.getElementById('ovSubmitRow').style.display = isMoved ? 'none' : '';
   }
 
   function getSelectedOvClasses() {
@@ -1698,24 +1911,6 @@
     const note = document.getElementById('ovNote').value.trim();
     if (!date) { showToast('日付を入力してください'); return; }
     const weekday = weekdayFromDateStr(date);
-
-    if (type === 'moved') {
-      const classNo = Number(document.getElementById('ovClass').value);
-      const period = Number(document.getElementById('ovPeriod').value);
-      const fromPeriod = Number(document.getElementById('ovMoveFromPeriod').value);
-      if (fromPeriod === period) { showToast('移動元と移動先が同じ時限です'); return; }
-      if (!weekday) { showToast('日曜日は時間割がありません'); return; }
-      const { data: slot, error: slotError } = await db.from('timetable_slots')
-        .select('subject').eq('grade', grade).eq('class_no', classNo).eq('weekday', weekday).eq('period', fromPeriod).maybeSingle();
-      if (slotError) { console.error('標準時間割取得エラー:', slotError.message); showToast('登録失敗: ' + slotError.message); return; }
-      const payload = { date, grade, class_no: classNo, period, type, from_period: fromPeriod, subject: slot?.subject || '（未設定）', note: note || null };
-      const { error } = await db.from('timetable_overrides').upsert(payload, { onConflict: 'date,grade,class_no,period' });
-      if (error) { console.error('時間割変更登録エラー:', error.message); showToast('登録失敗: ' + error.message); return; }
-      showToast('時間割変更を登録しました');
-      document.getElementById('ovNote').value = '';
-      loadOverridesList();
-      return;
-    }
 
     if (type === 'note') {
       const classes = getSelectedOvClasses();
@@ -1935,20 +2130,6 @@
     renderEventsList();
   }
 
-  function renderEventTagCheckboxes(selectedTags) {
-    const el = document.getElementById('eventTagCheckboxes');
-    if (categoriesCache.length === 0) { el.innerHTML = '<span style="font-size:13px;color:#aaa">タグがありません（投稿管理のタグ管理から追加）</span>'; return; }
-    el.innerHTML = categoriesCache.map(c => `
-      <label class="role-checkbox-item">
-        <input type="checkbox" name="eventTag" value="${escapeHtml(c.name)}" ${selectedTags.includes(c.name) ? 'checked' : ''}>
-        ${escapeHtml(c.name)}
-      </label>`).join('');
-  }
-
-  function getSelectedEventTags() {
-    return Array.from(document.querySelectorAll('input[name="eventTag"]:checked')).map(el => el.value);
-  }
-
   function renderEventRoleCheckboxes(selectedRoles) {
     const el = document.getElementById('eventRoleCheckboxes');
     if (allRoles.length === 0) { el.innerHTML = '<span style="font-size:13px;color:#aaa">ロールがありません（生徒管理のロール管理から追加）</span>'; return; }
@@ -1966,16 +2147,14 @@
   function renderEventsList() {
     const el = document.getElementById('eventsArea');
     if (eventsCache.length === 0) { el.innerHTML = '<div class="empty">行事予定はまだありません</div>'; return; }
-    const today = new Date().toLocaleDateString('en-CA');
     el.innerHTML = eventsCache.map(ev => {
-      const isPast = (ev.end_date || ev.start_date) < today;
       const dateLabel = ev.end_date && ev.end_date !== ev.start_date
         ? `${formatJaDate(ev.start_date)} 〜 ${formatJaDate(ev.end_date)}`
         : formatJaDate(ev.start_date);
-      const tagsHtml = (ev.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+      const tagsHtml = (ev.tags || []).map(t => tagChipHtml(t, eventTagColor(t))).join('');
       const rolesHtml = (ev.target_roles && ev.target_roles.length > 0)
         ? ev.target_roles.map(r => `<span class="role-tag-sm">${escapeHtml(r)}</span>`).join('') : '<span style="font-size:11px;color:#aaa">全員</span>';
-      return `<div class="post-item"${isPast ? ' style="opacity:.55"' : ''}>
+      return `<div class="post-item">
         <div class="post-item-info">
           <div class="post-item-title">${escapeHtml(ev.title)}</div>
           <div class="post-item-meta">
@@ -1986,6 +2165,7 @@
           </div>
         </div>
         <div class="post-item-actions">
+          <button class="btn-sm btn-remind" onclick="openReminderManager(${ev.id})">リマインダー</button>
           <button class="btn-sm btn-edit" onclick="editEvent(${ev.id})">編集</button>
           <button class="btn-sm btn-del" onclick="deleteEvent(${ev.id})">削除</button>
         </div>
@@ -2052,17 +2232,32 @@
   }
 
   // ── カレンダープレビュー（生徒側の月表示をそのまま再現。ロール非公開のものには印を付ける） ──
-  function previewEvents() {
-    if (eventsCache.length === 0) { openPreview('<p style="font-size:13px;color:var(--ink-faint)">行事予定がまだありません</p>'); return; }
-    const now = new Date();
-    const y = now.getFullYear(), m = now.getMonth();
+  let previewCalendarMonth = new Date();
+
+  async function previewEvents() {
+    await loadEvents();
+    previewCalendarMonth = new Date();
+    renderEventsPreviewModal();
+  }
+
+  function shiftPreviewCalendarMonth(delta) {
+    previewCalendarMonth = new Date(previewCalendarMonth.getFullYear(), previewCalendarMonth.getMonth() + delta, 1);
+    renderEventsPreviewModal();
+  }
+
+  function renderEventsPreviewModal() {
+    const y = previewCalendarMonth.getFullYear(), m = previewCalendarMonth.getMonth();
     const daysInMonth = new Date(y, m + 1, 0).getDate();
     const monthStart = `${y}-${String(m + 1).padStart(2, '0')}-01`;
     const monthEnd = `${y}-${String(m + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
     const monthEvents = eventsCache.filter(ev => (ev.end_date || ev.start_date) >= monthStart && ev.start_date <= monthEnd);
     const monthLabel = `${y}年${m + 1}月`;
 
-    let html = `<div class="preview-title" style="font-size:16px">行事予定カレンダー（${monthLabel}）</div>`;
+    let html = `<div class="preview-modal-nav">
+      <button class="btn-sm" onclick="shiftPreviewCalendarMonth(-1)">◀ 前の月</button>
+      <div class="preview-title" style="font-size:16px;margin:0">行事予定カレンダー（${monthLabel}）</div>
+      <button class="btn-sm" onclick="shiftPreviewCalendarMonth(1)">次の月 ▶</button>
+    </div>`;
     if (monthEvents.length === 0) {
       html += '<p style="font-size:13px;color:var(--ink-faint);margin-top:10px">この月の行事予定はありません</p>';
     } else {
@@ -2070,7 +2265,7 @@
         const label = ev.end_date && ev.end_date !== ev.start_date
           ? `${formatJaDate(ev.start_date)} 〜 ${formatJaDate(ev.end_date)}`
           : formatJaDate(ev.start_date);
-        const tagsHtml = (ev.tags || []).map(t => `<span class="preview-tag">${escapeHtml(t)}</span>`).join('');
+        const tagsHtml = (ev.tags || []).map(t => tagChipHtml(t, eventTagColor(t), 'preview-tag')).join('');
         const roleNote = (ev.target_roles && ev.target_roles.length > 0)
           ? `<span class="preview-tag" style="background:var(--gold-tint);color:var(--gold)">対象: ${ev.target_roles.map(r => escapeHtml(r)).join('・')}</span>` : '';
         return `<div class="cal-event-item"><strong>${escapeHtml(label)}</strong>　${escapeHtml(ev.title)} ${tagsHtml}${roleNote}${ev.description ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">${escapeHtml(ev.description)}</div>` : ''}</div>`;
@@ -2078,6 +2273,92 @@
     }
     html += '<p class="preview-note">表示対象ロールを指定した予定は、そのロールを持つ生徒にのみ表示されます（上では参考として全件表示しています）。</p>';
     openPreview(html);
+  }
+
+  // ── リマインダー（行事予定に紐づく定期LINE通知。送信自体はCloudflare Workers Cronが行う） ──
+  let reminderManagerEventId = null;
+  let reminderManagerCache = [];
+
+  async function openReminderManager(eventId) {
+    reminderManagerEventId = eventId;
+    await loadReminders(eventId);
+    renderReminderModal();
+    document.getElementById('reminderModal').classList.add('open');
+  }
+
+  function closeReminderModal() {
+    document.getElementById('reminderModal').classList.remove('open');
+  }
+
+  async function loadReminders(eventId) {
+    const { data, error } = await db.from('reminders').select('*').eq('event_id', eventId).order('remind_at');
+    if (error) { console.error('リマインダー取得エラー:', error.message); reminderManagerCache = []; return; }
+    reminderManagerCache = data || [];
+  }
+
+  function renderReminderModal() {
+    const ev = eventsCache.find(e => e.id === reminderManagerEventId);
+    const el = document.getElementById('reminderModalBody');
+    const listHtml = reminderManagerCache.length === 0
+      ? '<p style="font-size:13px;color:var(--ink-faint)">リマインダーはまだありません</p>'
+      : reminderManagerCache.map(r => `
+        <div class="post-item" style="margin-bottom:8px">
+          <div class="post-item-info">
+            <div class="post-item-title" style="font-size:13px">${escapeHtml(new Date(r.remind_at).toLocaleString('ja-JP'))} ${r.sent ? '<span class="status-badge status-published">送信済み</span>' : ''}</div>
+            <div class="post-item-meta">
+              ${r.message ? `<span>${escapeHtml(r.message)}</span>` : '<span style="color:#aaa">本文未指定（行事名で送信）</span>'}
+              ${(r.target_roles && r.target_roles.length > 0) ? r.target_roles.map(x => `<span class="role-tag-sm">${escapeHtml(x)}</span>`).join('') : '<span style="font-size:11px;color:#aaa">全員</span>'}
+            </div>
+          </div>
+          <div class="post-item-actions">
+            <button class="btn-sm btn-del" onclick="deleteReminder(${r.id})">削除</button>
+          </div>
+        </div>`).join('');
+
+    el.innerHTML = `
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">行事予定「${escapeHtml(ev?.title || '')}」について、指定した日時にLINEで自動送信します。</p>
+      <div style="margin-bottom:20px">${listHtml}</div>
+      <div class="form-row">
+        <label>送信日時</label>
+        <input type="datetime-local" id="newReminderAt">
+      </div>
+      <div class="form-row">
+        <label>メッセージ（任意・未指定なら行事名を送信）</label>
+        <input type="text" id="newReminderMessage" placeholder="例：文化祭の準備は明日までです">
+      </div>
+      <div class="form-row">
+        <label>送信対象ロール（未選択＝全員）</label>
+        <div class="role-checkboxes" id="newReminderRoleCheckboxes">
+          ${allRoles.map(r => `<label class="role-checkbox-item"><input type="checkbox" name="newReminderRole" value="${escapeHtml(r)}"> ${escapeHtml(r)}</label>`).join('')}
+        </div>
+      </div>
+      <div class="form-actions">
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" type="button" onclick="addReminder()">追加する</button>
+      </div>
+    `;
+  }
+
+  async function addReminder() {
+    const remindAtInput = document.getElementById('newReminderAt').value;
+    if (!remindAtInput) { showToast('送信日時を入力してください'); return; }
+    const message = document.getElementById('newReminderMessage').value.trim();
+    const target_roles = Array.from(document.querySelectorAll('input[name="newReminderRole"]:checked')).map(el => el.value);
+    const remind_at = new Date(remindAtInput).toISOString();
+    const { error } = await db.from('reminders').insert({ event_id: reminderManagerEventId, remind_at, message: message || null, target_roles });
+    if (error) { showToast('追加失敗: ' + error.message); return; }
+    await loadReminders(reminderManagerEventId);
+    renderReminderModal();
+    showToast('リマインダーを追加しました');
+  }
+
+  async function deleteReminder(id) {
+    if (!confirm('このリマインダーを削除しますか？')) return;
+    const { error } = await db.from('reminders').delete().eq('id', id);
+    if (error) { showToast('削除失敗: ' + error.message); return; }
+    await loadReminders(reminderManagerEventId);
+    renderReminderModal();
+    showToast('削除しました');
   }
 
   function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
@@ -2094,6 +2375,14 @@
 
   function renderPreviewBodyHtml(body) {
     return escapeHtml(body).replace(/\[([^\[\]]+)\]\((https?:\/\/[^\s()]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  }
+
+  // 投稿タグ・カレンダータグの両方で使う共通のタグ表示（カレンダータグは色指定があれば反映）
+  function tagChipHtml(name, color, cls) {
+    cls = cls || 'tag';
+    return color
+      ? `<span class="${cls}" style="background:${escapeHtml(color)};color:#fff">${escapeHtml(name)}</span>`
+      : `<span class="${cls}">${escapeHtml(name)}</span>`;
   }
 
   function toDatetimeLocalValue(iso) {
